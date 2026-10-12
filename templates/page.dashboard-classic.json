@@ -1,0 +1,17 @@
+{
+  "sections": {
+    "main": {
+      "type": "customer-dashboard-classic",
+      "settings": {
+        "customer_account_client_id": "e394fd4f-2668-4623-a054-0d08b5cc9e5b",
+        "continue_shopping_url": "",
+        "color_scheme": "scheme-1",
+        "padding_top": 36,
+        "padding_bottom": 56
+      }
+    }
+  },
+  "order": [
+    "main"
+  ]
+}

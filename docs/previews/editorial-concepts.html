@@ -1,0 +1,434 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Editorial dashboard concepts</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --sans: "Instrument Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    --serif: "Instrument Serif", "Times New Roman", serif;
+    --mono: "Geist Mono", ui-monospace, Menlo, monospace;
+    --ease: cubic-bezier(.2, .8, .2, 1);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--sans); color: #111; background: #fff; -webkit-font-smoothing: antialiased; }
+  button, input { font: inherit; color: inherit; background: none; border: 0; }
+  button { cursor: pointer; }
+  img { display: block; max-width: 100%; }
+  :focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
+
+  /* ---------- Gallery chrome (deliberately quiet) ---------- */
+  .chrome { position: sticky; top: 0; z-index: 40; background: #fff; border-bottom: 1px solid #e8e8e8; padding: 10px 20px; display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: center; font-size: 12px; }
+  .chrome strong { font-weight: 600; }
+  .chrome nav { display: flex; flex-wrap: wrap; gap: 2px; }
+  .chrome nav button { padding: 6px 10px; color: #777; }
+  .chrome nav button[aria-current="true"] { color: #111; background: #f1f1f1; }
+  .chrome label { display: flex; gap: 8px; align-items: center; color: #777; margin-left: auto; }
+  .chrome input { border-bottom: 1px solid #ccc; width: 140px; padding: 2px 0; color: #111; }
+  .chrome .w button { padding: 4px 8px; color: #777; } .chrome .w button[aria-pressed="true"] { color: #111; text-decoration: underline; text-underline-offset: 4px; }
+  .caption { max-width: 1440px; margin: 0 auto; padding: 18px 20px 10px; display: flex; flex-wrap: wrap; gap: 6px 24px; align-items: baseline; font-size: 13px; color: #666; }
+  .caption b { color: #111; font-weight: 600; font-size: 15px; }
+  .caption .ref { font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; }
+  .canvas { max-width: 1440px; margin: 0 auto 60px; border: 1px solid #e4e4e4; overflow: hidden; transition: max-width .3s var(--ease); }
+  .canvas.mobile { max-width: 390px; }
+  .reveal > * { animation: in .7s var(--ease) both; }
+  .reveal > :nth-child(2) { animation-delay: .08s; } .reveal > :nth-child(3) { animation-delay: .16s; } .reveal > :nth-child(n+4) { animation-delay: .22s; }
+  @keyframes in { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+  .toast { position: fixed; left: 50%; bottom: 22px; transform: translate(-50%, 16px); opacity: 0; background: #111; color: #fff; font-size: 12px; padding: 10px 14px; transition: .25s var(--ease); z-index: 60; pointer-events: none; }
+  .toast.on { opacity: 1; transform: translate(-50%, 0); }
+
+  /* ---------- Product "studio shots" (CSS objects on grey) ---------- */
+  .studio { background: #dcdcd9; position: relative; aspect-ratio: 4 / 5; display: grid; place-items: center; overflow: hidden; }
+  .obj { width: 62%; height: 15%; position: relative; box-shadow: 0 10px 18px -10px rgba(0,0,0,.45); }
+  .obj::before { content: ""; position: absolute; inset: 0; background-image: repeating-linear-gradient(0deg, rgba(255,255,255,.14) 0 2px, transparent 2px 7px), repeating-linear-gradient(90deg, rgba(0,0,0,.08) 0 2px, transparent 2px 7px); }
+  .obj::after { content: ""; position: absolute; left: 0; right: 0; bottom: -6%; height: 22%; background: inherit; filter: brightness(.86); }
+  .obj.bar { width: 34%; height: 18%; } .obj.bar::before { background-image: linear-gradient(180deg, rgba(255,255,255,.35), transparent 50%); }
+  .obj.tall { width: 30%; height: 46%; }
+  .photo { background: #8a8f86 center / cover no-repeat; position: relative; }
+
+  /* ======================= 1 · ATELIER (Nossara) ======================= */
+  .at { background: #f6f5f0; color: #1d1d1b; font-size: 12px; }
+  .at .hero { min-height: 560px; display: grid; grid-template-rows: auto 1fr auto; color: #fff; padding: 16px 18px 20px; }
+  .at .hero::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,.35), transparent 30%, transparent 70%, rgba(0,0,0,.35)); pointer-events: none; }
+  .at .hero > * { position: relative; z-index: 1; }
+  .at .bar { display: flex; justify-content: space-between; align-items: center; text-transform: uppercase; letter-spacing: .04em; }
+  .at .pill { border: 1px solid currentColor; border-radius: 999px; padding: 3px 10px; }
+  .at .vert { background: rgba(0,0,0,.18); backdrop-filter: blur(2px); writing-mode: vertical-rl; justify-self: center; align-self: center; border: 1px solid #fff; border-radius: 999px; padding: 14px 6px; letter-spacing: .14em; text-transform: uppercase; font-size: 13px; }
+  .at .foot { text-align: center; text-transform: uppercase; letter-spacing: .06em; font-size: 11px; line-height: 1.5; }
+  .at .sec { padding: 40px 6px 24px; }
+  .at .sec h3 { font-weight: 400; text-transform: uppercase; font-size: 11px; letter-spacing: .04em; margin: 0 0 10px 0; }
+  .at .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  .at .item { display: grid; gap: 4px; text-align: left; }
+  .at .item .studio span { position: absolute; left: 10px; top: 10px; writing-mode: vertical-rl; color: #fff; font-size: 11px; letter-spacing: .1em; }
+  .at .item .studio { transition: filter .3s; } .at .item:hover .studio { filter: brightness(.95); }
+  .at .item p { text-transform: uppercase; font-size: 11px; } .at .item small { color: #8a8a85; font-size: 11px; }
+  .at .item[aria-pressed="true"] p { text-decoration: underline; text-underline-offset: 3px; }
+  .at .story { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 6px; padding: 60px 6px 80px; align-items: start; }
+  .at .story p { grid-column: 2 / 3; font-size: 12px; line-height: 1.5; max-width: 40ch; }
+  .at .story .v { grid-column: 4; justify-self: end; writing-mode: vertical-rl; line-height: 1.8; letter-spacing: .1em; text-transform: uppercase; font-size: 11px; }
+  .canvas.mobile .at .grid { grid-template-columns: 1fr 1fr; } .canvas.mobile .at .story { grid-template-columns: 1fr; } .canvas.mobile .at .story p { grid-column: auto; }
+
+  /* ======================= 2 · INDEX (Stoa) ======================= */
+  .st { background: #f4f3ef; color: #121212; --or: #ff5b1f; }
+  .st .top { display: flex; justify-content: space-between; padding: 22px 64px; font-size: 13px; align-items: center; }
+  .st .logo { font-weight: 600; font-size: 18px; display: flex; gap: 8px; align-items: center; } .st .logo i { width: 18px; height: 18px; background: #121212; display: inline-block; }
+  .st .lab { font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: #6b6b66; display: flex; gap: 8px; align-items: center; }
+  .st .lab::before { content: ""; width: 6px; height: 6px; background: var(--or); }
+  .st .hero { display: grid; grid-template-columns: 1.1fr .9fr; gap: 40px; padding: 60px 64px 80px; align-items: center; }
+  .st h2 { font-size: clamp(44px, 6vw, 84px); font-weight: 500; letter-spacing: -.045em; line-height: .95; margin-top: 18px; }
+  .st h2 span { color: var(--or); display: block; }
+  .st .sub { color: #6b6b66; margin-top: 18px; max-width: 34ch; line-height: 1.5; }
+  .st .cta { margin-top: 26px; display: inline-flex; gap: 10px; border-bottom: 1px solid #121212; padding-bottom: 4px; font-size: 13px; }
+  .st .shape { width: 100%; aspect-ratio: 1; filter: drop-shadow(0 30px 30px rgba(120,40,0,.18)); transition: transform .8s var(--ease); }
+  .st .hero:hover .shape { transform: rotate(-6deg) scale(1.03); }
+  .st .sec { padding: 70px 64px; border-top: 1px solid #e3e1db; }
+  .st h3 { font-size: 40px; font-weight: 500; letter-spacing: -.035em; line-height: 1.05; margin: 14px 0 36px; }
+  .st .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .st .card { background: #ecebe6; padding: 22px; display: grid; gap: 10px; min-height: 190px; align-content: start; position: relative; }
+  .st .card svg { position: absolute; right: 18px; top: 18px; width: 64px; }
+  .st .card .n { font-family: var(--mono); font-size: 11px; color: var(--or); }
+  .st .card b { font-size: 22px; font-weight: 500; letter-spacing: -.02em; }
+  .st .card p { color: #6b6b66; font-size: 13px; line-height: 1.5; }
+  .st .card .tags { font-family: var(--mono); font-size: 10px; color: #8a8a85; display: flex; gap: 12px; margin-top: auto; }
+  .st .player { background: #ecebe6; padding: 22px 26px; display: grid; gap: 18px; }
+  .st .reel { height: 180px; background: repeating-linear-gradient(90deg, #e2e0da 0 1px, transparent 1px 64px); position: relative; }
+  .st .reel .mark { position: absolute; top: 18px; bottom: 18px; width: 120px; left: var(--x, 10%); background: var(--or); transition: left .2s linear; display: grid; place-items: center; color: #fff; font-family: var(--mono); font-size: 11px; }
+  .st .controls { display: flex; gap: 16px; align-items: center; font-family: var(--mono); font-size: 11px; color: #6b6b66; }
+  .st .track { flex: 1; height: 2px; background: #d6d4ce; position: relative; }
+  .st .track i { position: absolute; left: 0; top: -4px; width: 10px; height: 10px; background: #121212; border-radius: 50%; margin-left: -5px; }
+  .canvas.mobile .st .hero, .canvas.mobile .st .cards { grid-template-columns: 1fr; } .canvas.mobile .st .top, .canvas.mobile .st .hero, .canvas.mobile .st .sec { padding-left: 20px; padding-right: 20px; }
+
+  /* ======================= 3 · WORDMARK (Scandiwest) ======================= */
+  .sw { background: #fff; color: #1b1b1b; }
+  .sw .hero { height: 620px; display: grid; grid-template-rows: auto 1fr; color: #fff; }
+  .sw .hero > * { position: relative; z-index: 2; }
+  .sw .nav { display: flex; gap: 28px; padding: 18px 22px; font-size: 12px; align-items: center; }
+  .sw .nav .btn { margin-left: auto; background: #fff; color: #111; padding: 9px 14px; border-radius: 6px; }
+  .sw .word { position: absolute; z-index: 1; left: 0; right: 0; top: 30px; text-align: center; font-size: clamp(80px, 15vw, 220px); font-weight: 500; letter-spacing: -.06em; line-height: 1; color: rgba(255,255,255,.55); mix-blend-mode: soft-light; pointer-events: none; white-space: nowrap; }
+  .sw .float { position: absolute; left: 22px; bottom: 22px; background: #fff; color: #111; border-radius: 10px; padding: 10px; display: grid; grid-template-columns: 96px 1fr auto; gap: 12px; width: min(360px, calc(100% - 44px)); transition: transform .3s var(--ease); }
+  .sw .float:hover { transform: translateY(-3px); }
+  .sw .float .photo { border-radius: 6px; aspect-ratio: 1; }
+  .sw .float .chip { font-size: 11px; background: #f1f1f1; padding: 2px 8px; border-radius: 4px; justify-self: start; }
+  .sw .float .go { width: 28px; height: 28px; background: #111; color: #fff; border-radius: 6px; display: grid; place-items: center; align-self: start; }
+  .sw .claim { position: absolute; right: 26px; bottom: 26px; font-size: clamp(28px, 3.4vw, 44px); font-weight: 500; letter-spacing: -.03em; line-height: 1.05; max-width: 12ch; text-align: left; }
+  .sw .about { display: grid; grid-template-columns: 140px 1.3fr 1fr; gap: 30px; padding: 90px 22px; }
+  .sw .about .side { font-size: 12px; color: #999; display: flex; flex-direction: column; justify-content: space-between; }
+  .sw .about h3 { font-size: clamp(30px, 3.4vw, 46px); font-weight: 500; letter-spacing: -.035em; line-height: 1.08; }
+  .sw .stats { display: flex; gap: 60px; margin-top: 90px; }
+  .sw .stats b { display: block; font-size: 52px; font-weight: 400; letter-spacing: -.04em; }
+  .sw .stats span { font-size: 13px; }
+  .sw .loc { border-radius: 10px; aspect-ratio: 16/10; color: #fff; padding: 16px; display: flex; align-items: flex-end; font-size: 15px; font-weight: 500; }
+  .sw .about p { font-size: 15px; line-height: 1.5; margin-top: 30px; } .sw .about p + p { color: #777; font-size: 13px; margin-top: 18px; }
+  .sw .dark { background: #232323; color: #f2f2f2; padding: 80px 22px; }
+  .sw .dark h3 { font-size: 40px; font-weight: 400; letter-spacing: -.03em; margin: 0 0 30px 60px; }
+  .sw .rows { display: grid; gap: 2px; }
+  .sw .rowx { display: grid; grid-template-columns: 70px 1fr auto auto; gap: 22px; align-items: center; padding: 18px 0; border-top: 1px solid #3a3a3a; text-align: left; transition: padding .3s var(--ease); }
+  .sw .rowx:hover { padding-left: 10px; }
+  .sw .rowx .photo { aspect-ratio: 1; border-radius: 6px; }
+  .canvas.mobile .sw .about { grid-template-columns: 1fr; } .canvas.mobile .sw .claim { display: none; } .canvas.mobile .sw .stats { gap: 30px; }
+
+  /* ======================= 4 · LOOKBOOK (GANNI) ======================= */
+  .gn { background: #fff; color: #111; font-size: 12px; }
+  .gn .ann { background: #f0f0f0; text-align: center; padding: 6px; font-size: 11px; }
+  .gn .nav { display: flex; gap: 16px; padding: 12px 14px; align-items: center; }
+  .gn .nav b { font-size: 22px; font-weight: 600; letter-spacing: -.02em; margin-right: 14px; }
+  .gn .nav .s { margin-left: auto; background: #f2f2f2; padding: 6px 10px; width: 160px; color: #888; }
+  .gn .hero { height: 430px; color: #fff; display: flex; align-items: flex-end; justify-content: space-between; padding: 16px; }
+  .gn .hero b { font-size: clamp(56px, 9vw, 120px); font-weight: 600; letter-spacing: -.04em; line-height: .85; }
+  .gn .hero span { max-width: 26ch; font-size: 13px; }
+  .gn .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 8px; }
+  .gn .card { display: grid; gap: 6px; }
+  .gn .card .studio { background: #f4f4f4; aspect-ratio: 3/4; }
+  .gn .new { position: absolute; left: 10px; top: 10px; color: #888; font-size: 11px; }
+  .gn .plus { position: absolute; right: 10px; bottom: 10px; width: 26px; height: 26px; background: #111; color: #fff; display: grid; place-items: center; font-size: 16px; transition: transform .2s var(--ease); }
+  .gn .plus:hover { transform: scale(1.12); }
+  .gn .plus.done { background: #2f6f4f; }
+  .gn .sw8 { display: flex; gap: 4px; } .gn .sw8 i { width: 10px; height: 10px; border: 1px solid #ddd; }
+  .canvas.mobile .gn .grid { grid-template-columns: 1fr 1fr; } .canvas.mobile .gn .nav .s, .canvas.mobile .gn .nav span { display: none; }
+
+  /* ======================= 5 · NETWORK (Catalyst) ======================= */
+  .cb { background: #f1f1f0; color: #111; }
+  .cb .nav { display: flex; gap: 10px; padding: 14px; font-size: 12px; }
+  .cb .nav span { background: #fff; padding: 7px 12px; border-radius: 8px; }
+  .cb .hero { display: grid; grid-template-columns: 1fr 1fr; min-height: 520px; align-items: center; padding: 0 0 0 16px; }
+  .cb h2 { font-size: clamp(40px, 5vw, 66px); font-weight: 400; letter-spacing: -.035em; line-height: 1.02; }
+  .cb .graph { position: relative; height: 520px; }
+  .cb .graph svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .cb .graph path { fill: none; stroke: #b9b9b6; stroke-width: 1; transition: stroke .2s, stroke-width .2s; }
+  .cb .graph path.hl { stroke: #111; stroke-width: 1.5; }
+  .cb .node { position: absolute; transform: translate(-50%, -50%); border-radius: 6px; overflow: hidden; transition: transform .25s var(--ease), box-shadow .25s; box-shadow: 0 0 0 4px #f1f1f0; }
+  .cb .node:hover, .cb .node.hl { transform: translate(-50%, -50%) scale(1.08); box-shadow: 0 0 0 4px #f1f1f0, 0 0 0 5px #111; }
+  .cb .node.order { background: #111; color: #fff; font-family: var(--mono); font-size: 10px; padding: 6px 8px; border-radius: 4px; }
+  .cb .node .studio { width: 46px; aspect-ratio: 1; }
+  .cb .node.carrier { background: #fff; font-size: 10px; padding: 5px 8px; border-radius: 99px; font-family: var(--mono); }
+  .cb .body { display: grid; grid-template-columns: 1fr 1fr; padding: 70px 16px; }
+  .cb .body p { grid-column: 2; font-size: 19px; line-height: 1.4; max-width: 36ch; }
+  .cb .faq { grid-column: 2; margin-top: 50px; display: grid; gap: 6px; }
+  .cb .faq button { background: #fff; border-radius: 8px; padding: 12px 14px; display: flex; justify-content: space-between; text-align: left; font-size: 13px; }
+  .cb .faq .ans { font-size: 13px; color: #555; padding: 4px 14px 10px; display: none; } .cb .faq .open + .ans { display: block; }
+  .canvas.mobile .cb .hero, .canvas.mobile .cb .body { grid-template-columns: 1fr; } .canvas.mobile .cb .body p, .canvas.mobile .cb .faq { grid-column: auto; } .canvas.mobile .cb .hero { padding: 30px 16px 0; }
+
+  /* ======================= 6 · CONCIERGE (Jack & Jill) ======================= */
+  .jj { background: #fff; color: #161616; }
+  .jj .nav { display: flex; justify-content: space-between; align-items: center; padding: 16px 30px; font-size: 13px; }
+  .jj .nav .logo { font-family: var(--serif); font-size: 21px; }
+  .jj .nav .r { display: flex; gap: 8px; } .jj .nav .r span { padding: 6px 14px; border-radius: 99px; background: #f1f0ed; } .jj .nav .r span:last-child { background: #161616; color: #fff; }
+  .jj .hero { text-align: center; padding: 70px 20px 60px; }
+  .jj .hero small { font-size: 12px; color: #777; }
+  .jj h2 { font-family: var(--serif); font-weight: 400; font-size: clamp(40px, 5.6vw, 72px); line-height: 1.02; letter-spacing: -.01em; margin-top: 12px; }
+  .jj .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; padding: 0 30px; }
+  .jj .pair .head { display: flex; justify-content: space-between; align-items: end; margin-bottom: 10px; }
+  .jj .pair .head small { color: #777; font-size: 13px; display: block; } .jj .pair .head b { font-weight: 500; font-size: 15px; }
+  .jj .pair .head button { background: #161616; color: #fff; border-radius: 99px; padding: 7px 14px; font-size: 12px; }
+  .jj .frame { background: #f3f1ec; padding: 22px 22px 0; height: 300px; overflow: hidden; }
+  .jj .ui { background: #fff; height: 100%; padding: 14px; display: grid; gap: 8px; align-content: start; font-size: 12px; box-shadow: 0 1px 0 #e6e3dc; }
+  .jj .ui .r { display: flex; gap: 10px; align-items: center; padding: 6px 0; border-bottom: 1px solid #f0eee9; }
+  .jj .ui .r .studio { width: 30px; aspect-ratio: 1; border-radius: 4px; }
+  .jj .ui .r span:last-child { margin-left: auto; font-size: 11px; color: #777; }
+  .jj .band { background: #f6f4ef; margin-top: 70px; padding: 70px 20px; text-align: center; }
+  .jj .band h3 { font-size: 32px; font-weight: 500; letter-spacing: -.02em; line-height: 1.15; }
+  .jj .seg { display: inline-flex; background: #ebe8e1; border-radius: 99px; padding: 4px; margin: 24px 0; }
+  .jj .seg button { padding: 7px 16px; border-radius: 99px; font-size: 13px; color: #666; }
+  .jj .seg button[aria-pressed="true"] { background: #fff; color: #161616; box-shadow: 0 1px 2px rgba(0,0,0,.08); }
+  .jj .moment { background: #fff; max-width: 560px; margin: 0 auto; padding: 50px 20px; display: grid; justify-items: center; gap: 14px; }
+  .jj .accepted { background: #3a7bfa; color: #fff; padding: 14px 28px; border-radius: 99px; font-size: 17px; display: inline-flex; gap: 10px; align-items: center; transition: transform .3s var(--ease); }
+  .jj .accepted:active { transform: scale(.97); }
+  .canvas.mobile .jj .pair { grid-template-columns: 1fr; padding: 0 16px; }
+
+  /* ======================= 7 · COMMAND (Corekit) ======================= */
+  .ck { background: #f6f6f6; color: #151515; padding-bottom: 60px; }
+  .ck .hero { text-align: center; padding: 70px 20px 40px; }
+  .ck .hero small { display: inline-block; background: #fff; border-radius: 99px; padding: 5px 12px; font-size: 12px; box-shadow: 0 0 0 1px #e7e7e7; }
+  .ck h2 { font-size: clamp(36px, 5vw, 60px); font-weight: 600; letter-spacing: -.04em; line-height: 1.04; margin: 16px auto 0; max-width: 16ch; }
+  .ck .app { max-width: 920px; margin: 30px auto 0; padding: 3px; border-radius: 16px; background: linear-gradient(120deg, #d9c7ff, #ffe0c2 40%, #c9f0ff 80%); }
+  .ck .appin { background: #fff; border-radius: 13px; display: grid; grid-template-columns: 190px 1fr; min-height: 420px; overflow: hidden; }
+  .ck .side { border-right: 1px solid #efefef; padding: 16px; font-size: 12px; display: grid; gap: 4px; align-content: start; }
+  .ck .side span { padding: 6px 8px; border-radius: 6px; color: #555; } .ck .side span.on { background: #f3f3f3; color: #151515; }
+  .ck .main { padding: 50px 40px; display: grid; justify-items: center; gap: 16px; align-content: start; }
+  .ck .main h4 { font-size: 22px; font-weight: 600; letter-spacing: -.02em; } .ck .main h4 + p { color: #777; margin-top: -10px; }
+  .ck .box { width: 100%; max-width: 520px; border: 1px solid #e5e5e5; border-radius: 12px; padding: 10px 12px; display: flex; gap: 10px; align-items: center; }
+  .ck .box input { flex: 1; outline: 0; }
+  .ck .box button { width: 30px; height: 30px; border-radius: 50%; background: #151515; color: #fff; }
+  .ck .chips { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
+  .ck .chips button { font-size: 12px; padding: 6px 12px; border-radius: 99px; box-shadow: 0 0 0 1px #e7e7e7; }
+  .ck .answer { width: 100%; max-width: 520px; text-align: left; font-size: 14px; line-height: 1.5; min-height: 70px; }
+  .ck .answer .studio { width: 40px; aspect-ratio: 1; border-radius: 6px; display: inline-block; vertical-align: middle; margin-right: 8px; }
+  .canvas.mobile .ck .appin { grid-template-columns: 1fr; } .canvas.mobile .ck .side { display: none; } .canvas.mobile .ck .main { padding: 30px 16px; }
+
+  /* ======================= 8 · SPEC SHEET (Stoa x Catalyst) ======================= */
+  .sp { background: #fafaf8; color: #141414; padding: 40px; }
+  .sp .sheet { position: relative; border: 1px solid #d9d9d4; background: repeating-linear-gradient(90deg, transparent 0 79px, #ecece7 79px 80px), #fff; padding: 46px; display: grid; grid-template-columns: 1.2fr 1fr; gap: 40px; }
+  .sp .sheet::before, .sp .sheet::after { content: ""; position: absolute; width: 22px; height: 22px; border: 1px solid #141414; }
+  .sp .sheet::before { left: -12px; top: -12px; border-right: 0; border-bottom: 0; } .sp .sheet::after { right: -12px; bottom: -12px; border-left: 0; border-top: 0; }
+  .sp .lab { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: .1em; color: #8a8a85; }
+  .sp .num { font-size: clamp(80px, 12vw, 170px); font-weight: 500; letter-spacing: -.06em; line-height: .85; margin: 14px 0; }
+  .sp dl { display: grid; grid-template-columns: auto 1fr; gap: 10px 24px; font-size: 13px; margin-top: 24px; }
+  .sp dt { font-family: var(--mono); font-size: 10px; text-transform: uppercase; color: #8a8a85; padding-top: 2px; }
+  .sp .lines { display: grid; gap: 0; border-top: 1px solid #141414; }
+  .sp .lines button { display: grid; grid-template-columns: 50px 1fr auto; gap: 14px; align-items: center; padding: 12px 0; border-bottom: 1px solid #d9d9d4; text-align: left; font-size: 13px; }
+  .sp .lines button[aria-pressed="true"] { background: #fff4ee; }
+  .sp .lines .studio { aspect-ratio: 1; }
+  .sp .barcode { height: 44px; background: repeating-linear-gradient(90deg, #141414 0 2px, transparent 2px 4px, #141414 4px 5px, transparent 5px 9px, #141414 9px 12px, transparent 12px 14px); margin-top: 18px; }
+  .sp .stamp { position: absolute; right: 46px; top: 46px; border: 2px solid #ff5b1f; color: #ff5b1f; font-family: var(--mono); font-size: 12px; padding: 6px 10px; transform: rotate(-6deg); text-transform: uppercase; letter-spacing: .08em; }
+  .canvas.mobile .sp { padding: 16px; } .canvas.mobile .sp .sheet { grid-template-columns: 1fr; padding: 24px; } .canvas.mobile .sp .stamp { position: static; justify-self: start; }
+
+  /* ======================= 9 · QUIET SPLIT (Scandiwest about) ======================= */
+  .qs { background: #fff; color: #1b1b1b; display: grid; grid-template-columns: 1fr 1fr; min-height: 640px; }
+  .qs .l { padding: 60px 50px; display: flex; flex-direction: column; justify-content: space-between; }
+  .qs .l small { font-size: 12px; color: #999; }
+  .qs h2 { font-family: var(--serif); font-size: clamp(44px, 5.4vw, 76px); font-weight: 400; line-height: .98; letter-spacing: -.015em; }
+  .qs h2 em { color: #9a9a95; }
+  .qs .nums { display: flex; gap: 50px; }
+  .qs .nums button { text-align: left; } .qs .nums b { display: block; font-size: 46px; font-weight: 400; letter-spacing: -.04em; }
+  .qs .nums button[aria-pressed="true"] span { text-decoration: underline; text-underline-offset: 4px; }
+  .qs .r { position: relative; }
+  .qs .r .photo { position: absolute; inset: 0; transition: opacity .5s; }
+  .qs .tagc { position: absolute; left: 20px; bottom: 20px; right: 20px; background: rgba(255,255,255,.92); backdrop-filter: blur(6px); padding: 16px; display: grid; gap: 4px; font-size: 13px; }
+  .canvas.mobile .qs { grid-template-columns: 1fr; } .canvas.mobile .qs .r { height: 360px; } .canvas.mobile .qs .l { padding: 30px 20px; gap: 30px; }
+
+  /* ======================= 10 · FILM STRIP (Nossara x Stoa) ======================= */
+  .fs { background: #121212; color: #ecebe6; padding: 50px 0 40px; }
+  .fs .head { display: flex; justify-content: space-between; align-items: end; padding: 0 40px 30px; }
+  .fs .head h2 { font-size: clamp(36px, 4.4vw, 58px); font-weight: 400; letter-spacing: -.035em; line-height: 1; }
+  .fs .head .count { font-family: var(--mono); font-size: 12px; color: #9a9a95; }
+  .fs .strip { display: grid; grid-auto-flow: column; grid-auto-columns: min(46%, 520px); gap: 16px; overflow-x: auto; scroll-snap-type: x mandatory; padding: 0 40px 20px; cursor: grab; scrollbar-width: none; }
+  .fs .strip::-webkit-scrollbar { display: none; }
+  .fs .frame { scroll-snap-align: start; display: grid; gap: 10px; }
+  .fs .frame .studio { aspect-ratio: 4/3; background: #2a2a28; }
+  .fs .frame .meta { display: flex; justify-content: space-between; font-size: 12px; font-family: var(--mono); color: #9a9a95; text-transform: uppercase; }
+  .fs .frame b { font-weight: 400; font-size: 18px; letter-spacing: -.01em; }
+  .fs .ctrl { display: flex; gap: 14px; align-items: center; padding: 10px 40px 0; font-family: var(--mono); font-size: 11px; color: #9a9a95; }
+  .fs .ctrl button { border: 1px solid #3a3a38; width: 34px; height: 34px; display: grid; place-items: center; color: #ecebe6; }
+  .fs .prog { flex: 1; height: 1px; background: #3a3a38; position: relative; } .fs .prog i { position: absolute; left: 0; top: -1px; height: 3px; background: #ecebe6; width: 20%; transition: width .3s; }
+  .canvas.mobile .fs .strip { grid-auto-columns: 85%; padding: 0 16px 16px; } .canvas.mobile .fs .head, .canvas.mobile .fs .ctrl { padding-left: 16px; padding-right: 16px; }
+</style>
+</head>
+<body>
+
+<div class="chrome">
+  <strong>Editorial concepts</strong>
+  <nav id="nav" aria-label="Concepts"></nav>
+  <label>Brand name <input id="brand" value="Your Store" maxlength="18" aria-label="Brand name"></label>
+  <span class="w"><button data-w="d" aria-pressed="true">Desktop</button><button data-w="m" aria-pressed="false">Mobile</button></span>
+</div>
+<div class="caption" id="cap"></div>
+<div class="canvas" id="canvas"><div id="stage"></div></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+/* Sample data for the preview. Real version uses the customer's Shopify orders. */
+const P = [
+  { name: 'Waffle towel', variant: 'Grey', price: 18, color: '#9a9a96', kind: '' },
+  { name: 'Waffle towel', variant: 'Navy', price: 18, color: '#2e3f5c', kind: '' },
+  { name: 'Waffle towel', variant: 'White', price: 18, color: '#f3f2ee', kind: '' },
+  { name: 'Waffle towel', variant: 'Charcoal', price: 18, color: '#3b3c3e', kind: '' },
+  { name: 'Ski wax', variant: 'Universal', price: 24.95, color: '#d9a62b', kind: 'bar' },
+  { name: 'Merino base layer', variant: 'Oat · M', price: 89, color: '#cbb89a', kind: 'tall' },
+];
+const ORDERS = [
+  { id: '1006', date: 'Oct 18', status: 'Preparing', items: [4, 4], total: 49.9 },
+  { id: '1004', date: 'Oct 15', status: 'In transit', items: [5, 1], total: 107, carrier: 'FedEx', eta: 'Sunday, Oct 19' },
+  { id: '1001', date: 'Oct 11', status: 'Delivered', items: [4], total: 32.95 },
+  { id: '0998', date: 'Sep 02', status: 'Delivered', items: [0, 3], total: 36 },
+];
+const PHOTO = (seed, w = 1600, h = 1000) => `https://picsum.photos/seed/${seed}/${w}/${h}?grayscale`;
+const obj = (i, cls = '') => `<div class="studio ${cls}"><div class="obj ${P[i].kind}" style="background:${P[i].color}"></div></div>`;
+const money = (n) => '$' + n.toFixed(2);
+const $ = (s, r = document) => r.querySelector(s), $$ = (s, r = document) => [...r.querySelectorAll(s)];
+let toastT; const toast = (m) => { const t = $('#toast'); t.textContent = m; t.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('on'), 2000); };
+const brand = () => $('#brand').value.trim() || 'Your Store';
+
+const C = [
+/* 1 */ { name: 'Atelier', ref: 'Nossara', what: 'Full-bleed photo, tiny uppercase type, a vertical label as the signature. Past purchases shown like studio product shots. Tap a product to see its order.', render: (s) => {
+  s.innerHTML = `<div class="at reveal">
+    <section class="hero photo" style="background-image:url(${PHOTO('forest-towel', 1600, 1100)})">
+      <div class="bar"><span class="pill">${brand()}</span><span>Overview · Orders · Account</span><span>Cart ( 0 )</span></div>
+      <div class="vert">${brand()} · Your account</div>
+      <div class="foot">Welcome back, Grant<br>Member since October 2026</div>
+    </section>
+    <section class="sec"><h3>Your pieces</h3><div class="grid">${[1, 0, 2, 3].map((i, n) => `<button class="item" data-i="${n}" aria-pressed="false">${obj(i).replace('</div></div>', `</div><span>${['Delivered', 'Delivered', 'In transit', 'Preparing'][n]}</span></div>`)}<p>${P[i].name} [${P[i].variant}]</p><small>Order #${['0998', '0998', '1004', '1006'][n]} · ${money(P[i].price)}</small></button>`).join('')}</div></section>
+    <section class="story"><p id="atp">Four pieces so far. Your latest order, #1006, is being prepared and will ship in one to two days. Tap a piece to see where it is.</p><span class="v">Order history<br>Care and returns</span></section></div>`;
+  s.addEventListener('click', (e) => { const b = e.target.closest('.item'); if (!b) return; $$('.item', s).forEach((x) => x.setAttribute('aria-pressed', x === b)); const n = +b.dataset.i; $('#atp', s).textContent = ['Order #0998 · Delivered Sep 05. Waffle towel in navy, bought with a charcoal one.', 'Order #0998 · Delivered Sep 05. Waffle towel in grey. Buy it again from your order page.', 'Order #1004 · In transit with FedEx. Arrives Sunday, October 19.', 'Order #1006 · Being prepared. You will get tracking when it ships.'][n]; });
+}},
+/* 2 */ { name: 'Index', ref: 'Stoa', what: 'A huge two-line headline with the status in the accent colour, mono section labels, and a "player" for the shipment timeline. Press play.', render: (s) => {
+  s.innerHTML = `<div class="st reveal">
+    <div class="top"><span class="logo"><i></i>${brand().toLowerCase()}</span><span>Orders &nbsp; Addresses &nbsp; Profile</span><span style="border-bottom:1px solid #121212">Log out ↗</span></div>
+    <section class="hero"><div><span class="lab">Account · Grant</span><h2>Your order.<span>Arrives Sunday.</span></h2><p class="sub">Order #1004 left the warehouse on October 16 with FedEx. Two items: ski wax and a navy waffle towel.</p><button class="cta">Follow the shipment ↓</button></div><svg class="shape" viewBox="0 0 400 400" aria-hidden="true"><polygon points="70,150 250,60 250,150 120,215" fill="#ff7a45"/><polygon points="250,60 330,120 330,210 250,150" fill="#d9440f"/><polygon points="120,215 250,150 330,210 200,275" fill="#ff5b1f"/><polygon points="200,275 330,210 330,300 200,365" fill="#e84d14"/><polygon points="120,215 200,275 200,365 120,305" fill="#b8380a"/></svg></section>
+    <section class="sec"><span class="lab">01 / Your orders</span><h3>From checkout to your door.<br>And back again.</h3>
+      <div class="cards">${[['01', 'Ordered', '4', 'orders this season, all paid.', 'History · Invoices · Receipts'], ['02', 'On the way', '2', 'shipments moving right now.', 'Tracking · Carrier · Dates'], ['03', 'Delivered', '2', 'orders arrived. Rebuy in one tap.', 'Buy again · Returns · Help']].map((c) => `<div class="card"><svg viewBox="0 0 64 12" aria-hidden="true"><path d="M2 6 Q 12 0 22 6 T 42 6 T 62 6" fill="none" stroke="#ff5b1f" stroke-width="3"/></svg><span class="n">${c[0]}</span><b>${c[1]}.</b><p><strong style="font-weight:600;color:#121212">${c[2]}</strong> ${c[3]}</p><span class="tags">${c[4].split(' · ').map((t) => `<span>${t}</span>`).join('')}</span></div>`).join('')}</div></section>
+    <section class="sec"><span class="lab">02 / Shipment #1004</span><h3>Watch it move.</h3><div class="player"><div class="reel"><div class="mark" id="mk">Oct 16 · Shipped</div></div>
+      <div class="controls"><button id="play" aria-label="Play shipment timeline">▶ Play</button><span id="tc">Oct 15</span><div class="track"><i id="th"></i></div><span>Oct 19</span><span>FedEx 771234567890</span></div></div></section></div>`;
+  const stops = [['Oct 15', 'Ordered', 0], ['Oct 16', 'Shipped', 30], ['Oct 17', 'In transit', 55], ['Oct 19', 'Expected', 80]];
+  let t = null; const set = (i) => { const st = stops[i]; $('#mk', s).style.setProperty('--x', st[2] + '%'); $('#mk', s).textContent = `${st[0]} · ${st[1]}`; $('#tc', s).textContent = st[0]; $('#th', s).style.left = (st[2] / 80) * 100 + '%'; };
+  set(1);
+  $('#play', s).addEventListener('click', () => { clearInterval(t); let i = 0; set(0); t = setInterval(() => { i++; if (i >= stops.length) return clearInterval(t); set(i); }, 700); });
+}},
+/* 3 */ { name: 'Wordmark', ref: 'Scandiwest', what: 'The brand name huge and translucent behind a landscape photo, a floating card for the latest order, big honest numbers, then a dark order list.', render: (s) => {
+  s.innerHTML = `<div class="sw reveal">
+    <section class="hero photo" style="background-image:url(${PHOTO('cabin-field', 1600, 1100)})"><div class="nav"><span>Overview</span><span>Orders</span><span>Tracking</span><span>Addresses</span><span class="btn">Continue shopping</span></div>
+      <div class="word">${brand()}</div>
+      <a class="float" href="#" data-t="Opening order #1004"><span class="photo" style="background-image:url(${PHOTO('parcel', 300, 300)})"></span><span style="display:grid;gap:6px;align-content:start"><span class="chip">In transit</span><b style="font-weight:500">Order #1004</b><span style="font-size:12px;color:#777">Arrives Sunday · FedEx</span></span><span class="go">↗</span></a>
+      <p class="claim">Good to see you again, Grant.</p></section>
+    <section class="about"><div class="side"><span>Account</span><span>/01</span></div><div><h3>Everything you’ve ordered, in one place.</h3><div class="stats"><div><b data-n="4">0</b><span>orders placed</span></div><div><b data-n="2">0</b><span>on the way</span></div><div><b data-n="232">0</b><span>dollars spent</span></div></div></div>
+      <div><div class="loc photo" style="background-image:url(${PHOTO('lake-view', 800, 500)})">Ships to Toronto, Ontario</div><p>Your default address is set, so checkout fills it in for you.</p><p>Change it, or add another for gifts and holidays, from Saved addresses.</p></div></section>
+    <section class="dark"><h3>Orders you’ve placed</h3><div class="rows">${ORDERS.map((o, i) => `<a class="rowx" href="#" data-t="Opening order #${o.id}"><span class="photo" style="background-image:url(${PHOTO('o' + o.id, 200, 200)})"></span><span><b style="font-weight:500;font-size:17px">#${o.id}</b><br><span style="color:#9a9a9a;font-size:13px">${o.date} · ${o.items.map((n) => P[n].name).join(', ')}</span></span><span style="font-size:13px">${o.status}</span><span>${money(o.total)}</span></a>`).join('')}</div></section></div>`;
+  $$('[data-n]', s).forEach((b) => { const to = +b.dataset.n, st = performance.now(); const f = (n) => { const p = Math.min(1, (n - st) / 900); b.textContent = Math.round(to * (1 - Math.pow(1 - p, 3))); if (p < 1) requestAnimationFrame(f); }; requestAnimationFrame(f); });
+  s.addEventListener('click', (e) => { const a = e.target.closest('[data-t]'); if (a) { e.preventDefault(); toast(a.dataset.t); } });
+}},
+/* 4 */ { name: 'Lookbook', ref: 'GANNI', what: 'Your purchases as an edge-to-edge product grid with tiny captions and a square “+” to add again. The store’s own look, inside the account.', render: (s) => {
+  s.innerHTML = `<div class="gn reveal"><div class="ann">Welcome back, Grant · Free shipping on orders over $120</div>
+    <div class="nav"><b>${brand().toUpperCase()}</b><span>Overview</span><span>Orders</span><span>Tracking</span><span>Account</span><span class="s">Search your orders</span><span id="gc">Cart 0</span></div>
+    <section class="hero photo" style="background-image:url(${PHOTO('editorial-bed', 1600, 900)})"><b>${brand()}</b><span>Your account · 4 orders since October 2026<br><u>See all orders →</u></span></section>
+    <div class="grid">${[1, 4, 0, 5, 3, 2, 4, 1].map((i, n) => `<div class="card"><div style="position:relative">${obj(i)}<span class="new">${n < 2 ? 'Bought recently' : ''}</span><button class="plus" data-i="${i}" aria-label="Add ${P[i].name} to cart">+</button></div><span>${P[i].name} in ${P[i].variant}</span><span>${money(P[i].price)}</span><span class="sw8"><i style="background:${P[i].color}"></i><i style="background:#ddd"></i></span></div>`).join('')}</div></div>`;
+  let c = 0; s.addEventListener('click', (e) => { const b = e.target.closest('.plus'); if (!b) return; c++; $('#gc', s).textContent = 'Cart ' + c; b.classList.add('done'); b.textContent = '✓'; toast(P[+b.dataset.i].name + ' added to cart'); });
+}},
+/* 5 */ { name: 'Network', ref: 'Catalyst', what: 'A calm statement on the left and your orders as a network on the right: orders connect to products and carriers. Hover a node to trace its links.', render: (s) => {
+  const nodes = [['o1004', 'order', '#1004', 46, 22], ['o1006', 'order', '#1006', 30, 62], ['o1001', 'order', '#1001', 64, 76], ['p4', 'prod', 4, 74, 30], ['p1', 'prod', 1, 82, 58], ['p4b', 'prod', 4, 14, 84], ['c1', 'carrier', 'FedEx', 70, 10], ['c2', 'carrier', 'UPS', 90, 86]];
+  const links = [['o1004', 'p4'], ['o1004', 'p1'], ['o1004', 'c1'], ['o1006', 'p4b'], ['o1006', 'p4'], ['o1001', 'p4'], ['o1001', 'c2']];
+  const pos = Object.fromEntries(nodes.map((n) => [n[0], [n[3], n[4]]]));
+  s.innerHTML = `<div class="cb reveal"><div class="nav"><span>◇ ${brand()}</span><span>☰ Menu</span></div>
+    <section class="hero"><h2>Every order,<br>connected.</h2><div class="graph"><svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${links.map(([a, b]) => `<path data-l="${a} ${b}" vector-effect="non-scaling-stroke" d="M${pos[a][0]},${pos[a][1]} C${(pos[a][0] + pos[b][0]) / 2},${pos[a][1]} ${(pos[a][0] + pos[b][0]) / 2},${pos[b][1]} ${pos[b][0]},${pos[b][1]}"/>`).join('')}</svg>
+      ${nodes.map((n) => `<button class="node ${n[1]}" data-n="${n[0]}" style="left:${n[3]}%;top:${n[4]}%" aria-label="${n[1] === 'prod' ? P[n[2]].name : n[2]}">${n[1] === 'prod' ? obj(n[2]) : n[2]}</button>`).join('')}</div></section>
+    <section class="body"><p>Grant, you have placed four orders. Two are on the way: #1004 with FedEx, arriving Sunday, and #1006, which ships next. Ski wax is your most re-ordered item.</p>
+      <div class="faq">${[['Where is my order?', 'Order #1004 is in transit with FedEx and arrives Sunday, October 19.'], ['How do I return something?', 'Open the order and choose Request return. You have 30 days from delivery.'], ['Can I change my address?', 'Yes, in Saved addresses. Orders already shipped keep their address.']].map((q) => `<button>${q[0]}<span>→</span></button><div class="ans">${q[1]}</div>`).join('')}</div></section></div>`;
+  const hl = (id) => { $$('path', s).forEach((p) => p.classList.toggle('hl', !!id && p.dataset.l.split(' ').includes(id))); const near = new Set([id]); links.forEach(([a, b]) => { if (a === id) near.add(b); if (b === id) near.add(a); }); $$('.node', s).forEach((n) => n.classList.toggle('hl', !!id && near.has(n.dataset.n))); };
+  s.addEventListener('mouseover', (e) => { const n = e.target.closest('.node'); hl(n ? n.dataset.n : null); });
+  s.addEventListener('focusin', (e) => { const n = e.target.closest('.node'); if (n) hl(n.dataset.n); });
+  s.addEventListener('click', (e) => { const q = e.target.closest('.faq > button'); if (q) q.classList.toggle('open'); });
+}},
+/* 6 */ { name: 'Concierge', ref: 'Jack & Jill', what: 'A serif headline, centred, and your account shown as two framed product screens. One satisfying moment: confirming delivery.', render: (s) => {
+  const row = (o) => `<div class="r">${obj(o.items[0])}<span><b style="font-weight:500">Order #${o.id}</b><br><span style="color:#777">${o.date}</span></span><span>${o.status}</span></div>`;
+  s.innerHTML = `<div class="jj reveal"><div class="nav"><span class="logo">${brand()}</span><span style="color:#666">Orders &nbsp;&nbsp; Addresses &nbsp;&nbsp; Profile</span><span class="r"><span>Help</span><span>Shop</span></span></div>
+    <section class="hero"><small>Your account · since October 2026</small><h2>Everything you ordered,<br>looked after.</h2></section>
+    <section class="pair"><div><div class="head"><div><small>Your orders</small><b>Four orders, two on the way</b></div><button data-t="Opening orders">View all</button></div><div class="frame"><div class="ui">${ORDERS.map(row).join('')}</div></div></div>
+      <div><div class="head"><div><small>Your shipment</small><b>#1004 arrives Sunday</b></div><button data-t="Opening FedEx tracking">Track</button></div><div class="frame"><div class="ui"><b style="font-weight:500">FedEx · 771234567890</b><span style="color:#777">Left Phoenix, AZ · Oct 16</span><div style="height:6px;background:#f0eee9;margin:10px 0"><div style="width:62%;height:6px;background:#161616"></div></div><span>Ordered · Shipped · <b style="font-weight:600">In transit</b> · Delivered</span><div class="r" style="margin-top:12px">${obj(4)}<span>Ski wax · Universal</span><span>× 1</span></div><div class="r">${obj(1)}<span>Waffle towel · Navy</span><span>× 1</span></div></div></div></div></section>
+    <section class="band"><h3>For every order you place,<br>one clear next step</h3><div class="seg"><button data-s="d" aria-pressed="true">Delivered</button><button data-s="r" aria-pressed="false">Returns</button></div>
+      <div class="moment" id="mo"></div></section></div>`;
+  const mo = { d: `<span style="font-size:12px;color:#777">Order #1001 arrived Oct 14</span><button class="accepted" id="acc">Confirm it arrived <span>→</span></button><p style="color:#666;max-width:42ch;text-align:center;font-size:14px">Confirming tells us everything was fine. If not, you can start a return from the same place.</p>`, r: `<span style="font-size:12px;color:#777">30-day returns on every order</span><button class="accepted" style="background:#161616">Start a return <span>→</span></button><p style="color:#666;max-width:42ch;text-align:center;font-size:14px">Pick the order and the items. We email a prepaid label.</p>` };
+  const show = (k) => { $('#mo', s).innerHTML = mo[k]; $$('[data-s]', s).forEach((b) => b.setAttribute('aria-pressed', b.dataset.s === k)); };
+  s.addEventListener('click', (e) => { const b = e.target.closest('[data-s]'); if (b) show(b.dataset.s); const a = e.target.closest('#acc'); if (a) { a.innerHTML = 'Delivery confirmed <span>✓</span>'; } const t = e.target.closest('[data-t]'); if (t) toast(t.dataset.t); });
+  show('d');
+}},
+/* 7 */ { name: 'Command', ref: 'Corekit', what: 'The account as one calm app window with a soft colour edge. Ask in plain words or tap a suggestion; answers come from your order data, not an AI.', render: (s) => {
+  const answers = { track: `${obj(4)}<b>Order #1004</b> is in transit with FedEx (771234567890) and arrives <b>Sunday, October 19</b>.`, again: `${obj(4)}Your most re-ordered item is <b>Ski wax · Universal</b>. <button class="link" data-add style="text-decoration:underline">Add it to your cart</button>.`, address: `Your default address is <b>410 Spadina Ave, Toronto ON</b>. Change it in Saved addresses.`, returns: `Orders delivered in the last 30 days can be returned: <b>#1001</b> (until Nov 13).` };
+  const route = (q) => /track|where|ship|arriv/.test(q) ? 'track' : /again|reorder|wax|buy/.test(q) ? 'again' : /address|move|ship to/.test(q) ? 'address' : /return|refund/.test(q) ? 'returns' : null;
+  s.innerHTML = `<div class="ck reveal"><section class="hero"><small>✦ Your account, simplified</small><h2>Everything about your orders, in one place</h2></section>
+    <div class="app"><div class="appin"><div class="side"><b style="font-weight:600;margin-bottom:10px">${brand()}</b><span class="on">Home</span><span>Orders</span><span>Tracking</span><span>Addresses</span><span>Profile</span><span style="margin-top:20px;font-size:11px;color:#999">Recent</span><span>Order #1006</span><span>Order #1004</span></div>
+      <div class="main"><h4>Hello Grant</h4><p>What do you need today?</p><form class="box" id="f"><input id="q" placeholder="Where is my order?" autocomplete="off" aria-label="Ask about your account"><button aria-label="Ask">↑</button></form>
+        <div class="chips">${[['track', 'Track my order'], ['again', 'Buy again'], ['address', 'My address'], ['returns', 'Returns']].map((c) => `<button data-a="${c[0]}">${c[1]}</button>`).join('')}</div><div class="answer" id="an" aria-live="polite"></div></div></div></div></div>`;
+  const say = (k) => { $('#an', s).innerHTML = k ? answers[k] : 'Try “where is my order”, “buy again”, “address” or “returns”.'; };
+  s.addEventListener('submit', (e) => { e.preventDefault(); say(route($('#q', s).value.toLowerCase())); });
+  s.addEventListener('click', (e) => { const c = e.target.closest('[data-a]'); if (c) { $('#q', s).value = c.textContent; say(c.dataset.a); } if (e.target.closest('[data-add]')) toast('Ski wax added to cart'); });
+}},
+/* 8 */ { name: 'Spec sheet', ref: 'Stoa × Catalyst', what: 'An order shown like a technical drawing: grid, crop marks, mono labels, a huge order number and a status stamp. Tap a line to inspect it.', render: (s) => {
+  s.innerHTML = `<div class="sp reveal"><div class="sheet"><span class="stamp">In transit</span>
+    <div><span class="lab">${brand()} / Order record</span><div class="num">#1004</div><span class="lab">Placed 15.10.2026 · 09:12</span>
+      <dl><dt>Ship to</dt><dd>Grant Test, 410 Spadina Ave, Toronto ON M5T 2G7</dd><dt>Carrier</dt><dd>FedEx · Ground</dd><dt>Tracking</dt><dd style="font-family:var(--mono)">771234567890</dd><dt>Expected</dt><dd>Sunday 19.10.2026</dd></dl><div class="barcode" aria-hidden="true"></div></div>
+    <div><span class="lab">Contents · 2 lines</span><div class="lines" style="margin-top:10px">${[[4, 1], [1, 1]].map(([i, q], n) => `<button data-l="${n}" aria-pressed="${n === 0}">${obj(i)}<span>${P[i].name}<br><span class="lab">${P[i].variant} · Qty ${q}</span></span><span>${money(P[i].price * q)}</span></button>`).join('')}</div>
+      <dl><dt>Subtotal</dt><dd>$42.95</dd><dt>Shipping</dt><dd>$8.00</dd><dt>Tax</dt><dd>$4.07</dd><dt>Total</dt><dd style="font-size:22px;font-weight:500">$55.02</dd></dl><p class="lab" id="spn" style="margin-top:22px">Line 01 selected · Ski wax ships separately from the towel.</p></div></div></div>`;
+  s.addEventListener('click', (e) => { const b = e.target.closest('[data-l]'); if (!b) return; $$('[data-l]', s).forEach((x) => x.setAttribute('aria-pressed', x === b)); $('#spn', s).textContent = b.dataset.l === '0' ? 'Line 01 selected · Ski wax ships separately from the towel.' : 'Line 02 selected · Waffle towel, navy. Machine wash at 40°.'; });
+}},
+/* 9 */ { name: 'Quiet split', ref: 'Scandiwest', what: 'Half statement, half photograph. Three numbers you can tap; the photo and caption change with them.', render: (s) => {
+  const views = { orders: ['quiet-room', 'Four orders since October.', 'Latest: #1006, being prepared.'], ship: ['road-trees', 'Two parcels on the road.', '#1004 with FedEx, arriving Sunday.'], addr: ['city-roof', 'One saved address.', '410 Spadina Ave, Toronto.'] };
+  s.innerHTML = `<div class="qs reveal"><div class="l"><small>${brand()} · Account</small><h2>Welcome back, Grant. <em>Your things are on their way.</em></h2>
+    <div class="nums">${[['orders', '4', 'orders'], ['ship', '2', 'on the way'], ['addr', '1', 'address']].map((n, i) => `<button data-v="${n[0]}" aria-pressed="${i === 1}"><b>${n[1]}</b><span>${n[2]}</span></button>`).join('')}</div></div>
+    <div class="r"><div class="photo" id="qp"></div><div class="tagc"><b id="qt" style="font-weight:500"></b><span id="qd" style="color:#666"></span></div></div></div>`;
+  const show = (k) => { const v = views[k]; const p = $('#qp', s); p.style.opacity = 0; setTimeout(() => { p.style.backgroundImage = `url(${PHOTO(v[0], 900, 1100)})`; p.style.opacity = 1; }, 200); $('#qt', s).textContent = v[1]; $('#qd', s).textContent = v[2]; $$('[data-v]', s).forEach((b) => b.setAttribute('aria-pressed', b.dataset.v === k)); };
+  s.addEventListener('click', (e) => { const b = e.target.closest('[data-v]'); if (b) show(b.dataset.v); }); show('ship');
+}},
+/* 10 */ { name: 'Film strip', ref: 'Nossara × Stoa', what: 'Your order history as a dark, horizontal film strip you can drag or step through, with a frame counter.', render: (s) => {
+  const frames = [[4, '1006', 'Oct 18', 'Preparing'], [5, '1004', 'Oct 15', 'In transit'], [1, '1004', 'Oct 15', 'In transit'], [4, '1001', 'Oct 11', 'Delivered'], [1, '0998', 'Sep 02', 'Delivered'], [3, '0998', 'Sep 02', 'Delivered']];
+  s.innerHTML = `<div class="fs reveal"><div class="head"><h2>Your history,<br>frame by frame</h2><span class="count" id="ct">01 / 06</span></div>
+    <div class="strip" id="sp" tabindex="0" aria-label="Order history">${frames.map((f) => `<div class="frame">${obj(f[0])}<div class="meta"><span>#${f[1]} · ${f[2]}</span><span>${f[3]}</span></div><b>${P[f[0]].name}, ${P[f[0]].variant.toLowerCase()}</b></div>`).join('')}</div>
+    <div class="ctrl"><button id="pv" aria-label="Previous">←</button><button id="nx" aria-label="Next">→</button><div class="prog"><i id="pg"></i></div><span>Drag to browse</span></div></div>`;
+  const sp = $('#sp', s); const upd = () => { const w = sp.firstElementChild.offsetWidth + 16, i = Math.round(sp.scrollLeft / w); $('#ct', s).textContent = String(i + 1).padStart(2, '0') + ' / 06'; $('#pg', s).style.width = ((i + 1) / 6) * 100 + '%'; };
+  sp.addEventListener('scroll', upd);
+  const step = (d) => sp.scrollBy({ left: d * (sp.firstElementChild.offsetWidth + 16), behavior: 'smooth' });
+  $('#pv', s).onclick = () => step(-1); $('#nx', s).onclick = () => step(1);
+  let down = false, x0 = 0, l0 = 0; sp.addEventListener('pointerdown', (e) => { down = true; x0 = e.clientX; l0 = sp.scrollLeft; sp.style.scrollSnapType = 'none'; });
+  window.addEventListener('pointerup', () => { if (down) { down = false; sp.style.scrollSnapType = ''; } }); sp.addEventListener('pointermove', (e) => { if (down) sp.scrollLeft = l0 - (e.clientX - x0); });
+}},
+];
+
+const nav = $('#nav');
+nav.innerHTML = C.map((c, i) => `<button data-c="${i}">${String(i + 1).padStart(2, '0')} ${c.name}</button>`).join('');
+let cur = 0;
+function open(i) {
+  cur = i; const c = C[i];
+  $$('[data-c]', nav).forEach((b) => b.setAttribute('aria-current', b.dataset.c == i));
+  $('#cap').innerHTML = `<b>${String(i + 1).padStart(2, '0')} · ${c.name}</b><span class="ref">Inspired by ${c.ref}</span><span>${c.what}</span>`;
+  const old = $('#stage'), stage = old.cloneNode(false); old.replaceWith(stage); c.render(stage);
+  try { history.replaceState(null, '', '#' + (i + 1)); } catch {}
+}
+nav.addEventListener('click', (e) => { const b = e.target.closest('[data-c]'); if (b) open(+b.dataset.c); });
+$('#brand').addEventListener('input', () => open(cur));
+$$('[data-w]').forEach((b) => b.addEventListener('click', () => { $('#canvas').classList.toggle('mobile', b.dataset.w === 'm'); $$('[data-w]').forEach((x) => x.setAttribute('aria-pressed', x === b)); }));
+open(Math.min(C.length - 1, Math.max(0, (parseInt(location.hash.slice(1), 10) || 1) - 1)));
+</script>
+</body>
+</html>

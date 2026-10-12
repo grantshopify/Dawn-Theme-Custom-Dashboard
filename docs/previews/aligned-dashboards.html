@@ -1,0 +1,389 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aligned dashboards</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&family=Inter:wght@400;500;600;700&family=Instrument+Serif&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Inter, system-ui, sans-serif; color: #111; background: #fff; -webkit-font-smoothing: antialiased; font-variant-numeric: tabular-nums; }
+  button, input { font: inherit; color: inherit; background: none; border: 0; }
+  button { cursor: pointer; }
+  :focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
+  .chrome { position: sticky; top: 0; z-index: 40; background: #fff; border-bottom: 1px solid #e8e8e8; padding: 10px 18px; display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center; font-size: 12px; }
+  .chrome strong { font-weight: 600; }
+  .chrome nav { display: flex; flex-wrap: wrap; gap: 2px; }
+  .chrome nav button { padding: 6px 9px; color: #777; border-radius: 6px; }
+  .chrome nav button[aria-current="true"] { color: #111; background: #f0f0f0; }
+  .chrome nav button.rec { color: #0a7a3d; font-weight: 600; }
+  .chrome nav button.rec[aria-current="true"] { background: #e3f6ea; }
+  .chrome label { display: flex; gap: 6px; align-items: center; color: #777; margin-left: auto; }
+  .chrome input { border-bottom: 1px solid #ccc; width: 120px; color: #111; }
+  .chrome .w button { padding: 4px 8px; color: #777; } .chrome .w button[aria-pressed="true"] { color: #111; text-decoration: underline; text-underline-offset: 4px; }
+  .cap { max-width: 1320px; margin: 0 auto; padding: 16px 18px 10px; font-size: 13px; color: #555; display: grid; gap: 4px; }
+  .cap b { color: #111; font-size: 16px; font-weight: 600; }
+  .cap .src a { color: #2563eb; }
+  .cap ul { padding-left: 16px; display: flex; flex-wrap: wrap; gap: 2px 26px; }
+  .canvas { max-width: 1320px; margin: 0 auto 60px; border: 1px solid #e3e3e3; overflow: hidden; transition: max-width .3s; }
+  .canvas.mobile { max-width: 390px; }
+  .toast { position: fixed; left: 50%; bottom: 22px; transform: translate(-50%, 16px); opacity: 0; background: #111; color: #fff; font-size: 13px; padding: 10px 14px; border-radius: 8px; transition: .25s; z-index: 60; pointer-events: none; }
+  .toast.on { opacity: 1; transform: translate(-50%, 0); }
+  .in > * { animation: in .5s cubic-bezier(.2,.8,.2,1) both; } .in > :nth-child(2) { animation-delay: .05s; } .in > :nth-child(n+3) { animation-delay: .1s; }
+  @keyframes in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+
+  /* product thumbnails (sample) */
+  .th { display: inline-grid; place-items: center; background: #ececea; flex: none; overflow: hidden; }
+  .th i { display: block; width: 66%; height: 26%; box-shadow: 0 4px 8px -4px rgba(0,0,0,.4); background-image: repeating-linear-gradient(0deg, rgba(255,255,255,.15) 0 1px, transparent 1px 4px); }
+  .th i.bar { width: 40%; height: 30%; background-image: linear-gradient(180deg, rgba(255,255,255,.35), transparent 60%); }
+  .th i.tall { width: 34%; height: 62%; }
+  .hide-m { } .canvas.mobile .hide-m { display: none !important; }
+
+  /* ===== 1 Shopify customer accounts ===== */
+  .v1 { background: #f4f4f4; font-family: Inter; font-size: 14px; color: #1a1a1a; min-height: 760px; }
+  .v1 .top { background: #fff; border-bottom: 1px solid #e6e6e6; display: flex; align-items: center; gap: 28px; padding: 0 28px; height: 64px; }
+  .v1 .top b { font-size: 18px; font-weight: 600; } .v1 .top a { color: #555; font-size: 14px; height: 64px; display: flex; align-items: center; border-bottom: 2px solid transparent; }
+  .v1 .top a.on { color: #1a1a1a; border-color: #1a1a1a; } .v1 .top .r { margin-left: auto; width: 32px; height: 32px; border-radius: 50%; background: #1a1a1a; color: #fff; display: grid; place-items: center; font-size: 12px; }
+  .v1 .wrap { max-width: 1000px; margin: 0 auto; padding: 32px 20px; }
+  .v1 h2 { font-size: 24px; font-weight: 600; margin-bottom: 20px; }
+  .v1 .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .canvas.mobile .v1 .grid { grid-template-columns: 1fr; } .canvas.mobile .v1 .top { gap: 16px; padding: 0 16px; }
+  .v1 .card { background: #fff; border-radius: 12px; padding: 16px; display: grid; gap: 12px; box-shadow: 0 1px 2px rgba(0,0,0,.06); transition: box-shadow .2s; }
+  .v1 .card:hover { box-shadow: 0 6px 20px rgba(0,0,0,.08); }
+  .v1 .st { display: flex; gap: 8px; align-items: center; font-weight: 600; } .v1 .st small { font-weight: 400; color: #666; display: block; }
+  .v1 .ico { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; font-size: 13px; background: #e7f6ec; color: #0b6b37; } .v1 .ico.go { background: #fff4d6; color: #7a5a00; } .v1 .ico.blue { background: #e4efff; color: #1b4fa8; }
+  .v1 .imgs { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; } .v1 .imgs .th { border-radius: 8px; aspect-ratio: 1; width: 100%; }
+  .v1 .meta { color: #666; font-size: 13px; } .v1 .meta b { color: #1a1a1a; font-weight: 600; }
+  .v1 .btn { border: 1px solid #d4d4d4; border-radius: 8px; padding: 9px; text-align: center; font-weight: 500; background: #fff; }
+  .v1 .btn:hover { background: #f7f7f7; }
+
+  /* ===== 2 Polaris ===== */
+  .v2 { background: #f1f1f1; font-family: Inter; font-size: 13px; color: #303030; display: grid; grid-template-columns: 220px 1fr; min-height: 760px; }
+  .canvas.mobile .v2 { grid-template-columns: 1fr; } .canvas.mobile .v2 .nav { display: none; }
+  .v2 .nav { background: #ebebeb; padding: 12px 8px; display: grid; gap: 2px; align-content: start; }
+  .v2 .nav span { padding: 6px 10px; border-radius: 8px; font-weight: 550; } .v2 .nav span.on { background: #fff; box-shadow: 0 1px 0 rgba(0,0,0,.08); }
+  .v2 .main { padding: 24px 28px; display: grid; gap: 16px; align-content: start; max-width: 1000px; }
+  .v2 h2 { font-size: 20px; font-weight: 700; display: flex; gap: 10px; align-items: center; }
+  .v2 .card { background: #fff; border-radius: 12px; box-shadow: 0 1px 0 rgba(26,26,26,.07), inset 0 -1px 0 rgba(0,0,0,.1), inset 0 0 0 1px rgba(0,0,0,.06); }
+  .v2 .kpis { display: grid; grid-template-columns: repeat(4, 1fr); } .canvas.mobile .v2 .kpis { grid-template-columns: 1fr 1fr; }
+  .v2 .kpis > div { padding: 14px 16px; border-left: 1px solid #ebebeb; } .v2 .kpis > div:first-child { border-left: 0; }
+  .v2 .kpis span { color: #616161; text-decoration: underline dotted #b5b5b5; text-underline-offset: 4px; } .v2 .kpis b { display: block; font-size: 20px; margin-top: 6px; }
+  .v2 table { width: 100%; border-collapse: collapse; } .v2 th { text-align: left; font-weight: 550; color: #616161; background: #f7f7f7; padding: 8px 12px; font-size: 12px; }
+  .v2 td { padding: 10px 12px; border-top: 1px solid #ebebeb; } .v2 tr:hover td { background: #f7f7f7; cursor: pointer; }
+  .v2 .tabs { display: flex; gap: 4px; padding: 8px; } .v2 .tabs button { padding: 5px 10px; border-radius: 8px; color: #616161; font-weight: 550; } .v2 .tabs button[aria-pressed="true"] { background: #e3e3e3; color: #303030; }
+  .bp { display: inline-flex; align-items: center; gap: 5px; border-radius: 8px; padding: 2px 8px; font-size: 12px; font-weight: 550; background: #e3e3e3; }
+  .bp::before { content: ""; width: 7px; height: 7px; border-radius: 50%; border: 1.5px solid currentColor; }
+  .bp.full::before { background: currentColor; } .bp.att { background: #ffeb78; color: #4f4700; } .bp.ok { background: #cdfee1; color: #0c5132; } .bp.info { background: #e0f0ff; color: #00527c; }
+
+  /* ===== 3 Tailwind UI order history ===== */
+  .v3 { background: #fff; font-family: Inter; color: #111827; padding: 48px 40px; min-height: 760px; }
+  .canvas.mobile .v3 { padding: 28px 16px; }
+  .v3 h2 { font-size: 28px; font-weight: 700; letter-spacing: -.02em; } .v3 > p { color: #6b7280; margin-top: 6px; font-size: 14px; }
+  .v3 .order { border: 1px solid #e5e7eb; border-radius: 10px; margin-top: 32px; box-shadow: 0 1px 2px rgba(0,0,0,.04); }
+  .v3 .oh { display: grid; grid-template-columns: repeat(3, auto) 1fr; gap: 28px; padding: 18px 24px; border-bottom: 1px solid #e5e7eb; font-size: 14px; align-items: center; }
+  .canvas.mobile .v3 .oh { grid-template-columns: 1fr 1fr; gap: 12px; padding: 14px 16px; }
+  .v3 .oh dt { font-weight: 500; } .v3 .oh dd { color: #6b7280; margin-top: 2px; } .v3 .oh .acts { justify-self: end; display: flex; gap: 10px; }
+  .v3 .b { border: 1px solid #d1d5db; border-radius: 8px; padding: 8px 12px; font-size: 13px; font-weight: 500; background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.05); }
+  .v3 .b:hover { background: #f9fafb; }
+  .v3 .li { display: grid; grid-template-columns: 120px 1fr; gap: 22px; padding: 22px 24px; border-top: 1px solid #f3f4f6; }
+  .v3 .li:first-of-type { border-top: 0; } .canvas.mobile .v3 .li { grid-template-columns: 72px 1fr; padding: 16px; gap: 14px; }
+  .v3 .li .th { width: 100%; aspect-ratio: 1; border-radius: 8px; }
+  .v3 .li .t { display: flex; justify-content: space-between; font-weight: 500; } .v3 .li p { color: #6b7280; font-size: 14px; margin-top: 6px; line-height: 1.5; }
+  .v3 .li .f { display: flex; justify-content: space-between; align-items: center; margin-top: 14px; font-size: 14px; flex-wrap: wrap; gap: 8px; }
+  .v3 .li .ok { color: #15803d; } .v3 .li .links { display: flex; gap: 16px; color: #4f46e5; font-weight: 500; } .v3 .li .links button { color: #4f46e5; }
+
+  /* ===== 4 Baymard: actions on the list ===== */
+  .v4 { background: #fafafa; font-family: Inter; font-size: 14px; color: #1c1c1c; padding: 36px 40px; min-height: 760px; }
+  .canvas.mobile .v4 { padding: 20px 14px; }
+  .v4 h2 { font-size: 26px; font-weight: 700; } .v4 .hint { color: #666; margin: 6px 0 22px; }
+  .v4 .row { background: #fff; border: 1px solid #e4e4e4; border-radius: 8px; padding: 18px; display: grid; grid-template-columns: 1fr auto; gap: 14px; margin-bottom: 12px; }
+  .canvas.mobile .v4 .row { grid-template-columns: 1fr; }
+  .v4 .s { font-weight: 700; font-size: 16px; } .v4 .s.ok { color: #1f7a3f; } .v4 .s.go { color: #a35b00; } .v4 .s.ship { color: #1d4ed8; }
+  .v4 .sub { color: #666; margin-top: 2px; font-size: 13px; }
+  .v4 .pics { display: flex; gap: 8px; margin-top: 12px; } .v4 .pics .th { width: 64px; height: 64px; border-radius: 6px; }
+  .v4 .acts { display: grid; gap: 8px; align-content: start; min-width: 190px; }
+  .v4 .acts button { border-radius: 6px; padding: 10px 14px; font-weight: 600; text-align: center; border: 1px solid #1c1c1c; }
+  .v4 .acts button.p { background: #1c1c1c; color: #fff; } .v4 .acts button.l { border: 0; text-decoration: underline; font-weight: 500; padding: 4px; }
+
+  /* ===== 5 Section grid (card-grid pattern) ===== */
+  .v5 { background: #f7f4ef; font-family: Inter; color: #2b2622; padding: 44px 48px; min-height: 760px; }
+  .canvas.mobile .v5 { padding: 24px 16px; }
+  .v5 .hi { font-family: "Instrument Serif", serif; font-size: 46px; line-height: 1.05; } .v5 .hi + p { color: #7a7067; margin-top: 8px; }
+  .v5 .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 32px; } .canvas.mobile .v5 .grid { grid-template-columns: 1fr; }
+  .v5 .tile { background: #fff; padding: 22px; min-height: 170px; display: flex; flex-direction: column; justify-content: space-between; border: 1px solid #ebe5dc; transition: transform .25s, box-shadow .25s; text-align: left; }
+  .v5 .tile:hover { transform: translateY(-3px); box-shadow: 0 12px 30px -16px rgba(60,40,20,.35); }
+  .v5 .tile h3 { font-family: "Instrument Serif", serif; font-weight: 400; font-size: 26px; } .v5 .tile p { color: #7a7067; font-size: 13px; line-height: 1.5; }
+  .v5 .tile .go { font-size: 13px; font-weight: 600; text-decoration: underline; text-underline-offset: 4px; }
+  .v5 .tile.wide { grid-column: span 2; flex-direction: row; gap: 22px; align-items: stretch; } .canvas.mobile .v5 .tile.wide { grid-column: auto; flex-direction: column; }
+  .v5 .tile.wide .th { width: 180px; aspect-ratio: 1; }
+
+  /* ===== 6 Malomo branded tracking ===== */
+  .v6 { background: #fff; font-family: Inter; color: #1a1a1a; min-height: 760px; }
+  .v6 .banner { background: #1a1a1a; color: #fff; text-align: center; padding: 10px; font-size: 13px; }
+  .v6 .hero { display: grid; grid-template-columns: 1.1fr .9fr; gap: 0; } .canvas.mobile .v6 .hero { grid-template-columns: 1fr; }
+  .v6 .hero .l { padding: 44px 40px; background: #f3efe8; } .canvas.mobile .v6 .hero .l { padding: 28px 18px; }
+  .v6 .hero small { text-transform: uppercase; letter-spacing: .12em; font-size: 11px; color: #8a7f70; }
+  .v6 .hero h2 { font-size: 40px; font-weight: 700; letter-spacing: -.03em; line-height: 1.05; margin: 10px 0 8px; }
+  .v6 .stages { display: grid; grid-template-columns: repeat(4, 1fr); margin: 30px 0 16px; }
+  .v6 .stages div { border-top: 4px solid #d6cfc4; padding-top: 10px; font-size: 13px; color: #8a7f70; }
+  .v6 .stages div.done { border-color: #1a1a1a; color: #1a1a1a; font-weight: 600; }
+  .v6 .stages div.now { border-color: #e25822; color: #e25822; font-weight: 700; }
+  .v6 .cta { background: #1a1a1a; color: #fff; padding: 13px 20px; font-weight: 600; display: inline-block; margin-top: 10px; }
+  .v6 .hero .r { background: #6d7562 center/cover; min-height: 380px; position: relative; }
+  .v6 .hero .r::after { content: "Care guide · How to wax your skis in 5 minutes →"; position: absolute; left: 18px; right: 18px; bottom: 18px; background: #fff; padding: 14px; font-size: 13px; font-weight: 600; }
+  .v6 .recs { padding: 40px; } .canvas.mobile .v6 .recs { padding: 24px 16px; }
+  .v6 .recs h3 { font-size: 22px; margin-bottom: 16px; } .v6 .recs .g { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; } .canvas.mobile .v6 .recs .g { grid-template-columns: 1fr 1fr; }
+  .v6 .recs .th { width: 100%; aspect-ratio: 4/5; } .v6 .recs p { font-size: 13px; margin-top: 8px; }
+
+  /* ===== 7 Linear ===== */
+  .v7 { background: #0f1011; color: #e6e6e7; font-family: Inter; font-size: 13px; display: grid; grid-template-columns: 220px 1fr; min-height: 760px; }
+  .canvas.mobile .v7 { grid-template-columns: 1fr; } .canvas.mobile .v7 .nav { display: none; }
+  .v7 .nav { border-right: 1px solid #23252a; padding: 12px 10px; display: grid; gap: 1px; align-content: start; color: #9b9ca1; }
+  .v7 .nav .ws { color: #e6e6e7; font-weight: 600; padding: 6px 8px 14px; display: flex; gap: 8px; align-items: center; }
+  .v7 .nav .ws i { width: 18px; height: 18px; border-radius: 5px; background: linear-gradient(135deg, #5e6ad2, #9a6ad2); }
+  .v7 .nav span { padding: 6px 8px; border-radius: 6px; display: flex; justify-content: space-between; } .v7 .nav span.on { background: #1d1e22; color: #e6e6e7; }
+  .v7 .nav kbd, .v7 kbd { font-family: Inter; font-size: 11px; color: #6b6c70; border: 1px solid #2b2d31; border-radius: 4px; padding: 0 5px; }
+  .v7 .bar { display: flex; justify-content: space-between; align-items: center; padding: 10px 18px; border-bottom: 1px solid #23252a; }
+  .v7 .bar .f { display: flex; gap: 6px; } .v7 .bar .f button { padding: 4px 10px; border-radius: 6px; color: #9b9ca1; border: 1px solid #2b2d31; } .v7 .bar .f button[aria-pressed="true"] { color: #e6e6e7; background: #1d1e22; }
+  .v7 .grp { padding: 8px 18px; color: #9b9ca1; background: #141516; font-size: 12px; border-bottom: 1px solid #1b1c1f; }
+  .v7 .item { display: grid; grid-template-columns: 70px 18px 1fr auto 70px; gap: 12px; align-items: center; padding: 10px 18px; border-bottom: 1px solid #1b1c1f; width: 100%; text-align: left; }
+  .v7 .item:hover, .v7 .item.sel { background: #17181b; } .v7 .item .id { color: #6b6c70; }
+  .v7 .ring { width: 14px; height: 14px; border-radius: 50%; border: 2px solid #6b6c70; } .v7 .ring.prog { border-color: #f2c94c; border-right-color: transparent; } .v7 .ring.done { background: #5e6ad2; border-color: #5e6ad2; } .v7 .ring.ship { border-color: #4cb782; border-left-color: transparent; }
+  .v7 .item .dt { color: #6b6c70; text-align: right; } .canvas.mobile .v7 .item { grid-template-columns: 18px 1fr auto; } .canvas.mobile .v7 .item .id, .canvas.mobile .v7 .item .dt { display: none; }
+  .v7 .hint { padding: 14px 18px; color: #6b6c70; font-size: 12px; }
+
+  /* ===== 8 Stripe ===== */
+  .v8 { background: #fff; font-family: Inter; color: #1a1f36; font-size: 14px; display: grid; grid-template-columns: 230px 1fr; min-height: 760px; }
+  .canvas.mobile .v8 { grid-template-columns: 1fr; } .canvas.mobile .v8 .nav { display: none; }
+  .v8 .nav { background: #f6f8fa; padding: 18px 14px; display: grid; gap: 2px; align-content: start; color: #414552; font-weight: 500; }
+  .v8 .nav b { font-weight: 700; margin: 0 8px 16px; } .v8 .nav span { padding: 6px 8px; border-radius: 6px; } .v8 .nav span.on { color: #635bff; background: #eef0ff; }
+  .v8 .main { padding: 28px 36px; display: grid; gap: 26px; align-content: start; } .canvas.mobile .v8 .main { padding: 20px 16px; }
+  .v8 h2 { font-size: 24px; font-weight: 700; }
+  .v8 .chart { display: grid; grid-template-columns: 1fr 260px; gap: 30px; } .canvas.mobile .v8 .chart { grid-template-columns: 1fr; }
+  .v8 .lbl { color: #697386; font-size: 13px; } .v8 .big { font-size: 28px; font-weight: 600; margin-top: 4px; }
+  .v8 svg { width: 100%; height: 150px; margin-top: 10px; }
+  .v8 .side > div { padding: 12px 0; border-bottom: 1px solid #ebeef1; } .v8 .side b { display: block; font-size: 18px; margin-top: 2px; }
+  .v8 table { width: 100%; border-collapse: collapse; font-size: 14px; } .v8 th { text-align: left; color: #697386; font-weight: 500; font-size: 12px; padding: 8px 10px; border-bottom: 1px solid #ebeef1; }
+  .v8 td { padding: 12px 10px; border-bottom: 1px solid #ebeef1; } .v8 td.amt { text-align: right; font-weight: 600; } .v8 th.amt { text-align: right; }
+  .v8 tr:hover td { background: #f6f8fa; }
+  .sp { display: inline-flex; gap: 4px; align-items: center; border-radius: 4px; padding: 1px 6px; font-size: 12px; font-weight: 600; } .sp.ok { background: #d7f7c2; color: #05690d; } .sp.go { background: #fcedb9; color: #a82c00; } .sp.info { background: #cff5f6; color: #0055bc; }
+
+  /* ===== 9 Vercel ===== */
+  .v9 { background: #fff; color: #171717; font-family: Geist, Inter, sans-serif; font-size: 14px; min-height: 760px; }
+  .v9 .top { display: flex; align-items: center; gap: 12px; padding: 14px 24px; border-bottom: 1px solid #eaeaea; }
+  .v9 .top .tri { width: 0; height: 0; border-left: 10px solid transparent; border-right: 10px solid transparent; border-bottom: 17px solid #000; }
+  .v9 .top .sl { color: #d4d4d4; } .v9 .top .r { margin-left: auto; display: flex; gap: 16px; color: #666; font-size: 13px; }
+  .v9 .tabs { display: flex; gap: 18px; padding: 0 24px; border-bottom: 1px solid #eaeaea; font-size: 13px; color: #666; overflow-x: auto; }
+  .v9 .tabs span { padding: 12px 0; border-bottom: 2px solid transparent; white-space: nowrap; } .v9 .tabs span.on { color: #000; border-color: #000; }
+  .v9 .main { max-width: 1100px; margin: 0 auto; padding: 32px 24px; display: grid; gap: 22px; }
+  .v9 .hero { display: flex; justify-content: space-between; align-items: end; gap: 16px; flex-wrap: wrap; }
+  .v9 h2 { font-size: 32px; font-weight: 600; letter-spacing: -.04em; }
+  .v9 .btn { background: #000; color: #fff; padding: 8px 14px; border-radius: 6px; font-weight: 500; font-size: 13px; } .v9 .btn.g { background: #fff; color: #000; box-shadow: 0 0 0 1px #eaeaea; }
+  .v9 .prod { border: 1px solid #eaeaea; border-radius: 8px; display: grid; grid-template-columns: 300px 1fr; } .canvas.mobile .v9 .prod { grid-template-columns: 1fr; }
+  .v9 .prod .th { width: 100%; height: 100%; min-height: 200px; border-right: 1px solid #eaeaea; background: #fafafa; }
+  .v9 .prod dl { padding: 22px; display: grid; grid-template-columns: 1fr 1fr; gap: 18px; } .v9 dt { color: #666; font-size: 13px; } .v9 dd { margin-top: 4px; font-weight: 500; }
+  .v9 .dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: #0070f3; margin-right: 6px; } .v9 .dot.ok { background: #45a557; } .v9 .dot.go { background: #f5a623; }
+  .v9 .mono { font-family: "Geist Mono", monospace; font-size: 13px; }
+  .v9 .list { border: 1px solid #eaeaea; border-radius: 8px; } .v9 .list > div { display: grid; grid-template-columns: 1.2fr 1fr 1fr auto; gap: 14px; padding: 14px 18px; border-top: 1px solid #eaeaea; align-items: center; }
+  .v9 .list > div:first-child { border-top: 0; } .v9 .list > div:hover { background: #fafafa; } .canvas.mobile .v9 .list > div { grid-template-columns: 1fr auto; }
+  .v9 .muted { color: #666; }
+
+  /* ===== 10 Mercury ===== */
+  .v10 { background: #fbfbfa; color: #1e1e2a; font-family: Inter; font-size: 14px; display: grid; grid-template-columns: 220px 1fr; min-height: 760px; }
+  .canvas.mobile .v10 { grid-template-columns: 1fr; } .canvas.mobile .v10 .nav { display: none; }
+  .v10 .nav { padding: 20px 14px; display: grid; gap: 2px; align-content: start; color: #5b5b6b; } .v10 .nav b { color: #1e1e2a; margin: 0 8px 18px; font-weight: 600; }
+  .v10 .nav span { padding: 7px 10px; border-radius: 8px; } .v10 .nav span.on { background: #fff; color: #1e1e2a; box-shadow: 0 1px 3px rgba(30,30,42,.08); }
+  .v10 .main { padding: 30px 34px; display: grid; gap: 22px; align-content: start; } .canvas.mobile .v10 .main { padding: 20px 16px; }
+  .v10 .greet { font-size: 26px; font-weight: 500; letter-spacing: -.02em; }
+  .v10 .cards { display: grid; grid-template-columns: 1.3fr 1fr 1fr; gap: 14px; } .canvas.mobile .v10 .cards { grid-template-columns: 1fr; }
+  .v10 .c { background: #fff; border-radius: 14px; padding: 20px; box-shadow: 0 1px 2px rgba(30,30,42,.05), 0 0 0 1px rgba(30,30,42,.05); }
+  .v10 .c.hero { background: linear-gradient(160deg, #ffffff 0%, #f1eefc 100%); }
+  .v10 .c small { color: #6b6b7b; } .v10 .c .amt { font-size: 38px; font-weight: 500; letter-spacing: -.03em; margin-top: 8px; } .v10 .c .amt span { font-size: 20px; color: #9b9bab; }
+  .v10 .c .act { display: flex; gap: 8px; margin-top: 18px; } .v10 .c .act button { border-radius: 99px; padding: 7px 14px; background: #1e1e2a; color: #fff; font-size: 13px; } .v10 .c .act button.s { background: #ecebf3; color: #1e1e2a; }
+  .v10 .tx { background: #fff; border-radius: 14px; box-shadow: 0 0 0 1px rgba(30,30,42,.06); }
+  .v10 .tx h3 { font-size: 15px; font-weight: 600; padding: 16px 20px; } .v10 .tx .r { display: grid; grid-template-columns: 36px 1fr auto auto; gap: 14px; align-items: center; padding: 12px 20px; border-top: 1px solid #f0f0f3; }
+  .v10 .tx .r .th { width: 36px; height: 36px; border-radius: 10px; } .v10 .tx .r small { color: #8b8b9b; display: block; } .v10 .tx .neg { color: #1e1e2a; } .v10 .tx .pos { color: #188a4b; }
+
+  /* ===== 11 Recommended ===== */
+  .v11 { background: #fafafa; color: #171717; font-family: Geist, Inter, sans-serif; font-size: 14px; display: grid; grid-template-columns: 220px 1fr; min-height: 820px; }
+  .canvas.mobile .v11 { grid-template-columns: 1fr; } .canvas.mobile .v11 .nav { display: none; }
+  .v11 .nav { padding: 22px 14px; display: grid; gap: 1px; align-content: start; border-right: 1px solid #eaeaea; background: #fff; }
+  .v11 .nav .who { display: flex; gap: 10px; align-items: center; padding: 0 8px 18px; } .v11 .nav .av { width: 30px; height: 30px; background: #000; color: #fff; display: grid; place-items: center; font-size: 12px; font-weight: 600; }
+  .v11 .nav span { padding: 8px 10px; color: #666; } .v11 .nav span.on { color: #000; font-weight: 500; box-shadow: inset 2px 0 0 #000; background: #fafafa; }
+  .v11 .main { padding: 34px 40px; display: grid; gap: 28px; align-content: start; } .canvas.mobile .v11 .main { padding: 22px 16px; }
+  .v11 .eyebrow { font-family: "Geist Mono", monospace; font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: #888; }
+  .v11 h2 { font-size: clamp(36px, 4.6vw, 60px); font-weight: 600; letter-spacing: -.05em; line-height: .98; margin-top: 10px; } .v11 h2 span { color: #a1a1a1; }
+  .v11 .hero { display: grid; grid-template-columns: 1fr auto; gap: 20px; align-items: end; } .canvas.mobile .v11 .hero { grid-template-columns: 1fr; }
+  .v11 .btn { background: #000; color: #fff; padding: 10px 16px; font-weight: 500; font-size: 13px; } .v11 .btn.g { background: #fff; color: #000; box-shadow: inset 0 0 0 1px #e5e5e5; }
+  .v11 .ship { background: #fff; border: 1px solid #eaeaea; display: grid; grid-template-columns: 200px 1fr; } .canvas.mobile .v11 .ship { grid-template-columns: 1fr; }
+  .v11 .ship .th { width: 100%; height: 100%; min-height: 170px; }
+  .v11 .ship .b { padding: 20px 22px; display: grid; gap: 14px; }
+  .v11 .steps { display: grid; grid-template-columns: repeat(5, 1fr); font-size: 12px; color: #a1a1a1; }
+  .v11 .steps div { border-top: 2px solid #e5e5e5; padding-top: 8px; } .v11 .steps .d { border-color: #000; color: #666; } .v11 .steps .n { border-color: #000; color: #000; font-weight: 600; }
+  .v11 .kp { display: grid; grid-template-columns: repeat(4, 1fr); background: #fff; border: 1px solid #eaeaea; } .canvas.mobile .v11 .kp { grid-template-columns: 1fr 1fr; }
+  .v11 .kp > div { padding: 18px 20px; border-left: 1px solid #eaeaea; } .v11 .kp > div:first-child { border-left: 0; }
+  .v11 .kp small { color: #888; } .v11 .kp b { display: block; font-size: 26px; font-weight: 600; letter-spacing: -.03em; margin-top: 6px; }
+  .v11 .tbl { background: #fff; border: 1px solid #eaeaea; } .v11 .tbl .h { display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; border-bottom: 1px solid #eaeaea; }
+  .v11 .tbl .f { display: flex; gap: 4px; } .v11 .tbl .f button { padding: 4px 10px; color: #666; font-size: 13px; } .v11 .tbl .f button[aria-pressed="true"] { color: #000; box-shadow: inset 0 -2px 0 #000; }
+  .v11 table { width: 100%; border-collapse: collapse; } .v11 th { text-align: left; color: #888; font-weight: 400; font-size: 12px; padding: 10px 18px; }
+  .v11 td { padding: 12px 18px; border-top: 1px solid #f0f0f0; } .v11 td.amt, .v11 th.amt { text-align: right; } .v11 td.amt { font-weight: 500; } .v11 tr:hover td { background: #fafafa; }
+  .v11 .mono { font-family: "Geist Mono", monospace; font-size: 13px; }
+  .v11 .s { display: inline-flex; gap: 6px; align-items: center; font-size: 13px; } .v11 .s::before { content: ""; width: 7px; height: 7px; background: #a1a1a1; } .v11 .s.ok::before { background: #29845a; } .v11 .s.go::before { background: #e0b500; } .v11 .s.info::before { background: #0070f3; }
+  .v11 .feed { background: #fff; border: 1px solid #eaeaea; padding: 6px 18px; } .v11 .feed div { display: grid; grid-template-columns: 90px 1fr; gap: 14px; padding: 12px 0; border-top: 1px solid #f0f0f0; } .v11 .feed div:first-child { border-top: 0; }
+  .v11 .two { display: grid; grid-template-columns: 1.6fr 1fr; gap: 20px; align-items: start; } .canvas.mobile .v11 .two { grid-template-columns: 1fr; }
+</style>
+</head>
+<body>
+<div class="chrome">
+  <strong>Aligned dashboards</strong>
+  <nav id="nav" aria-label="Dashboards"></nav>
+  <label>Brand <input id="brand" value="Your Store" maxlength="18" aria-label="Brand name"></label>
+  <span class="w"><button data-w="d" aria-pressed="true">Desktop</button><button data-w="m" aria-pressed="false">Mobile</button></span>
+</div>
+<div class="cap" id="cap"></div>
+<div class="canvas" id="canvas"><div id="stage"></div></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+/* Sample data (preview only). */
+const P = { wax: ['Ski wax', 'Universal', 24.95, '#d9a62b', 'bar'], navy: ['Waffle towel', 'Navy', 18, '#2e3f5c', ''], grey: ['Waffle towel', 'Grey', 18, '#9a9a96', ''], char: ['Waffle towel', 'Charcoal', 18, '#3b3c3e', ''], merino: ['Merino base layer', 'Oat · M', 89, '#cbb89a', 'tall'] };
+const O = [
+  { id: '1006', date: 'Oct 18, 2026', short: 'Oct 18', status: 'prep', items: [['wax', 2]], total: 49.9 },
+  { id: '1004', date: 'Oct 15, 2026', short: 'Oct 15', status: 'ship', items: [['wax', 1], ['navy', 1]], total: 55.02, carrier: 'FedEx', track: '771234567890', eta: 'Sunday, Oct 19' },
+  { id: '1001', date: 'Oct 11, 2026', short: 'Oct 11', status: 'done', items: [['wax', 1]], total: 32.95, delivered: 'Oct 14' },
+  { id: '0998', date: 'Sep 2, 2026', short: 'Sep 2', status: 'done', items: [['grey', 1], ['char', 1], ['merino', 1]], total: 125, delivered: 'Sep 5' },
+];
+const ST = { prep: 'Preparing', ship: 'In transit', done: 'Delivered' };
+const th = (k, w = 48, h = w) => `<span class="th" style="width:${w}px;height:${h}px"><i class="${P[k][4]}" style="background-color:${P[k][3]}"></i></span>`;
+const thFill = (k) => `<span class="th"><i class="${P[k][4]}" style="background-color:${P[k][3]}"></i></span>`;
+const money = (n) => '$' + n.toFixed(2);
+const $ = (s, r = document) => r.querySelector(s), $$ = (s, r = document) => [...r.querySelectorAll(s)];
+let tt; const toast = (m) => { const t = $('#toast'); t.textContent = m; t.classList.add('on'); clearTimeout(tt); tt = setTimeout(() => t.classList.remove('on'), 1900); };
+const brand = () => $('#brand').value.trim() || 'Your Store';
+const clickToast = (s) => s.addEventListener('click', (e) => { const a = e.target.closest('[data-t]'); if (a) { e.preventDefault(); toast(a.dataset.t); } });
+
+const D = [
+/* 1 */ { name: 'Shopify accounts', ref: ['Your Shopify customer account', 'https://shopify.com/100395057522/account'], take: ['Order cards with an image grid', 'Status first, in plain words', 'One "Buy again" per order'], render: (s) => {
+  const ico = { prep: ['go', '◷'], ship: ['blue', '→'], done: ['', '✓'] };
+  s.innerHTML = `<div class="v1"><div class="top"><b>${brand()}</b><a class="on">Orders</a><a>Profile</a><a class="hide-m">Settings</a><span class="r">GT</span></div>
+    <div class="wrap in"><h2>Orders</h2><div class="grid">${O.map((o) => `<div class="card"><div class="st"><span class="ico ${ico[o.status][0]}">${ico[o.status][1]}</span><span>${ST[o.status]}<small>${o.status === 'done' ? 'Delivered ' + o.delivered : o.status === 'ship' ? 'Arrives ' + o.eta : 'Ships in 1–2 days'}</small></span></div>
+      <div class="imgs">${o.items.slice(0, 4).map(([k]) => thFill(k)).join('')}${o.items.length === 1 ? '<span class="th" style="background:#f6f6f6"></span>' : ''}</div>
+      <div class="meta">${o.items.reduce((a, [, q]) => a + q, 0)} items<br><b>Order #${o.id}</b><br>${money(o.total)}</div><button class="btn" data-t="Order #${o.id} items added to cart">Buy again</button></div>`).join('')}</div></div></div>`;
+  clickToast(s);
+}},
+/* 2 */ { name: 'Polaris', ref: ['Shopify Polaris', 'https://polaris.shopify.com'], take: ['Admin-style metrics bar', 'Tabs that filter the table', 'Shopify badge tones'], render: (s) => {
+  const bp = { prep: 'att', ship: 'info', done: '' };
+  s.innerHTML = `<div class="v2"><div class="nav"><span class="on">Home</span><span>Orders</span><span>Tracking</span><span>Profile</span><span>Addresses</span></div>
+    <div class="main in"><h2>Good evening, Grant</h2><div class="card kpis"><div><span>Orders</span><b>4</b></div><div><span>On the way</span><b>2</b></div><div><span>Delivered</span><b>2</b></div><div><span>Store credit</span><b>$25.00</b></div></div>
+      <div class="card"><div class="tabs">${['All', 'Preparing', 'In transit', 'Delivered'].map((t, i) => `<button data-f="${['all', 'prep', 'ship', 'done'][i]}" aria-pressed="${i === 0}">${t}</button>`).join('')}</div>
+      <table><thead><tr><th>Order</th><th class="hide-m">Date</th><th>Total</th><th class="hide-m">Payment</th><th>Fulfillment</th></tr></thead><tbody id="tb"></tbody></table></div></div></div>`;
+  const draw = (f) => { $('#tb', s).innerHTML = O.filter((o) => f === 'all' || o.status === f).map((o) => `<tr data-t="Opening order #${o.id}"><td><b>#${o.id}</b></td><td class="hide-m">${o.short}</td><td>${money(o.total)}</td><td class="hide-m"><span class="bp full">Paid</span></td><td><span class="bp ${bp[o.status]} ${o.status === 'done' ? 'full' : ''}">${o.status === 'done' ? 'Fulfilled' : o.status === 'ship' ? 'In transit' : 'Unfulfilled'}</span></td></tr>`).join(''); };
+  s.addEventListener('click', (e) => { const b = e.target.closest('[data-f]'); if (b) { $$('[data-f]', s).forEach((x) => x.setAttribute('aria-pressed', x === b)); draw(b.dataset.f); } const r = e.target.closest('[data-t]'); if (r) toast(r.dataset.t); });
+  draw('all');
+}},
+/* 3 */ { name: 'Tailwind order history', ref: ['Tailwind UI order history pages', 'https://tailwindui.com/components/ecommerce/page-examples/order-history-pages'], take: ['Order header with number, date, total', 'Product rows with a description', '"View product · Buy again" inline'], render: (s) => {
+  const desc = { wax: 'All-temperature wax for skis and boards. One bar covers about 10 waxings.', navy: 'Lightweight waffle weave that dries fast. Woven from long-staple cotton.', grey: 'Lightweight waffle weave that dries fast.', char: 'Lightweight waffle weave that dries fast.', merino: 'Soft 200 g merino that stays warm when wet.' };
+  s.innerHTML = `<div class="v3 in"><h2>Order history</h2><p>Check the status of recent orders, manage returns, and find similar products.</p>${O.slice(0, 3).map((o) => `<div class="order"><div class="oh"><div><dt>Order number</dt><dd>#${o.id}</dd></div><div><dt>Date placed</dt><dd>${o.date}</dd></div><div class="hide-m"><dt>Total amount</dt><dd style="color:#111827;font-weight:500">${money(o.total)}</dd></div><div class="acts"><button class="b" data-t="Opening order #${o.id}">View order</button><button class="b hide-m" data-t="Downloading invoice">View invoice</button></div></div>
+    ${o.items.map(([k, q]) => `<div class="li">${thFill(k)}<div><div class="t"><span>${P[k][0]} · ${P[k][1]}</span><span>${money(P[k][2] * q)}</span></div><p>${desc[k]}</p><div class="f"><span class="${o.status === 'done' ? 'ok' : ''}">${o.status === 'done' ? '✓ Delivered on ' + o.delivered : o.status === 'ship' ? '→ Arrives ' + o.eta : '◷ Preparing to ship'}</span><span class="links"><button data-t="Opening product">View product</button><button data-t="${P[k][0]} added to cart">Buy again</button></span></div></div></div>`).join('')}</div>`).join('')}</div>`;
+  clickToast(s);
+}},
+/* 4 */ { name: 'Actions first (Baymard)', ref: ['Baymard: Orders Overview examples', 'https://baymard.com/ecommerce-design-examples/104-orders-overview'], take: ['Status as the headline of each order', 'The right action per status, right on the list', 'Return, cancel and invoice without opening the order'], render: (s) => {
+  const acts = { prep: [['p', 'Change or cancel'], ['', 'View order'], ['l', 'Download invoice']], ship: [['p', 'Track package'], ['', 'View order'], ['l', 'Download invoice']], done: [['p', 'Return or replace items'], ['', 'Buy again'], ['l', 'Write a review']] };
+  const cls = { prep: 'go', ship: 'ship', done: 'ok' };
+  s.innerHTML = `<div class="v4 in"><h2>Your orders</h2><p class="hint">Most visits are to track, return or reorder, so those actions sit on each order.</p>${O.map((o) => `<div class="row"><div><div class="s ${cls[o.status]}">${o.status === 'done' ? 'Delivered ' + o.delivered : o.status === 'ship' ? 'Arriving ' + o.eta : 'Preparing your order'}</div><div class="sub">Order #${o.id} · placed ${o.date} · ${money(o.total)}${o.status === 'done' ? ' · Returnable until Nov 13' : ''}</div><div class="pics">${o.items.map(([k]) => th(k, 64)).join('')}</div></div>
+    <div class="acts">${acts[o.status].map(([c, l]) => `<button class="${c}" data-t="${l} · #${o.id}">${l}</button>`).join('')}</div></div>`).join('')}</div>`;
+  clickToast(s);
+}},
+/* 5 */ { name: 'Section grid', ref: ['Ecommerce Guide: account dashboard patterns', 'https://ecommerceguide.com/patterns/account-dashboard/'], take: ['A warm, retail-brand home page', 'One wide tile for what matters now', 'Every section one tap away'], render: (s) => {
+  s.innerHTML = `<div class="v5"><div class="in"><h2 class="hi">Hello, Grant.</h2><p>Your account at ${brand()}. Everything in one place.</p></div>
+    <div class="grid in"><a class="tile wide" href="#" data-t="Opening order #1004">${thFill('navy')}<div style="display:flex;flex-direction:column;justify-content:space-between;gap:12px"><div><p>On its way</p><h3>Order #1004 arrives Sunday</h3><p>Ski wax and a navy waffle towel, shipped with FedEx on October 16.</p></div><span class="go">Track your order</span></div></a>
+      <a class="tile" href="#" data-t="Opening orders"><div><h3>Orders</h3><p>4 orders · 2 on the way</p></div><span class="go">View all</span></a>
+      <a class="tile" href="#" data-t="Opening addresses"><div><h3>Addresses</h3><p>410 Spadina Ave, Toronto</p></div><span class="go">Manage</span></a>
+      <a class="tile" href="#" data-t="Opening profile"><div><h3>Profile</h3><p>Grant Test · grant@example.com</p></div><span class="go">Edit</span></a>
+      <a class="tile" href="#" data-t="Opening store"><div><h3>Store credit</h3><p>$25.00, applied at checkout</p></div><span class="go">Shop now</span></a></div></div>`;
+  clickToast(s);
+}},
+/* 6 */ { name: 'Branded tracking (Malomo)', ref: ['Malomo: order tracking pages that inspire', 'https://gomalomo.com/order-tracking-pages-that-inspire'], take: ['Tracking as a brand moment', 'Clear stage bar', 'Care guide and "pairs well with" products'], render: (s) => {
+  s.innerHTML = `<div class="v6"><div class="banner">Free shipping on orders over $120 · New season wax is here</div>
+    <section class="hero in"><div class="l"><small>Order #1004 · FedEx</small><h2>Your gear is on the way.</h2><p style="color:#5f574d">Expected <b>Sunday, October 19</b>. We’ll email you when it’s out for delivery.</p>
+      <div class="stages"><div class="done">Ordered</div><div class="done">Shipped</div><div class="now">In transit</div><div>Delivered</div></div><a class="cta" href="#" data-t="Opening FedEx tracking">Track with FedEx</a></div>
+      <div class="r" style="background-image:url(https://picsum.photos/seed/snow-trail/900/900?grayscale)"></div></section>
+    <section class="recs"><h3>Pairs well with your order</h3><div class="g">${['merino', 'grey', 'char', 'wax'].map((k) => `<div>${thFill(k)}<p><b>${P[k][0]}</b><br>${money(P[k][2])}</p></div>`).join('')}</div></section></div>`;
+  clickToast(s);
+}},
+/* 7 */ { name: 'Linear', ref: ['Linear', 'https://linear.app'], take: ['Dense, calm list grouped by status', 'Keyboard first: J/K to move, Enter to open', 'Dark, quiet, precise'], render: (s) => {
+  const ring = { prep: 'prog', ship: 'ship', done: 'done' };
+  s.innerHTML = `<div class="v7"><div class="nav"><div class="ws"><i></i>${brand()}</div><span class="on">Orders <kbd>G O</kbd></span><span>Tracking <kbd>G T</kbd></span><span>Addresses</span><span>Profile</span><span style="margin-top:14px">Search <kbd>⌘K</kbd></span></div>
+    <div><div class="bar"><b>Orders</b><div class="f"><button aria-pressed="true">All</button><button aria-pressed="false">Active</button><button aria-pressed="false">Delivered</button></div></div>
+      <div id="lst" tabindex="0" aria-label="Orders list">${['ship', 'prep', 'done'].map((g) => `<div class="grp">${ST[g]} · ${O.filter((o) => o.status === g).length}</div>${O.filter((o) => o.status === g).map((o) => `<button class="item" data-id="${o.id}"><span class="id">#${o.id}</span><span class="ring ${ring[o.status]}"></span><span>${o.items.map(([k]) => P[k][0]).join(', ')}</span><span>${money(o.total)}</span><span class="dt">${o.short}</span></button>`).join('')}`).join('')}</div>
+      <p class="hint">Press <kbd>J</kbd> / <kbd>K</kbd> to move, <kbd>Enter</kbd> to open.</p></div></div>`;
+  const items = $$('.item', s); let i = 0; const sel = () => items.forEach((x, n) => x.classList.toggle('sel', n === i)); sel();
+  $('#lst', s).addEventListener('keydown', (e) => { if (e.key === 'j' || e.key === 'ArrowDown') { i = Math.min(items.length - 1, i + 1); sel(); e.preventDefault(); } if (e.key === 'k' || e.key === 'ArrowUp') { i = Math.max(0, i - 1); sel(); e.preventDefault(); } if (e.key === 'Enter') toast('Opening order #' + items[i].dataset.id); });
+  s.addEventListener('click', (e) => { const it = e.target.closest('.item'); if (it) { i = items.indexOf(it); sel(); toast('Opening order #' + it.dataset.id); } });
+}},
+/* 8 */ { name: 'Stripe', ref: ['Stripe', 'https://stripe.com'], take: ['Spending chart with hover values', 'Right-aligned money, tabular numbers', 'Small, precise status labels'], render: (s) => {
+  const pts = [0, 0, 0, 0, 0, 0, 0, 24.95, 24.95, 89.45, 214.45, 351.87];
+  const max = 360, path = pts.map((v, i) => `${(i / 11) * 100},${100 - (v / max) * 92}`).join(' ');
+  const sp = { prep: ['go', 'Preparing'], ship: ['info', 'In transit'], done: ['ok', 'Delivered'] };
+  s.innerHTML = `<div class="v8"><div class="nav"><b>${brand()}</b><span class="on">Home</span><span>Orders</span><span>Tracking</span><span>Store credit</span><span>Profile</span></div>
+    <div class="main in"><h2>Today</h2><div class="chart"><div><div class="lbl">Total spent · last 12 months</div><div class="big" id="sv">$351.87</div><svg viewBox="0 0 100 100" preserveAspectRatio="none" id="sc"><polyline points="${path}" fill="none" stroke="#635bff" stroke-width="2" vector-effect="non-scaling-stroke"/><polygon points="0,100 ${path} 100,100" fill="#635bff" opacity=".08"/><line id="cur" x1="100" x2="100" y1="0" y2="100" stroke="#a5a1ff" stroke-width="1" vector-effect="non-scaling-stroke"/></svg><div class="lbl" id="sl">Oct 2026</div></div>
+      <div class="side"><div><span class="lbl">Store credit</span><b>$25.00</b></div><div><span class="lbl">On the way</span><b>2 orders</b></div><div><span class="lbl">Average order</span><b>$65.72</b></div></div></div>
+      <table><thead><tr><th class="amt">Amount</th><th></th><th>Order</th><th class="hide-m">Items</th><th>Date</th></tr></thead><tbody>${O.map((o) => `<tr data-t="Opening order #${o.id}"><td class="amt">${money(o.total)}</td><td style="color:#697386">USD</td><td><span class="sp ${sp[o.status][0]}">${sp[o.status][1]}</span> #${o.id}</td><td class="hide-m" style="color:#697386">${o.items.map(([k]) => P[k][0]).join(', ')}</td><td style="color:#697386">${o.short}</td></tr>`).join('')}</tbody></table></div></div>`;
+  const months = ['Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct'];
+  const sc = $('#sc', s); sc.addEventListener('mousemove', (e) => { const r = sc.getBoundingClientRect(), i = Math.round(((e.clientX - r.left) / r.width) * 11); $('#cur', s).setAttribute('x1', (i / 11) * 100); $('#cur', s).setAttribute('x2', (i / 11) * 100); $('#sv', s).textContent = money(pts[i]); $('#sl', s).textContent = `${months[i]} ${i < 2 ? 2025 : 2026} · cumulative`; });
+  clickToast(s);
+}},
+/* 9 */ { name: 'Vercel', ref: ['Vercel', 'https://vercel.com'], take: ['Black and white, Geist type, mono details', 'Latest order shown like a "production deployment"', 'Status dots and relative times'], render: (s) => {
+  const dot = { prep: 'go', ship: '', done: 'ok' };
+  s.innerHTML = `<div class="v9"><div class="top"><span class="tri"></span><span class="sl">/</span><b style="font-weight:500">${brand()}</b><span class="sl">/</span><span>grant</span><span class="r"><span class="hide-m">Help</span><span>Shop</span></span></div>
+    <div class="tabs"><span class="on">Overview</span><span>Orders</span><span>Tracking</span><span>Addresses</span><span>Settings</span></div>
+    <div class="main in"><div class="hero"><h2>Overview</h2><div style="display:flex;gap:8px"><button class="btn g" data-t="Opening orders">All orders</button><button class="btn" data-t="Opening store">Continue shopping</button></div></div>
+      <div class="prod">${thFill('navy')}<dl><div><dt>Latest order</dt><dd>#1004</dd></div><div><dt>Status</dt><dd><span class="dot"></span>In transit</dd></div><div><dt>Carrier</dt><dd class="mono">FedEx · 771234567890</dd></div><div><dt>Expected</dt><dd>Sunday, Oct 19</dd></div><div><dt>Items</dt><dd>Ski wax, Waffle towel</dd></div><div><dt>Total</dt><dd>$55.02</dd></div></dl></div>
+      <b style="font-weight:600;font-size:15px">Recent orders</b><div class="list">${O.map((o) => `<div data-t="Opening order #${o.id}"><span><b style="font-weight:500">#${o.id}</b> <span class="muted hide-m">· ${o.items.map(([k]) => P[k][0]).join(', ')}</span></span><span class="hide-m"><span class="dot ${dot[o.status]}"></span>${ST[o.status]}</span><span class="muted mono hide-m">${o.short}</span><span>${money(o.total)}</span></div>`).join('')}</div></div></div>`;
+  clickToast(s);
+}},
+/* 10 */ { name: 'Mercury', ref: ['Mercury', 'https://mercury.com'], take: ['Money feels premium: big calm numbers', 'Soft cards with gentle depth', 'Store credit as a real balance'], render: (s) => {
+  s.innerHTML = `<div class="v10"><div class="nav"><b>${brand()}</b><span class="on">Home</span><span>Orders</span><span>Store credit</span><span>Addresses</span><span>Profile</span></div>
+    <div class="main in"><div class="greet">Good evening, Grant</div>
+      <div class="cards"><div class="c hero"><small>Store credit</small><div class="amt">$25<span>.00</span></div><div class="act"><button data-t="Opening store">Shop with credit</button><button class="s" data-t="Opening history">History</button></div></div>
+        <div class="c"><small>On the way</small><div class="amt">2</div><small>#1004 arrives Sunday</small></div><div class="c"><small>Spent this year</small><div class="amt">$262<span>.97</span></div><small>4 orders</small></div></div>
+      <div class="tx"><h3>Recent activity</h3>${[['wax', 'Order #1006', 'Oct 18 · Preparing', '−$49.90', 'neg'], ['navy', 'Order #1004', 'Oct 15 · In transit', '−$55.02', 'neg'], ['wax', 'Order #1001', 'Oct 11 · Delivered', '−$32.95', 'neg'], ['grey', 'Store credit added', 'Oct 01 · Refund for #0991', '+$12.50', 'pos']].map((r) => `<div class="r" data-t="Opening ${r[1]}">${th(r[0], 36)}<span>${r[1]}<small>${r[2]}</small></span><span class="hide-m" style="color:#8b8b9b;font-size:13px">USD</span><b class="${r[4]}" style="font-weight:500">${r[3]}</b></div>`).join('')}</div></div></div>`;
+  clickToast(s);
+}},
+/* 11 */ { name: '★ Recommended', rec: true, ref: ['Polaris structure + Vercel look + Stripe numbers + Stoa headline', ''], take: ['Status-first headline (Stoa)', 'Square, monochrome, Geist type (Vercel)', 'Right-aligned money and filters (Stripe, Polaris)'], render: (s) => {
+  const cls = { prep: 'go', ship: 'info', done: 'ok' };
+  s.innerHTML = `<div class="v11"><div class="nav"><div class="who"><span class="av">GT</span><span>Grant Test</span></div><span class="on">Overview</span><span>My Orders</span><span>Order Tracking</span><span>My Profile</span><span>Saved Addresses</span><span style="margin-top:16px">Continue Shopping</span><span>Log Out</span></div>
+    <div class="main in">
+      <div class="hero"><div><span class="eyebrow">${brand()} · Account · since Oct 2026</span><h2>Your order.<br><span>Arrives Sunday.</span></h2></div><div style="display:flex;gap:8px"><button class="btn g" data-t="Opening order #1004">View order</button><button class="btn" data-t="Opening FedEx tracking">Track with FedEx</button></div></div>
+      <div class="ship">${thFill('navy')}<div class="b"><div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px"><b style="font-weight:500">Order #1004 · Ski wax, Waffle towel</b><span class="mono" style="color:#888">FedEx 771234567890</span></div>
+        <div class="steps"><div class="d">Ordered</div><div class="d">Shipped</div><div class="n">In transit</div><div>Out for delivery</div><div>Delivered</div></div><span style="color:#666">Left the warehouse Oct 16. Expected Sunday, October 19.</span></div></div>
+      <div class="kp"><div><small>Orders</small><b>4</b></div><div><small>On the way</small><b>2</b></div><div><small>Spent</small><b>$262.97</b></div><div><small>Store credit</small><b>$25.00</b></div></div>
+      <div class="two"><div class="tbl"><div class="h"><b style="font-weight:500">Orders</b><div class="f">${['All', 'Active', 'Delivered'].map((t, i) => `<button data-f="${['all', 'active', 'done'][i]}" aria-pressed="${i === 0}">${t}</button>`).join('')}</div></div>
+        <table><thead><tr><th>Order</th><th class="hide-m">Date</th><th>Status</th><th class="amt">Total</th></tr></thead><tbody id="tb"></tbody></table></div>
+        <div class="feed">${[['Oct 18', 'Order #1006 is being prepared'], ['Oct 16', 'Order #1004 shipped with FedEx'], ['Oct 14', 'Order #1001 delivered'], ['Oct 01', '$12.50 store credit added']].map((f) => `<div><span class="mono" style="color:#888">${f[0]}</span><span>${f[1]}</span></div>`).join('')}</div></div>
+    </div></div>`;
+  const draw = (f) => { $('#tb', s).innerHTML = O.filter((o) => f === 'all' || (f === 'active' ? o.status !== 'done' : o.status === 'done')).map((o) => `<tr data-t="Opening order #${o.id}"><td><b style="font-weight:500">#${o.id}</b></td><td class="hide-m mono" style="color:#888">${o.short}</td><td><span class="s ${cls[o.status]}">${ST[o.status]}</span></td><td class="amt">${money(o.total)}</td></tr>`).join(''); };
+  s.addEventListener('click', (e) => { const b = e.target.closest('[data-f]'); if (b) { $$('[data-f]', s).forEach((x) => x.setAttribute('aria-pressed', x === b)); draw(b.dataset.f); } const r = e.target.closest('[data-t]'); if (r) toast(r.dataset.t); });
+  draw('all');
+}},
+];
+
+const nav = $('#nav');
+nav.innerHTML = D.map((d, i) => `<button data-c="${i}" class="${d.rec ? 'rec' : ''}">${d.rec ? '' : String(i + 1).padStart(2, '0') + ' '}${d.name}</button>`).join('');
+let cur = D.length - 1;
+function open(i) {
+  cur = i; const d = D[i];
+  $$('[data-c]', nav).forEach((b) => b.setAttribute('aria-current', b.dataset.c == i));
+  $('#cap').innerHTML = `<b>${d.rec ? 'Recommended combination' : String(i + 1).padStart(2, '0') + ' · ' + d.name}</b><span class="src">${d.ref[1] ? `Aligned with <a href="${d.ref[1]}" target="_blank" rel="noopener">${d.ref[0]}</a>` : d.ref[0]}</span><ul>${d.take.map((t) => `<li>${t}</li>`).join('')}</ul>`;
+  const old = $('#stage'), st = old.cloneNode(false); old.replaceWith(st); d.render(st);
+}
+nav.addEventListener('click', (e) => { const b = e.target.closest('[data-c]'); if (b) open(+b.dataset.c); });
+$('#brand').addEventListener('input', () => open(cur));
+$$('[data-w]').forEach((b) => b.addEventListener('click', () => { $('#canvas').classList.toggle('mobile', b.dataset.w === 'm'); $$('[data-w]').forEach((x) => x.setAttribute('aria-pressed', x === b)); }));
+open(cur);
+</script>
+</body>
+</html>

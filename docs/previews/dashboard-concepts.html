@@ -1,0 +1,588 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dashboard concepts</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --snow: #f4f6f8; --white: #ffffff; --ink: #14181f; --slate: #5b6573; --mist: #8a94a3;
+    --frost: #dde2e8; --frost-2: #eef1f4; --wax: #f2b705; --wax-soft: #fff4cc; --wax-ink: #5a4300;
+    --pine: #1e7a55; --pine-soft: #dff3ea; --berry: #b42318; --berry-soft: #fde8e7; --sky-soft: #e4effa; --sky: #1f5f99;
+    --display: "Bricolage Grotesque", "Avenir Next", system-ui, sans-serif;
+    --body: "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+    --ease: cubic-bezier(.2, .8, .2, 1);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; border-radius: 0; }
+  body { font-family: var(--body); font-size: 14px; color: var(--ink); background: #e6eaee; font-variant-numeric: tabular-nums; }
+  button, input { font: inherit; color: inherit; }
+  button { cursor: pointer; background: none; border: 0; }
+  :focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+  .mono { font-family: var(--mono); }
+  .muted { color: var(--slate); }
+  .mist { color: var(--mist); font-size: 12px; }
+
+  /* ---------- Gallery shell ---------- */
+  .shell { display: grid; grid-template-columns: 280px minmax(0, 1fr); min-height: 100vh; }
+  .index { background: var(--ink); color: #e9edf2; padding: 22px 0; position: sticky; top: 0; height: 100vh; overflow-y: auto; }
+  .index h1 { font-family: var(--display); font-size: 22px; font-weight: 700; letter-spacing: -.02em; padding: 0 22px; }
+  .index p { color: #9aa4b2; font-size: 12px; padding: 6px 22px 16px; line-height: 1.5; }
+  .index h2 { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: #9aa4b2; padding: 16px 22px 8px; font-weight: 500; }
+  .index button { display: flex; gap: 12px; width: 100%; padding: 9px 22px; text-align: left; color: #d6dce4; font-size: 13px; align-items: baseline; }
+  .index button span { font-family: var(--mono); font-size: 11px; color: #6f7a89; width: 20px; flex: none; }
+  .index button:hover { background: #1f252e; }
+  .index button[aria-current="true"] { background: var(--wax); color: var(--ink); font-weight: 600; }
+  .index button[aria-current="true"] span { color: var(--wax-ink); }
+  .stage { padding: 20px 28px 48px; min-width: 0; }
+  .stage-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; align-items: end; margin-bottom: 14px; }
+  .stage-head h2 { font-family: var(--display); font-size: 26px; font-weight: 700; letter-spacing: -.02em; }
+  .stage-head p { color: var(--slate); max-width: 70ch; margin-top: 4px; line-height: 1.5; }
+  .tag { display: inline-block; font-size: 11px; padding: 2px 8px; background: var(--frost); color: var(--slate); margin-left: 8px; vertical-align: middle; font-family: var(--body); font-weight: 500; letter-spacing: 0; }
+  .tag.data { background: var(--sky-soft); color: var(--sky); }
+  .seg { display: inline-flex; border: 1px solid var(--frost); background: var(--white); }
+  .seg button { padding: 7px 12px; font-size: 12px; font-weight: 500; color: var(--slate); }
+  .seg button[aria-pressed="true"] { background: var(--ink); color: #fff; }
+
+  /* ---------- Dashboard frame ---------- */
+  .frame { background: var(--snow); border: 1px solid #cdd4dc; max-width: 1180px; transition: max-width .3s var(--ease); }
+  .frame.mobile { max-width: 390px; }
+  .topbar { display: flex; justify-content: space-between; align-items: center; padding: 14px 22px; background: var(--white); border-bottom: 1px solid var(--frost); }
+  .brand { font-family: var(--display); font-weight: 700; font-size: 17px; letter-spacing: -.02em; }
+  .cartpill { display: inline-flex; gap: 8px; align-items: center; font-size: 13px; color: var(--slate); }
+  .cartpill b { background: var(--ink); color: #fff; min-width: 22px; height: 22px; display: inline-grid; place-items: center; font-size: 12px; transition: transform .3s var(--ease); }
+  .cartpill b.bump { transform: scale(1.3); background: var(--wax); color: var(--ink); }
+  .dash { display: grid; grid-template-columns: 196px minmax(0, 1fr); gap: 28px; padding: 26px 22px 34px; }
+  .frame.mobile .dash { grid-template-columns: 1fr; padding: 16px; gap: 14px; }
+  .dnav { display: grid; gap: 2px; align-content: start; font-size: 13px; }
+  .dnav div { padding: 8px 10px; color: var(--slate); }
+  .dnav .on { background: var(--white); color: var(--ink); font-weight: 600; box-shadow: inset 2px 0 0 var(--wax), 0 0 0 1px var(--frost); }
+  .dnav .who { display: flex; gap: 10px; align-items: center; padding: 0 10px 14px; color: var(--ink); }
+  .av { width: 34px; height: 34px; background: var(--ink); color: var(--wax); display: grid; place-items: center; font-weight: 600; font-size: 12px; flex: none; }
+  .frame.mobile .dnav { display: none; }
+  .mnav { display: none; justify-content: space-between; background: var(--white); border: 1px solid var(--frost); padding: 11px 14px; font-weight: 600; }
+  .frame.mobile .mnav { display: flex; }
+  .view { display: grid; gap: 18px; min-width: 0; align-content: start; }
+  .view > * { animation: rise .45s var(--ease) both; }
+  .view > :nth-child(2) { animation-delay: .05s; } .view > :nth-child(3) { animation-delay: .1s; } .view > :nth-child(n+4) { animation-delay: .15s; }
+  @keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+  /* ---------- Shared components ---------- */
+  .card { background: var(--white); border: 1px solid var(--frost); padding: 20px; min-width: 0; }
+  .card.pad0 { padding: 0; }
+  .h-xl { font-family: var(--display); font-size: 36px; font-weight: 700; letter-spacing: -.035em; line-height: 1.05; }
+  .frame.mobile .h-xl { font-size: 28px; }
+  .h-m { font-size: 15px; font-weight: 600; }
+  .eyebrow { font-size: 12px; color: var(--slate); display: flex; gap: 8px; align-items: center; }
+  .eyebrow::before { content: ""; width: 8px; height: 8px; background: var(--wax); }
+  .num { font-family: var(--display); font-weight: 700; letter-spacing: -.03em; }
+  .row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  .between { justify-content: space-between; }
+  .grow { flex: 1; min-width: 0; }
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 38px; padding: 0 16px; background: var(--ink); color: #fff; font-weight: 600; font-size: 13px; border: 1px solid var(--ink); transition: transform .15s var(--ease), background .2s; }
+  .btn:hover { background: #262c36; } .btn:active { transform: translateY(1px); }
+  .btn.ghost { background: var(--white); color: var(--ink); border-color: var(--frost); }
+  .btn.ghost:hover { border-color: var(--ink); }
+  .btn.wax { background: var(--wax); color: var(--ink); border-color: var(--wax); }
+  .link { color: var(--ink); font-weight: 600; font-size: 13px; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--frost); }
+  .link:hover { text-decoration-color: var(--ink); }
+  .badge { display: inline-flex; align-items: center; gap: 6px; padding: 2px 8px; font-size: 12px; font-weight: 500; background: var(--frost-2); color: var(--slate); white-space: nowrap; }
+  .badge::before { content: ""; width: 6px; height: 6px; background: currentColor; }
+  .badge.ok { background: var(--pine-soft); color: var(--pine); }
+  .badge.go { background: var(--wax-soft); color: var(--wax-ink); }
+  .badge.info { background: var(--sky-soft); color: var(--sky); }
+  .badge.bad { background: var(--berry-soft); color: var(--berry); }
+  .thumb { width: 48px; height: 48px; flex: none; position: relative; overflow: hidden; }
+  .thumb::after { content: ""; position: absolute; inset: 30% 30%; background: rgba(255,255,255,.45); }
+  .p1 { background: #f2b705; } .p2 { background: #7c8ea3; } .p3 { background: #2f4858; } .p4 { background: #c9a27e; } .p5 { background: #9fb8ad; } .p6 { background: #b56b5b; }
+  .toast { position: fixed; left: 50%; bottom: 24px; transform: translate(-50%, 20px); opacity: 0; background: var(--ink); color: #fff; padding: 12px 16px; font-size: 13px; transition: .25s var(--ease); pointer-events: none; z-index: 50; display: flex; gap: 10px; }
+  .toast.on { opacity: 1; transform: translate(-50%, 0); }
+  .toast::before { content: ""; width: 10px; height: 10px; background: var(--wax); align-self: center; }
+  .list { list-style: none; }
+  .list li { border-top: 1px solid var(--frost); }
+  .list li:first-child { border-top: 0; }
+  .orow { display: grid; grid-template-columns: auto minmax(0,1fr) auto auto; gap: 14px; align-items: center; padding: 12px 18px; width: 100%; text-align: left; transition: background .15s; }
+  .orow:hover { background: var(--frost-2); }
+  .frame.mobile .orow { grid-template-columns: auto minmax(0,1fr) auto; } .frame.mobile .orow .hide-m { display: none; }
+  .note { margin-top: 12px; font-size: 12px; color: var(--slate); display: flex; gap: 8px; }
+  .note b { color: var(--ink); font-weight: 600; }
+
+  /* ---------- Concept specific ---------- */
+  .trail { position: relative; padding: 8px 0 4px; }
+  .trail svg { width: 100%; height: 120px; display: block; overflow: visible; }
+  .trail-map { position: relative; }
+  .trail .cp { position: absolute; width: 14px; height: 14px; transform: translate(-50%, -50%); background: var(--white); border: 2px solid var(--ink); transition: transform .2s var(--ease); }
+  .trail .cp.past { background: var(--ink); }
+  .trail .cp.now { background: var(--wax); width: 18px; height: 18px; }
+  .trail .cp:hover, .trail .cp.sel { transform: translate(-50%, -50%) scale(1.3); }
+  .trail-labels { display: grid; grid-template-columns: repeat(5, 1fr); font-size: 12px; color: var(--slate); margin-top: 6px; }
+  .trail-labels button { text-align: left; padding: 4px 0; }
+  .trail-labels button[aria-pressed="true"] { color: var(--ink); font-weight: 600; }
+  .detail { background: var(--frost-2); padding: 12px 14px; display: grid; gap: 4px; }
+  .kpi-strip { display: grid; grid-template-columns: repeat(4, 1fr); }
+  .frame.mobile .kpi-strip { grid-template-columns: 1fr 1fr; }
+  .kpi-strip > div { padding: 18px 20px; border-left: 1px solid var(--frost); }
+  .kpi-strip > div:first-child { border-left: 0; }
+  .frame.mobile .kpi-strip > div:nth-child(3) { border-left: 0; }
+  .frame.mobile .kpi-strip > div:nth-child(n+3) { border-top: 1px solid var(--frost); }
+  .kpi-strip .num { font-size: 30px; display: block; margin-top: 4px; }
+  .delta { font-size: 12px; color: var(--pine); }
+  .thumbs { display: flex; gap: 6px; }
+  .thumbs button { outline-offset: 2px; }
+  .thumbs button[aria-pressed="true"] .thumb { box-shadow: 0 0 0 2px var(--ink); }
+  .acc { border-top: 1px solid var(--frost); }
+  .acc > button { width: 100%; display: flex; justify-content: space-between; padding: 12px 0; font-weight: 600; }
+  .acc .body { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .3s var(--ease); }
+  .acc.open .body { grid-template-rows: 1fr; }
+  .acc .body > div { overflow: hidden; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip { border: 1px solid var(--frost); background: var(--white); padding: 8px 12px; display: inline-flex; gap: 8px; align-items: baseline; font-weight: 500; transition: .15s; }
+  .chip b { font-family: var(--display); font-size: 18px; }
+  .chip[aria-pressed="true"] { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .search { display: flex; align-items: center; gap: 8px; border: 1px solid var(--frost); background: var(--white); padding: 0 12px; min-height: 40px; }
+  .search input { border: 0; outline: 0; background: none; flex: 1; min-width: 0; }
+  .chart { display: grid; grid-template-columns: repeat(12, 1fr); gap: 6px; align-items: end; height: 170px; position: relative; padding-top: 24px; }
+  .chart button { background: var(--frost); position: relative; transition: background .15s, height .5s var(--ease); min-height: 3px; }
+  .chart button:hover, .chart button.sel { background: var(--ink); }
+  .chart button.cur { background: var(--wax); }
+  .chart-x { display: grid; grid-template-columns: repeat(12, 1fr); gap: 6px; font-size: 11px; color: var(--mist); margin-top: 6px; text-align: center; }
+  .tip { position: absolute; top: 0; transform: translateX(-50%); background: var(--ink); color: #fff; font-size: 12px; padding: 4px 8px; white-space: nowrap; pointer-events: none; transition: left .15s; }
+  .stepper { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; border: 1px solid var(--frost); background: var(--white); }
+  .frame.mobile .stepper { grid-template-columns: 1fr; }
+  .stepper > div { padding: 16px; display: grid; gap: 8px; align-content: start; border-left: 1px solid var(--frost); }
+  .stepper > div:first-child { border-left: 0; }
+  .frame.mobile .stepper > div { border-left: 0; border-top: 1px solid var(--frost); }
+  .stepper .k { font-family: var(--mono); font-size: 11px; color: var(--mist); }
+  .stepper .done .k { color: var(--pine); }
+  .shelf { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(170px, 1fr); gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 6px; }
+  .prod { background: var(--white); border: 1px solid var(--frost); display: grid; scroll-snap-align: start; }
+  .prod .img { aspect-ratio: 4/3; position: relative; }
+  .prod .img::after { content: ""; position: absolute; inset: 32% 36%; background: rgba(255,255,255,.4); }
+  .prod .in { padding: 12px; display: grid; gap: 8px; }
+  .qty { display: inline-flex; border: 1px solid var(--frost); }
+  .qty button { width: 30px; height: 30px; } .qty span { width: 28px; display: grid; place-items: center; font-family: var(--mono); }
+  .wallet { background: var(--ink); color: #fff; padding: 24px; display: grid; gap: 18px; position: relative; overflow: hidden; }
+  .wallet::after { content: ""; position: absolute; right: -40px; top: -40px; width: 160px; height: 160px; background: var(--wax); transform: rotate(45deg); opacity: .9; }
+  .wallet > * { position: relative; z-index: 1; }
+  .toggle { width: 40px; height: 22px; background: var(--frost); position: relative; transition: background .2s; flex: none; }
+  .toggle::after { content: ""; position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; background: #fff; transition: transform .2s var(--ease); }
+  .toggle[aria-checked="true"] { background: var(--pine); }
+  .toggle[aria-checked="true"]::after { transform: translateX(18px); }
+  .ring { width: 88px; height: 88px; flex: none; }
+  .ring circle { fill: none; stroke-width: 10; }
+  .ring .track { stroke: var(--frost); } .ring .val { stroke: var(--pine); stroke-linecap: butt; transition: stroke-dashoffset .5s var(--ease); transform: rotate(-90deg); transform-origin: center; }
+  .todo { display: flex; gap: 12px; align-items: center; padding: 12px 0; border-top: 1px solid var(--frost); width: 100%; text-align: left; }
+  .todo .box { width: 20px; height: 20px; border: 1.5px solid var(--mist); display: grid; place-items: center; color: #fff; font-size: 12px; flex: none; transition: .2s; }
+  .todo[aria-checked="true"] .box { background: var(--pine); border-color: var(--pine); }
+  .todo[aria-checked="true"] .t { text-decoration: line-through; color: var(--mist); }
+  .feed li { position: relative; padding: 0 0 4px 26px; }
+  .feed li::before { content: ""; position: absolute; left: 4px; top: 6px; bottom: -6px; width: 1px; background: var(--frost); }
+  .feed li:last-child::before { display: none; }
+  .feed .dot { position: absolute; left: 0; top: 4px; width: 9px; height: 9px; background: var(--mist); }
+  .feed .dot.ok { background: var(--pine); } .feed .dot.go { background: var(--wax); } .feed .dot.info { background: var(--sky); }
+  .feed button.item { width: 100%; text-align: left; padding: 0 0 14px; display: grid; gap: 2px; }
+  .feed .more { display: none; padding: 0 0 14px; color: var(--slate); font-size: 13px; }
+  .feed li.open .more { display: block; }
+  .bento { display: grid; grid-template-columns: repeat(4, 1fr); grid-auto-rows: 120px; gap: 12px; }
+  .frame.mobile .bento { grid-template-columns: 1fr 1fr; grid-auto-rows: 110px; }
+  .tile { background: var(--white); border: 1px solid var(--frost); padding: 16px; display: flex; flex-direction: column; justify-content: space-between; transition: transform .2s var(--ease), border-color .2s; overflow: hidden; }
+  .tile:hover { transform: translateY(-2px); border-color: var(--ink); }
+  .t-2x2 { grid-column: span 2; grid-row: span 2; } .t-2x1 { grid-column: span 2; } .t-1x2 { grid-row: span 2; }
+  .tile.dark { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .tile.waxy { background: var(--wax); border-color: var(--wax); }
+  .spark { width: 100%; height: 44px; }
+  .palette { background: var(--white); border: 1px solid var(--ink); box-shadow: 0 24px 60px rgba(20,24,31,.18); max-width: 640px; }
+  .palette .search { border: 0; border-bottom: 1px solid var(--frost); min-height: 52px; font-size: 15px; }
+  .kbd { font-family: var(--mono); font-size: 11px; border: 1px solid var(--frost); padding: 1px 6px; color: var(--slate); }
+  .pres { max-height: 280px; overflow: auto; }
+  .pres .grp { font-size: 11px; color: var(--mist); padding: 10px 16px 4px; letter-spacing: .06em; text-transform: uppercase; }
+  .pres button { width: 100%; display: flex; gap: 12px; align-items: center; padding: 10px 16px; text-align: left; }
+  .pres button.act { background: var(--wax-soft); box-shadow: inset 2px 0 0 var(--wax); }
+  .split { display: grid; grid-template-columns: 300px minmax(0, 1fr); border: 1px solid var(--frost); background: var(--white); min-height: 380px; }
+  .frame.mobile .split { grid-template-columns: 1fr; }
+  .split .lst { border-right: 1px solid var(--frost); }
+  .frame.mobile .split .lst { border-right: 0; border-bottom: 1px solid var(--frost); }
+  .split .lst button { width: 100%; text-align: left; padding: 12px 16px; display: grid; gap: 2px; border-bottom: 1px solid var(--frost); }
+  .split .lst button[aria-selected="true"] { background: var(--frost-2); box-shadow: inset 3px 0 0 var(--wax); }
+  .board { display: grid; grid-template-columns: repeat(4, minmax(170px, 1fr)); gap: 10px; overflow-x: auto; }
+  .col { background: var(--frost-2); padding: 10px; display: grid; gap: 8px; align-content: start; min-height: 260px; }
+  .col h4 { font-size: 12px; font-weight: 600; display: flex; justify-content: space-between; color: var(--slate); }
+  .kcard { background: var(--white); border: 1px solid var(--frost); padding: 10px; text-align: left; display: grid; gap: 6px; transition: .15s; }
+  .kcard:hover, .kcard.sel { border-color: var(--ink); }
+  .cal { display: grid; grid-template-columns: repeat(7, 1fr); border-top: 1px solid var(--frost); border-left: 1px solid var(--frost); }
+  .cal > * { border-right: 1px solid var(--frost); border-bottom: 1px solid var(--frost); }
+  .cal .dow { font-size: 11px; color: var(--mist); padding: 6px 8px; background: var(--frost-2); }
+  .cal button { aspect-ratio: 1.3; padding: 6px 8px; text-align: left; display: flex; flex-direction: column; justify-content: space-between; background: var(--white); font-size: 12px; }
+  .cal button.out { color: var(--mist); background: var(--snow); }
+  .cal button.sel { box-shadow: inset 0 0 0 2px var(--ink); }
+  .cal .dots { display: flex; gap: 3px; }
+  .cal .dots i { width: 7px; height: 7px; background: var(--wax); } .cal .dots i.d { background: var(--pine); }
+  .map { position: relative; background: #e9eef2; border: 1px solid var(--frost); }
+  .map svg { width: 100%; height: 260px; display: block; }
+  .theme-demo { border: 1px solid var(--frost); padding: 18px; display: grid; gap: 12px; transition: background .3s, color .3s; }
+  .theme-demo.dark { background: #0f1318; color: #e6ebf1; border-color: #232a33; }
+  .theme-demo.dark .card { background: #171c23; border-color: #232a33; color: #e6ebf1; }
+  .theme-demo.compact .card { padding: 10px 12px; }
+  .swatches { display: flex; gap: 8px; } .swatches button { width: 28px; height: 28px; border: 2px solid transparent; } .swatches button[aria-pressed="true"] { border-color: var(--ink); }
+  .meter { height: 8px; background: var(--frost); position: relative; }
+  .meter i { position: absolute; inset: 0 auto 0 0; background: var(--pine); transition: width .6s var(--ease); }
+  .meter.due i { background: var(--wax); }
+  .inbox li { display: grid; grid-template-columns: 10px minmax(0,1fr) auto; gap: 12px; padding: 12px 16px; align-items: start; cursor: pointer; }
+  .inbox li.unread { background: #fbfcfd; } .inbox li .u { width: 8px; height: 8px; margin-top: 6px; background: var(--wax); }
+  .inbox li:not(.unread) .u { background: transparent; } .inbox li:not(.unread) .t { font-weight: 400; color: var(--slate); }
+  .phone { width: 340px; height: 640px; border: 10px solid var(--ink); background: var(--snow); margin: 0 auto; display: grid; grid-template-rows: auto minmax(0,1fr) auto; overflow: hidden; }
+  .phone .ph { padding: 14px 16px 8px; background: var(--white); }
+  .phone .pb { overflow-y: auto; padding: 14px 16px; display: grid; gap: 12px; align-content: start; }
+  .phone .tabs { display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1px solid var(--frost); background: var(--white); }
+  .phone .tabs button { padding: 10px 0 12px; font-size: 11px; color: var(--mist); display: grid; justify-items: center; gap: 4px; }
+  .phone .tabs button i { width: 18px; height: 3px; background: transparent; }
+  .phone .tabs button[aria-selected="true"] { color: var(--ink); font-weight: 600; } .phone .tabs button[aria-selected="true"] i { background: var(--wax); }
+  .swipe { display: grid; grid-auto-flow: column; grid-auto-columns: 85%; gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory; }
+  .swipe > * { scroll-snap-align: start; }
+
+  @media (max-width: 900px) {
+    .shell { grid-template-columns: 1fr; }
+    .index { position: static; height: auto; }
+    .stage { padding: 16px; }
+  }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="shell">
+  <nav class="index" aria-label="Concepts">
+    <h1>Dashboard concepts</h1>
+    <p>Twenty interactive overview concepts for your customer dashboard. Sample data based on order #1001. Everything is clickable.</p>
+    <div id="indexList"></div>
+  </nav>
+
+  <main class="stage">
+    <div class="stage-head">
+      <div>
+        <h2 id="cTitle"></h2>
+        <p id="cDesc"></p>
+      </div>
+      <div class="seg" role="group" aria-label="Preview width">
+        <button type="button" data-w="desktop" aria-pressed="true">Desktop</button>
+        <button type="button" data-w="mobile" aria-pressed="false">Mobile</button>
+      </div>
+    </div>
+
+    <div class="frame" id="frame">
+      <div class="topbar"><span class="brand">Your store</span><span class="cartpill">Cart <b id="cart">0</b></span></div>
+      <div class="dash">
+        <div class="dnav">
+          <div class="who"><span class="av">GT</span><span>Grant test</span></div>
+          <div class="on">Overview</div><div>My Orders</div><div>Order Tracking</div><div>My Profile</div><div>Saved Addresses</div><div>Continue Shopping</div><div>Log Out</div>
+        </div>
+        <div class="mnav">Overview <span>▾</span></div>
+        <div class="view" id="view"></div>
+      </div>
+    </div>
+    <p class="note" id="cNote"></p>
+  </main>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+/* ---------- Sample data (preview only) ---------- */
+const ORDERS = [
+  { id: '1001', date: '2026-10-11', total: 32.95, items: [['Selling Plans Ski Wax', 24.95, 1, 'p1']], status: 'delivered', pay: 'Paid', carrier: 'UPS', tracking: '1Z999AA10123456784' },
+  { id: '0998', date: '2026-09-02', total: 148.0, items: [['Merino base layer', 89, 1, 'p2'], ['Wool beanie', 29, 2, 'p6']], status: 'delivered', pay: 'Paid', carrier: 'USPS', tracking: '9400111899223344556677' },
+  { id: '0991', date: '2026-07-19', total: 64.5, items: [['Edge tuner', 39.5, 1, 'p3'], ['Wax scraper', 12.5, 2, 'p4']], status: 'delivered', pay: 'Paid', carrier: 'UPS', tracking: '1Z999AA10123450001' },
+  { id: '0987', date: '2026-06-03', total: 24.95, items: [['Selling Plans Ski Wax', 24.95, 1, 'p1']], status: 'delivered', pay: 'Paid', carrier: 'UPS', tracking: '1Z999AA10123450002' },
+  { id: '1004', date: '2026-10-15', total: 212.0, items: [['Storm goggle lens', 120, 1, 'p5'], ['Merino base layer', 89, 1, 'p2']], status: 'transit', pay: 'Paid', carrier: 'FedEx', tracking: '771234567890' },
+  { id: '1006', date: '2026-10-18', total: 49.9, items: [['Selling Plans Ski Wax', 24.95, 2, 'p1']], status: 'preparing', pay: 'Paid', carrier: null, tracking: null },
+].sort((a, b) => b.date.localeCompare(a.date));
+const STATUS = { delivered: ['Delivered', 'ok'], transit: ['In transit', 'info'], preparing: ['Preparing', 'go'], cancelled: ['Cancelled', 'bad'] };
+const money = (n) => '$' + n.toFixed(2);
+const fmtDate = (d, opt = { month: 'short', day: 'numeric' }) => new Date(d + 'T12:00:00').toLocaleDateString('en-US', opt);
+const badge = (s) => `<span class="badge ${STATUS[s][1]}">${STATUS[s][0]}</span>`;
+const thumb = (cls, size = 48) => `<span class="thumb ${cls}" style="width:${size}px;height:${size}px"></span>`;
+let cartCount = 0;
+const cartEl = document.getElementById('cart');
+function addToCart(n = 1, label = 'Added to cart') {
+  cartCount += n; cartEl.textContent = cartCount; cartEl.classList.add('bump');
+  setTimeout(() => cartEl.classList.remove('bump'), 350); toast(label);
+}
+let toastT;
+function toast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('on'), 2200); }
+function countUp(el, to, fmt = (v) => Math.round(v)) {
+  const from = 0, start = performance.now(), dur = 600;
+  const step = (now) => { const p = Math.min(1, (now - start) / dur), e = 1 - Math.pow(1 - p, 3); el.textContent = fmt(from + (to - from) * e); if (p < 1) requestAnimationFrame(step); };
+  requestAnimationFrame(step);
+}
+const greet = (sub = 'Here is what is happening with your orders.') => `<div style="display:grid;gap:8px"><p class="eyebrow">Customer since October 2026</p><h3 class="h-xl">Welcome back, Grant</h3><p class="muted">${sub}</p></div>`;
+const $ = (sel, root = document) => root.querySelector(sel);
+const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
+
+/* ---------- Concepts ---------- */
+const C = [];
+
+/* 1 */ C.push({ group: 'Redesigned', name: 'Order journey trail', desc: 'Your latest order drawn as a trail with checkpoints. Tap a checkpoint to see when and where it happened.', note: 'Uses Shopify fulfillment status, dates and tracking. Checkpoints only show stages Shopify reports.', render(v) {
+  const o = ORDERS.find((x) => x.status === 'transit');
+  const cps = [['Ordered', 'Oct 15 · 9:12 am', 'Order placed and paid.'], ['Packed', 'Oct 16 · 2:40 pm', 'Packed at Shop location.'], ['Shipped', 'Oct 16 · 6:05 pm', 'Handed to FedEx · 771234567890'], ['Out for delivery', 'Expected Oct 19', 'Not reached yet.'], ['Delivered', 'Expected Oct 19', 'Not reached yet.']];
+  const pts = [[2, 92], [24, 70], [50, 58], [76, 36], [98, 12]];
+  v.innerHTML = `${greet('Your next order arrives Sunday.')}
+  <div class="card" style="display:grid;gap:14px">
+    <div class="row between"><div class="row">${thumb(o.items[0][3])}<div><b>Order #${o.id} is in transit</b><div class="muted">${o.items.map((i) => i[0]).join(', ')}</div></div></div>${badge(o.status)}</div>
+    <div class="trail"><div class="trail-map"><svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+      <polyline points="${pts.map((p) => p.join(',')).join(' ')}" fill="none" stroke="#dde2e8" stroke-width="2.5" vector-effect="non-scaling-stroke"/>
+      <polyline points="${pts.slice(0, 3).map((p) => p.join(',')).join(' ')}" fill="none" stroke="#14181f" stroke-width="3" vector-effect="non-scaling-stroke"/>
+    </svg>${pts.map((p, i) => `<button type="button" class="cp ${i < 2 ? 'past' : i === 2 ? 'now' : ''}" data-i="${i}" style="left:${p[0]}%;top:${p[1]}%" aria-label="${cps[i][0]}"></button>`).join('')}</div>
+    <div class="trail-labels">${cps.map((c, i) => `<button type="button" data-i="${i}" aria-pressed="${i === 2}">${c[0]}</button>`).join('')}</div></div>
+    <div class="detail" id="cpd"></div>
+    <div class="row"><button class="btn" data-act="track">Track with FedEx</button><button class="btn ghost" data-act="view">View order</button></div>
+  </div>`;
+  const show = (i) => { $('#cpd', v).innerHTML = `<b>${cps[i][0]}</b><span class="mono muted">${cps[i][1]}</span><span>${cps[i][2]}</span>`; $$('.trail-labels button', v).forEach((b) => b.setAttribute('aria-pressed', b.dataset.i == i)); $$('.cp', v).forEach((g) => g.classList.toggle('sel', g.dataset.i == i)); };
+  v.addEventListener('click', (e) => { const t = e.target.closest('[data-i]'); if (t) show(+t.dataset.i); const a = e.target.closest('[data-act]'); if (a) toast(a.dataset.act === 'track' ? 'Opening FedEx tracking' : 'Opening order #1004'); });
+  show(2);
+}});
+
+/* 2 */ C.push({ group: 'Redesigned', name: 'Live summary strip', desc: 'One strip of numbers with a period switch. Counts and spend recalculate as you change the period.', note: 'All numbers are calculated from the customer’s own Shopify orders.', render(v) {
+  v.innerHTML = `${greet()}
+  <div class="row between"><h3 class="h-m">Your activity</h3><div class="seg" role="group" aria-label="Period"><button data-p="30" aria-pressed="true">30 days</button><button data-p="180" aria-pressed="false">6 months</button><button data-p="9999" aria-pressed="false">All time</button></div></div>
+  <div class="card pad0"><div class="kpi-strip"><div><span class="muted">Orders</span><span class="num" data-k="orders">0</span></div><div><span class="muted">On the way</span><span class="num" data-k="way">0</span></div><div><span class="muted">Delivered</span><span class="num" data-k="done">0</span></div><div><span class="muted">Spent</span><span class="num" data-k="spent">$0</span></div></div></div>
+  <div class="card pad0"><ul class="list" id="mini"></ul></div>`;
+  const calc = (days) => {
+    const cut = new Date('2026-10-19'); cut.setDate(cut.getDate() - days);
+    const list = ORDERS.filter((o) => new Date(o.date) >= cut);
+    countUp($('[data-k=orders]', v), list.length); countUp($('[data-k=way]', v), list.filter((o) => o.status !== 'delivered').length);
+    countUp($('[data-k=done]', v), list.filter((o) => o.status === 'delivered').length);
+    countUp($('[data-k=spent]', v), list.reduce((s, o) => s + o.total, 0), (x) => '$' + x.toFixed(2));
+    $('#mini', v).innerHTML = list.slice(0, 4).map((o) => `<li><button class="orow">${thumb(o.items[0][3], 36)}<span><b class="mono">#${o.id}</b> <span class="muted">· ${fmtDate(o.date)}</span></span><span class="hide-m">${money(o.total)}</span>${badge(o.status)}</button></li>`).join('') || '<li style="padding:16px" class="muted">No orders in this period.</li>';
+  };
+  v.addEventListener('click', (e) => { const b = e.target.closest('[data-p]'); if (!b) return; $$('[data-p]', v).forEach((x) => x.setAttribute('aria-pressed', x === b)); calc(+b.dataset.p); });
+  calc(30);
+}});
+
+/* 3 */ C.push({ group: 'Redesigned', name: 'Latest order spotlight', desc: 'A rich card for the newest order. Pick an item to inspect it, open tracking details, copy the number.', note: 'Line items, variants and tracking come from the Customer Account API order query.', render(v) {
+  const o = ORDERS[0];
+  v.innerHTML = `${greet()}
+  <div class="card" style="display:grid;gap:16px">
+    <div class="row between"><div><span class="mist">Latest order</span><div class="num" style="font-size:24px">#${o.id}</div></div>${badge(o.status)}</div>
+    <div class="row" style="align-items:flex-start;gap:18px">
+      <div class="thumb ${o.items[0][3]}" id="big" style="width:120px;height:120px"></div>
+      <div class="grow" style="display:grid;gap:8px"><b id="iname"></b><span class="muted" id="iprice"></span>
+        <div class="thumbs">${o.items.map((it, i) => `<button aria-pressed="${i === 0}" data-it="${i}" aria-label="${it[0]}">${thumb(it[3], 40)}</button>`).join('')}</div>
+        <div class="row"><button class="btn wax" data-act="again">Buy again</button><span class="mist">Placed ${fmtDate(o.date, { month: 'long', day: 'numeric' })} · ${money(o.total)}</span></div></div>
+    </div>
+    <div class="acc" id="acc"><button aria-expanded="false">Shipping details <span>+</span></button><div class="body"><div style="display:grid;gap:8px;padding-bottom:6px">
+      <span class="muted">Preparing your order. Tracking will appear here once it ships.</span>
+      <span>Ships to Grant Test, Phoenix AZ 85144</span></div></div></div>
+  </div>`;
+  const pick = (i) => { const it = o.items[i]; $('#big', v).className = 'thumb ' + it[3]; $('#iname', v).textContent = it[0]; $('#iprice', v).textContent = `${money(it[1])} × ${it[2]}`; $$('[data-it]', v).forEach((b) => b.setAttribute('aria-pressed', b.dataset.it == i)); };
+  v.addEventListener('click', (e) => {
+    const t = e.target.closest('[data-it]'); if (t) pick(+t.dataset.it);
+    if (e.target.closest('#acc > button')) { const a = $('#acc', v); a.classList.toggle('open'); a.firstElementChild.setAttribute('aria-expanded', a.classList.contains('open')); a.firstElementChild.lastElementChild.textContent = a.classList.contains('open') ? '−' : '+'; }
+    if (e.target.closest('[data-act=again]')) addToCart(o.items.reduce((s, i) => s + i[2], 0), 'Order items added to cart');
+  });
+  pick(0);
+}});
+
+/* 4 */ C.push({ group: 'Redesigned', name: 'Filter and find', desc: 'Status chips double as filters, with instant search by order number or product.', note: 'Search uses the API’s order_number filter; product search would match line item titles.', render(v) {
+  v.innerHTML = `${greet()}
+  <div class="chips" role="group" aria-label="Filter orders">${[['all', 'All'], ['preparing', 'Preparing'], ['transit', 'On the way'], ['delivered', 'Delivered']].map(([k, l], i) => `<button class="chip" data-f="${k}" aria-pressed="${i === 0}">${l} <b>${k === 'all' ? ORDERS.length : ORDERS.filter((o) => o.status === k).length}</b></button>`).join('')}</div>
+  <label class="search"><span class="mist">Search</span><input id="q" placeholder="Order number or product, e.g. wax" autocomplete="off"></label>
+  <div class="card pad0"><ul class="list" id="res"></ul></div>`;
+  let f = 'all';
+  const run = () => { const q = $('#q', v).value.toLowerCase().trim(); const list = ORDERS.filter((o) => (f === 'all' || o.status === f) && (!q || o.id.includes(q.replace('#', '')) || o.items.some((i) => i[0].toLowerCase().includes(q))));
+    $('#res', v).innerHTML = list.map((o) => `<li><button class="orow">${thumb(o.items[0][3], 36)}<span><b class="mono">#${o.id}</b><br><span class="muted">${o.items.map((i) => i[0]).join(', ')}</span></span><span class="hide-m">${money(o.total)}</span>${badge(o.status)}</button></li>`).join('') || '<li style="padding:18px" class="muted">No orders match. Try another number or product.</li>'; };
+  v.addEventListener('click', (e) => { const b = e.target.closest('[data-f]'); if (!b) return; f = b.dataset.f; $$('[data-f]', v).forEach((x) => x.setAttribute('aria-pressed', x === b)); run(); });
+  v.addEventListener('input', run); run();
+}});
+
+/* 5 */ C.push({ group: 'Redesigned', name: 'Spending explorer', desc: 'Hover or tap a month to see what you spent. Switch between spend and number of orders.', note: 'Calculated from order totals and dates. No extra data stored.', render(v) {
+  const months = ['Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct'];
+  const spend = [0, 0, 0, 0, 0, 0, 0, 24.95, 64.5, 0, 148, 294.85], count = [0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 3];
+  v.innerHTML = `${greet()}
+  <div class="card" style="display:grid;gap:12px">
+    <div class="row between"><div><span class="muted">Last 12 months</span><div class="num" style="font-size:30px" id="tot"></div></div><div class="seg"><button data-m="spend" aria-pressed="true">Spend</button><button data-m="count" aria-pressed="false">Orders</button></div></div>
+    <div style="position:relative"><div class="tip" id="tip" hidden></div><div class="chart" id="ch">${months.map((m, i) => `<button data-i="${i}" aria-label="${m}" class="${i === 11 ? 'cur' : ''}"></button>`).join('')}</div><div class="chart-x">${months.map((m) => `<span>${m}</span>`).join('')}</div></div>
+    <div class="row" style="gap:28px"><div><span class="mist">Average order</span><div class="num">$88.72</div></div><div><span class="mist">Most bought</span><div><b>Selling Plans Ski Wax</b></div></div></div>
+  </div>`;
+  let mode = 'spend';
+  const draw = () => { const data = mode === 'spend' ? spend : count, max = Math.max(...data); $$('#ch button', v).forEach((b, i) => (b.style.height = Math.max(2, (data[i] / max) * 100) + '%')); $('#tot', v).textContent = mode === 'spend' ? money(spend.reduce((a, b) => a + b)) : count.reduce((a, b) => a + b) + ' orders'; };
+  const ch = $('#ch', v), tip = $('#tip', v);
+  const hover = (b) => { if (!b) { tip.hidden = true; return; } const i = +b.dataset.i, d = mode === 'spend' ? money(spend[i]) : count[i] + ' order' + (count[i] === 1 ? '' : 's'); tip.hidden = false; tip.textContent = `${months[i]} · ${d}`; tip.style.left = b.offsetLeft + b.offsetWidth / 2 + 'px'; $$('#ch button', v).forEach((x) => x.classList.toggle('sel', x === b)); };
+  ch.addEventListener('mouseover', (e) => hover(e.target.closest('button'))); ch.addEventListener('focusin', (e) => hover(e.target.closest('button'))); ch.addEventListener('click', (e) => hover(e.target.closest('button')));
+  ch.addEventListener('mouseleave', () => hover(null));
+  v.addEventListener('click', (e) => { const b = e.target.closest('[data-m]'); if (!b) return; mode = b.dataset.m; $$('[data-m]', v).forEach((x) => x.setAttribute('aria-pressed', x === b)); draw(); });
+  draw();
+}});
+
+/* 6 */ C.push({ group: 'Redesigned', name: 'First-order welcome', desc: 'For customers with one order: a short setup path instead of empty statistics. Steps tick off as you go.', note: 'Shown while a customer has 0–1 orders. Steps reflect real account state (address, email preference).', render(v) {
+  const steps = [['Your first order arrived', 'Order #1001 · Delivered Oct 14', true], ['Save a default address', 'Checkout fills it in for you', false], ['Choose email updates', 'Restocks and new arrivals', false]];
+  v.innerHTML = `<div class="card" style="display:grid;gap:18px;padding:28px"><p class="eyebrow">Welcome to your account</p><h3 class="h-xl">Good to have you, Grant</h3><p class="muted" style="max-width:52ch">Three quick things and your account is ready for the season.</p>
+  <div class="stepper" id="st">${steps.map((s, i) => `<div class="${s[2] ? 'done' : ''}"><span class="k">${s[2] ? 'Done' : 'Step ' + (i + 1)}</span><b>${s[0]}</b><span class="muted">${s[1]}</span>${s[2] ? '' : `<button class="btn ghost" data-s="${i}" style="justify-self:start">${i === 1 ? 'Add address' : 'Turn on'}</button>`}</div>`).join('')}</div>
+  <div class="meter"><i id="m" style="width:33%"></i></div><span class="mist" id="ml">1 of 3 done</span></div>`;
+  let done = 1;
+  v.addEventListener('click', (e) => { const b = e.target.closest('[data-s]'); if (!b) return; const cell = b.parentElement; cell.classList.add('done'); cell.querySelector('.k').textContent = 'Done'; b.remove(); done++; $('#m', v).style.width = (done / 3) * 100 + '%'; $('#ml', v).textContent = done === 3 ? 'All set. Enjoy the season.' : `${done} of 3 done`; toast(done === 3 ? 'Account ready' : 'Saved'); });
+}});
+
+/* 7 */ C.push({ group: 'Redesigned', name: 'Buy-again shelf', desc: 'A swipeable shelf of things you bought before. Set a quantity and add straight to the cart. Watch the cart in the top bar.', note: 'Uses variant IDs from past orders and Shopify’s storefront cart. Sold-out items say so.', render(v) {
+  const seen = new Map(); ORDERS.forEach((o) => o.items.forEach((i) => seen.has(i[0]) || seen.set(i[0], i)));
+  const items = [...seen.values()];
+  v.innerHTML = `${greet('Restock before your next trip.')}
+  <div class="row between"><h3 class="h-m">Buy it again</h3><span class="mist">Scroll sideways</span></div>
+  <div class="shelf">${items.map((it, i) => `<div class="prod"><div class="img ${it[3]}"></div><div class="in"><b>${it[0]}</b><span class="muted">${money(it[1])}</span>${i === 3 ? '<span class="badge bad">Sold out</span>' : `<div class="row between"><span class="qty"><button data-d="-1" data-i="${i}" aria-label="Fewer">−</button><span id="q${i}">1</span><button data-d="1" data-i="${i}" aria-label="More">+</button></span><button class="btn" data-add="${i}">Add</button></div>`}</div></div>`).join('')}</div>`;
+  const q = items.map(() => 1);
+  v.addEventListener('click', (e) => { const d = e.target.closest('[data-d]'); if (d) { const i = +d.dataset.i; q[i] = Math.max(1, Math.min(9, q[i] + +d.dataset.d)); $('#q' + i, v).textContent = q[i]; } const a = e.target.closest('[data-add]'); if (a) addToCart(q[+a.dataset.add], `${items[+a.dataset.add][0]} × ${q[+a.dataset.add]} added to cart`); });
+}});
+
+/* 8 */ C.push({ group: 'Redesigned', name: 'Credit wallet', desc: 'Store credit as a wallet card. Open the history, and see how it applies at checkout.', note: 'Balance and history come from storeCreditAccounts (balance, transactions). Shown only when a balance exists.', render(v) {
+  v.innerHTML = `${greet()}
+  <div class="wallet"><div class="row between"><span style="color:#9aa4b2">Store credit</span><span class="mono" style="color:#9aa4b2">USD</span></div><div class="num" style="font-size:48px" id="bal">$0.00</div>
+    <div class="row between"><span style="color:#c9d1db">Applied automatically at checkout</span><button class="btn wax" data-act="shop">Use it now</button></div></div>
+  <div class="card" style="display:grid;gap:4px"><div class="acc open" id="hist"><button aria-expanded="true">Credit history <span>−</span></button><div class="body"><div><ul class="list">
+    <li class="row between" style="padding:10px 0"><span>Refund for order #0991 <span class="mist">· Jul 28</span></span><b style="color:var(--pine)">+$12.50</b></li>
+    <li class="row between" style="padding:10px 0"><span>Gift from Your store <span class="mist">· Aug 01</span></span><b style="color:var(--pine)">+$20.00</b></li>
+    <li class="row between" style="padding:10px 0"><span>Used on order #0998 <span class="mist">· Sep 02</span></span><b>−$7.50</b></li></ul></div></div></div></div>`;
+  countUp($('#bal', v), 25, (x) => '$' + x.toFixed(2));
+  v.addEventListener('click', (e) => { if (e.target.closest('[data-act=shop]')) toast('Opening the store'); const h = e.target.closest('#hist > button'); if (h) { const a = h.parentElement; a.classList.toggle('open'); h.setAttribute('aria-expanded', a.classList.contains('open')); h.lastElementChild.textContent = a.classList.contains('open') ? '−' : '+'; } });
+}});
+
+/* 9 */ C.push({ group: 'Redesigned', name: 'Account health', desc: 'A progress ring with real to-dos. Tick items and the ring fills.', note: 'Items come from account data: default address, email preference, saved phone, open shipments.', render(v) {
+  const todos = [['Place your first order', true], ['Add a default shipping address', false], ['Add a phone number for delivery updates', false], ['Turn on restock emails', false]];
+  v.innerHTML = `${greet()}<div class="card row" style="gap:28px;align-items:flex-start">
+    <div style="display:grid;justify-items:center;gap:6px"><svg class="ring" viewBox="0 0 100 100" aria-hidden="true"><circle class="track" cx="50" cy="50" r="42"/><circle class="val" id="rv" cx="50" cy="50" r="42" stroke-dasharray="263.9" stroke-dashoffset="263.9"/></svg><b class="num" id="pct" style="font-size:22px">0%</b><span class="mist">complete</span></div>
+    <div class="grow">${todos.map((t, i) => `<button class="todo" role="checkbox" aria-checked="${t[1]}" data-t="${i}"><span class="box">✓</span><span class="t grow">${t[0]}</span><span class="mist">${t[1] ? 'Done' : 'To do'}</span></button>`).join('')}</div></div>`;
+  const upd = () => { const n = $$('.todo', v).filter((t) => t.getAttribute('aria-checked') === 'true').length, p = n / todos.length; $('#rv', v).style.strokeDashoffset = 263.9 * (1 - p); $('#pct', v).textContent = Math.round(p * 100) + '%'; };
+  v.addEventListener('click', (e) => { const t = e.target.closest('.todo'); if (!t) return; const on = t.getAttribute('aria-checked') !== 'true'; t.setAttribute('aria-checked', on); t.lastElementChild.textContent = on ? 'Done' : 'To do'; upd(); });
+  requestAnimationFrame(upd);
+}});
+
+/* 10 */ C.push({ group: 'Redesigned', name: 'Activity feed', desc: 'Everything that happened, newest first. Filter by type and open any entry for details.', note: 'Built from order, fulfillment and account timestamps in Shopify.', render(v) {
+  const ev = [['ship', 'go', 'Order #1006 is being prepared', 'Oct 18 · 4:02 pm', '2 × Selling Plans Ski Wax. You will get tracking when it ships.'], ['ship', 'info', 'Order #1004 shipped with FedEx', 'Oct 16 · 6:05 pm', 'Tracking 771234567890 · Expected Oct 19.'], ['order', '', 'Order #1004 placed', 'Oct 15 · 9:12 am', 'Storm goggle lens, Merino base layer · $212.00'], ['ship', 'ok', 'Order #1001 delivered', 'Oct 14 · 2:12 pm', 'Left at front door.'], ['account', '', 'Default address updated', 'Oct 12 · 8:30 pm', '410 Spadina Ave, Toronto ON'], ['order', '', 'Order #1001 placed', 'Oct 11 · 10:34 pm', 'Selling Plans Ski Wax · $32.95']];
+  v.innerHTML = `${greet()}<div class="card" style="display:grid;gap:14px"><div class="row between"><h3 class="h-m">Recent activity</h3><div class="seg" role="group" aria-label="Filter">${[['all', 'All'], ['order', 'Orders'], ['ship', 'Shipping'], ['account', 'Account']].map((f, i) => `<button data-f="${f[0]}" aria-pressed="${i === 0}">${f[1]}</button>`).join('')}</div></div><ul class="list feed" id="fd" style="padding-top:4px"></ul></div>`;
+  const draw = (f) => { $('#fd', v).innerHTML = ev.filter((x) => f === 'all' || x[0] === f).map((x) => `<li style="border:0"><span class="dot ${x[1]}"></span><button class="item"><b>${x[2]}</b><span class="mist mono">${x[3]}</span></button><div class="more">${x[4]}</div></li>`).join(''); };
+  v.addEventListener('click', (e) => { const b = e.target.closest('[data-f]'); if (b) { $$('[data-f]', v).forEach((x) => x.setAttribute('aria-pressed', x === b)); draw(b.dataset.f); } const it = e.target.closest('.item'); if (it) it.parentElement.classList.toggle('open'); });
+  draw('all');
+}});
+
+/* 11 */ C.push({ group: 'New', name: 'Bento overview', desc: 'A mosaic of tiles sized by importance: the shipment on its way gets the biggest tile. Hover any tile.', note: 'Every tile is a summary of a real dashboard section and links into it.', render(v) {
+  v.innerHTML = `${greet()}<div class="bento">
+    <div class="tile t-2x2 dark"><div class="row between"><span style="color:#9aa4b2">On the way</span><span class="badge info">In transit</span></div><div><div class="num" style="font-size:34px">Arrives Sunday</div><div style="color:#c9d1db">Order #1004 · FedEx</div></div><div class="meter" style="background:#2a313b"><i style="width:60%;background:var(--wax)"></i></div></div>
+    <div class="tile waxy"><span>Store credit</span><span class="num" style="font-size:28px">$25.00</span></div>
+    <div class="tile"><span class="muted">Orders this season</span><span class="num" style="font-size:28px">6</span></div>
+    <div class="tile t-2x1"><span class="muted">Spending · 12 months</span><svg class="spark" viewBox="0 0 120 30" preserveAspectRatio="none"><polyline points="0,29 40,29 60,26 70,22 80,29 95,14 110,6 120,2" fill="none" stroke="#14181f" stroke-width="1.5"/></svg><span class="num">$531.40</span></div>
+    <div class="tile"><span class="muted">Default address</span><b>Toronto, ON</b></div>
+    <div class="tile"><span class="muted">Buy again</span><div class="row">${thumb('p1', 30)}${thumb('p2', 30)}${thumb('p5', 30)}</div></div>
+    <div class="tile t-2x1"><span class="muted">Latest delivered</span><div class="row">${thumb('p1', 36)}<div class="grow"><b>Order #1001</b><div class="mist">Delivered Oct 14</div></div><button class="btn ghost" data-act="again">Buy again</button></div></div>
+  </div>`;
+  v.addEventListener('click', (e) => { if (e.target.closest('[data-act=again]')) addToCart(1); });
+}});
+
+/* 12 */ C.push({ group: 'New', name: 'Command search', desc: 'Type to jump anywhere: an order, a product to rebuy, or an action. Use arrow keys and Enter.', note: 'Searches the customer’s own orders and dashboard actions. Press / to focus.', render(v) {
+  const entries = [...ORDERS.map((o) => ['Orders', `#${o.id} · ${o.items[0][0]}`, STATUS[o.status][0], 'Opening order #' + o.id]), ['Products', 'Selling Plans Ski Wax', 'Add to cart', 'cart'], ['Products', 'Merino base layer', 'Add to cart', 'cart'], ['Actions', 'Track my latest shipment', 'Tracking', 'Opening tracking'], ['Actions', 'Add a new address', 'Addresses', 'Opening address form'], ['Actions', 'Change my name', 'Profile', 'Opening profile']];
+  v.innerHTML = `${greet('What do you need? Search instead of browsing.')}<div class="palette"><label class="search"><span class="mist">⌕</span><input id="cq" placeholder="Search orders, products, or actions" autocomplete="off"><span class="kbd">/</span></label><div class="pres" id="cr" role="listbox"></div><div class="row between" style="padding:8px 16px;border-top:1px solid var(--frost)"><span class="mist"><span class="kbd">↑</span> <span class="kbd">↓</span> to move · <span class="kbd">Enter</span> to open</span><span class="mist" id="cc"></span></div></div>`;
+  let act = 0, list = [];
+  const draw = () => { const q = $('#cq', v).value.toLowerCase(); list = entries.filter((e) => !q || e[1].toLowerCase().includes(q) || e[0].toLowerCase().includes(q)); act = Math.min(act, Math.max(0, list.length - 1)); let g = ''; $('#cr', v).innerHTML = list.map((e, i) => { const h = e[0] !== g ? `<div class="grp">${(g = e[0])}</div>` : ''; return `${h}<button role="option" data-r="${i}" class="${i === act ? 'act' : ''}"><span class="grow">${e[1]}</span><span class="mist">${e[2]}</span></button>`; }).join('') || '<div style="padding:16px" class="muted">Nothing found. Try an order number like 1001.</div>'; $('#cc', v).textContent = list.length + ' results'; };
+  const go = (i) => { const e = list[i]; if (!e) return; e[3] === 'cart' ? addToCart(1, e[1] + ' added to cart') : toast(e[3]); };
+  $('#cq', v).addEventListener('input', () => { act = 0; draw(); });
+  $('#cq', v).addEventListener('keydown', (e) => { if (e.key === 'ArrowDown') { act = Math.min(list.length - 1, act + 1); draw(); e.preventDefault(); } if (e.key === 'ArrowUp') { act = Math.max(0, act - 1); draw(); e.preventDefault(); } if (e.key === 'Enter') go(act); });
+  v.addEventListener('click', (e) => { const r = e.target.closest('[data-r]'); if (r) go(+r.dataset.r); });
+  draw(); setTimeout(() => $('#cq', v).focus({ preventScroll: true }), 300);
+}});
+
+/* 13 */ C.push({ group: 'New', name: 'Split inbox', desc: 'Orders on the left, details on the right, like an email app. Click or use arrow keys to move through orders.', note: 'Same order data as My Orders, without leaving the overview.', render(v) {
+  v.innerHTML = `<div class="split"><div class="lst" role="listbox" tabindex="0" aria-label="Orders">${ORDERS.map((o, i) => `<button role="option" data-o="${i}" aria-selected="${i === 0}"><span class="row between"><b class="mono">#${o.id}</b>${badge(o.status)}</span><span class="mist">${fmtDate(o.date)} · ${money(o.total)}</span></button>`).join('')}</div><div id="od" style="padding:22px;display:grid;gap:16px;align-content:start"></div></div>`;
+  let cur = 0;
+  const show = (i) => { cur = i; const o = ORDERS[i]; $$('[data-o]', v).forEach((b) => b.setAttribute('aria-selected', b.dataset.o == i)); $('#od', v).innerHTML = `<div class="row between"><div><span class="mist">Order</span><div class="num" style="font-size:30px">#${o.id}</div><span class="muted">${fmtDate(o.date, { month: 'long', day: 'numeric', year: 'numeric' })}</span></div>${badge(o.status)}</div>${o.items.map((it) => `<div class="row">${thumb(it[3])}<div class="grow"><b>${it[0]}</b><div class="mist">${money(it[1])} × ${it[2]}</div></div><b>${money(it[1] * it[2])}</b></div>`).join('')}<div class="row between" style="border-top:1px solid var(--frost);padding-top:12px"><span class="muted">Total</span><b class="num" style="font-size:20px">${money(o.total)}</b></div>${o.tracking ? `<div class="detail"><span class="mist">${o.carrier}</span><span class="mono">${o.tracking}</span></div>` : '<div class="detail muted">Tracking appears once it ships.</div>'}<div class="row"><button class="btn" data-act="again">Buy again</button><button class="btn ghost" data-act="print">Print</button></div>`; };
+  v.addEventListener('click', (e) => { const b = e.target.closest('[data-o]'); if (b) show(+b.dataset.o); if (e.target.closest('[data-act=again]')) addToCart(ORDERS[cur].items.reduce((s, i) => s + i[2], 0), 'Order items added to cart'); if (e.target.closest('[data-act=print]')) toast('Opening print view'); });
+  $('.lst', v).addEventListener('keydown', (e) => { if (e.key === 'ArrowDown') { show(Math.min(ORDERS.length - 1, cur + 1)); e.preventDefault(); } if (e.key === 'ArrowUp') { show(Math.max(0, cur - 1)); e.preventDefault(); } });
+  show(0);
+}});
+
+/* 14 */ C.push({ group: 'New', name: 'Order board', desc: 'Your orders sorted into columns by stage, like a board. Click a card to highlight it.', note: 'Columns map to Shopify fulfillment and shipment status. Read-only: customers can’t move orders.', render(v) {
+  const cols = [['preparing', 'Preparing'], ['transit', 'On the way'], ['delivered', 'Delivered']];
+  v.innerHTML = `${greet()}<div class="board" style="grid-template-columns:repeat(3,minmax(190px,1fr))">${cols.map(([k, l]) => { const list = ORDERS.filter((o) => o.status === k); return `<div class="col"><h4>${l}<span class="mono">${list.length}</span></h4>${list.map((o) => `<button class="kcard" data-k="${o.id}"><span class="row between"><b class="mono">#${o.id}</b><span class="mist">${fmtDate(o.date)}</span></span><span class="row">${o.items.map((i) => thumb(i[3], 26)).join('')}</span><span class="muted">${money(o.total)}</span></button>`).join('') || '<span class="mist">Nothing here</span>'}</div>`; }).join('')}</div><div class="detail" id="kd">Select an order to see a summary.</div>`;
+  v.addEventListener('click', (e) => { const c = e.target.closest('[data-k]'); if (!c) return; $$('.kcard', v).forEach((x) => x.classList.toggle('sel', x === c)); const o = ORDERS.find((x) => x.id === c.dataset.k); $('#kd', v).innerHTML = `<b>Order #${o.id}</b><span>${o.items.map((i) => `${i[0]} × ${i[2]}`).join(', ')}</span><span class="mist">${o.tracking ? o.carrier + ' · ' + o.tracking : 'Tracking appears once it ships.'}</span>`; });
+}});
+
+/* 15 */ C.push({ group: 'New', name: 'Season calendar', desc: 'A month view with orders and deliveries as markers. Click a day to see what happened.', note: 'Markers come from order dates and Shopify delivery or estimated delivery dates.', render(v) {
+  const events = { 11: [['o', 'Order #1001 placed']], 14: [['d', 'Order #1001 delivered']], 15: [['o', 'Order #1004 placed']], 16: [['o', 'Order #1004 shipped']], 18: [['o', 'Order #1006 placed']], 19: [['d', 'Order #1004 expected']] };
+  let cells = ''; const first = new Date(2026, 9, 1).getDay();
+  for (let i = 0; i < first; i++) cells += `<button class="out" disabled>${30 - first + i + 1}</button>`;
+  for (let d = 1; d <= 31; d++) cells += `<button data-d="${d}" class="${d === 19 ? 'sel' : ''}"><span>${d}</span><span class="dots">${(events[d] || []).map((e) => `<i class="${e[0] === 'd' ? 'd' : ''}"></i>`).join('')}</span></button>`;
+  v.innerHTML = `${greet()}<div class="card" style="display:grid;gap:12px"><div class="row between"><h3 class="h-m">October 2026</h3><span class="row mist"><span class="row" style="gap:4px"><i style="width:8px;height:8px;background:var(--wax);display:inline-block"></i>Order</span><span class="row" style="gap:4px"><i style="width:8px;height:8px;background:var(--pine);display:inline-block"></i>Delivery</span></span></div><div class="cal">${['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((d) => `<span class="dow">${d}</span>`).join('')}${cells}</div><div class="detail" id="cd"></div></div>`;
+  const show = (d) => { $$('[data-d]', v).forEach((b) => b.classList.toggle('sel', b.dataset.d == d)); const e = events[d]; $('#cd', v).innerHTML = `<b>October ${d}</b>${e ? e.map((x) => `<span>${x[1]}</span>`).join('') : '<span class="muted">Nothing on this day.</span>'}`; };
+  v.addEventListener('click', (e) => { const b = e.target.closest('[data-d]'); if (b) show(+b.dataset.d); }); show(19);
+}});
+
+/* 16 */ C.push({ group: 'New', name: 'Route tracker', desc: 'A stylised route from the warehouse to your door with the parcel moving along it. Replay the journey.', note: 'Positions are illustrative between Shopify checkpoints. Real carrier scans stay in the carrier’s tracking page.', render(v) {
+  v.innerHTML = `${greet()}<div class="card pad0"><div class="map"><svg viewBox="0 0 600 260" aria-label="Route from warehouse to your address">
+    <g stroke="#d3dae2" stroke-width="1">${Array.from({ length: 12 }, (_, i) => `<line x1="${i * 50}" y1="0" x2="${i * 50}" y2="260"/>`).join('')}${Array.from({ length: 6 }, (_, i) => `<line x1="0" y1="${i * 50}" x2="600" y2="${i * 50}"/>`).join('')}</g>
+    <path id="route" d="M60,200 C160,200 170,90 280,110 S420,210 540,60" fill="none" stroke="#14181f" stroke-width="3" stroke-dasharray="6 6"/>
+    <rect x="50" y="190" width="20" height="20" fill="#14181f"/><text x="48" y="232" font-size="12" fill="#5b6573">Warehouse</text>
+    <rect x="530" y="50" width="20" height="20" fill="#1e7a55"/><text x="500" y="40" font-size="12" fill="#5b6573">Your door</text>
+    <rect id="pkg" width="16" height="16" x="-8" y="-8" fill="#f2b705" stroke="#14181f" stroke-width="2"/></svg></div>
+    <div class="row between" style="padding:16px 20px"><div><b>Order #1004 · FedEx</b><div class="muted">60% of the way · Expected Sunday, Oct 19</div></div><button class="btn ghost" data-act="replay">Replay</button></div></div>`;
+  const path = $('#route', v), pkg = $('#pkg', v), L = path.getTotalLength();
+  const run = () => { const start = performance.now(); const tick = (now) => { const p = Math.min(1, (now - start) / 1800) * 0.6, pt = path.getPointAtLength(L * p); pkg.setAttribute('transform', `translate(${pt.x},${pt.y})`); if (p < 0.6) requestAnimationFrame(tick); }; requestAnimationFrame(tick); };
+  v.addEventListener('click', (e) => { if (e.target.closest('[data-act=replay]')) run(); }); run();
+}});
+
+/* 17 */ C.push({ group: 'New', name: 'Make it yours', desc: 'Customers pick light or dark mode, compact or comfortable spacing, and an accent. Preview updates live.', note: 'Saved per browser only (a convenience, not customer data).', render(v) {
+  v.innerHTML = `${greet()}<div class="card" style="display:grid;gap:14px"><div class="row" style="gap:24px"><div class="row"><span class="muted">Dark mode</span><button class="toggle" role="switch" aria-checked="false" id="dm" aria-label="Dark mode"></button></div><div class="row"><span class="muted">Compact</span><button class="toggle" role="switch" aria-checked="false" id="cm" aria-label="Compact spacing"></button></div><div class="row"><span class="muted">Accent</span><div class="swatches">${['#f2b705', '#1e7a55', '#1f5f99', '#b42318'].map((c, i) => `<button style="background:${c}" data-c="${c}" aria-pressed="${i === 0}" aria-label="Accent ${c}"></button>`).join('')}</div></div></div>
+  <div class="theme-demo" id="td"><div class="row between"><b class="num" style="font-size:22px">Overview</b><span class="badge" id="tb" style="background:var(--acc,#f2b705);color:#14181f">2 on the way</span></div><div class="card row between"><span>Order #1004</span><span class="mist">Arrives Sunday</span></div><div class="card row between"><span>Order #1006</span><span class="mist">Preparing</span></div><div class="meter"><i id="ti" style="width:60%;background:var(--acc,#f2b705)"></i></div></div></div>`;
+  const td = $('#td', v);
+  v.addEventListener('click', (e) => { const t = e.target.closest('.toggle'); if (t) { const on = t.getAttribute('aria-checked') !== 'true'; t.setAttribute('aria-checked', on); td.classList.toggle(t.id === 'dm' ? 'dark' : 'compact', on); } const s = e.target.closest('[data-c]'); if (s) { $$('[data-c]', v).forEach((x) => x.setAttribute('aria-pressed', x === s)); td.style.setProperty('--acc', s.dataset.c); } });
+}});
+
+/* 18 */ C.push({ group: 'New', name: 'Restock reminders', desc: 'For things you rebuy, see when you usually run out and reorder in one tap. Meters fill as the date gets closer.', note: 'Estimated from the gaps between past orders of the same product. No extra storage needed.', render(v) {
+  const rows = [['Selling Plans Ski Wax', 'p1', 'Every ~6 weeks', 0.92, 'Due in 3 days'], ['Wax scraper', 'p4', 'Every ~3 months', 0.55, 'In about 6 weeks'], ['Merino base layer', 'p2', 'Every ~1 year', 0.12, 'Next season']];
+  v.innerHTML = `${greet('Never start a ski day without wax.')}<div class="card pad0"><ul class="list">${rows.map((r, i) => `<li class="row" style="padding:16px 20px;gap:16px">${thumb(r[1])}<div class="grow" style="display:grid;gap:6px"><div class="row between"><b>${r[0]}</b><span class="mist">${r[2]}</span></div><div class="meter ${r[3] > 0.8 ? 'due' : ''}"><i data-w="${r[3]}" style="width:0"></i></div><span class="${r[3] > 0.8 ? '' : 'muted'}" style="${r[3] > 0.8 ? 'color:var(--wax-ink);font-weight:600' : ''}">${r[4]}</span></div><button class="btn ${r[3] > 0.8 ? 'wax' : 'ghost'}" data-r="${i}">Reorder</button></li>`).join('')}</ul></div>`;
+  requestAnimationFrame(() => $$('[data-w]', v).forEach((i) => (i.style.width = i.dataset.w * 100 + '%')));
+  v.addEventListener('click', (e) => { const b = e.target.closest('[data-r]'); if (b) addToCart(1, rows[+b.dataset.r][0] + ' added to cart'); });
+}});
+
+/* 19 */ C.push({ group: 'New', name: 'Updates inbox', desc: 'Shipping and account updates in an inbox. Unread items are marked; open one to mark it read.', note: 'Messages are generated from order and shipment events. Read state is kept per browser.', render(v) {
+  const msgs = [['Order #1004 is arriving Sunday', 'FedEx expects delivery on Oct 19 by end of day.', 'Oct 18', true], ['Order #1006 is being prepared', 'We’re packing 2 × Selling Plans Ski Wax.', 'Oct 18', true], ['Order #1004 shipped', 'Tracking 771234567890 with FedEx.', 'Oct 16', false], ['Order #1001 was delivered', 'Left at front door.', 'Oct 14', false]];
+  v.innerHTML = `${greet()}<div class="card pad0"><div class="row between" style="padding:14px 16px;border-bottom:1px solid var(--frost)"><h3 class="h-m">Updates <span class="badge go" id="uc"></span></h3><button class="link" data-act="all">Mark all as read</button></div><ul class="list inbox">${msgs.map((m, i) => `<li class="${m[3] ? 'unread' : ''}" data-m="${i}" tabindex="0"><span class="u"></span><div style="display:grid;gap:2px"><b class="t">${m[0]}</b><span class="mist">${m[1]}</span></div><span class="mist">${m[2]}</span></li>`).join('')}</ul></div>`;
+  const cnt = () => { const n = $$('li.unread', v).length; $('#uc', v).textContent = n ? n + ' new' : 'All read'; };
+  v.addEventListener('click', (e) => { const li = e.target.closest('[data-m]'); if (li) li.classList.remove('unread'); if (e.target.closest('[data-act=all]')) $$('li.unread', v).forEach((x) => x.classList.remove('unread')); cnt(); });
+  v.addEventListener('keydown', (e) => { if (e.key === 'Enter' && e.target.matches('[data-m]')) { e.target.classList.remove('unread'); cnt(); } });
+  cnt();
+}});
+
+/* 20 */ C.push({ group: 'New', name: 'App-style mobile', desc: 'Designed phone-first: a bottom tab bar and swipeable cards, like a native shopping app. Tap the tabs.', note: 'Same data and pages as the desktop dashboard, arranged for thumbs.', phone: true, render(v) {
+  const screens = {
+    home: `<p class="eyebrow">Hi Grant</p><b class="num" style="font-size:24px">2 orders on the way</b><div class="swipe">${ORDERS.filter((o) => o.status !== 'delivered').map((o) => `<div class="card" style="display:grid;gap:8px"><div class="row between"><b class="mono">#${o.id}</b>${badge(o.status)}</div><div class="row">${o.items.map((i) => thumb(i[3], 34)).join('')}</div><div class="meter"><i style="width:${o.status === 'transit' ? 60 : 20}%;background:var(--wax)"></i></div></div>`).join('')}</div><div class="card row between"><span>Store credit</span><b class="num">$25.00</b></div><div class="card" style="display:grid;gap:8px"><b>Buy again</b><div class="row">${thumb('p1', 44)}${thumb('p2', 44)}${thumb('p4', 44)}<button class="btn" data-act="add" style="margin-left:auto">Add wax</button></div></div>`,
+    orders: ORDERS.map((o) => `<div class="card row">${thumb(o.items[0][3], 36)}<div class="grow"><b class="mono">#${o.id}</b><div class="mist">${fmtDate(o.date)} · ${money(o.total)}</div></div>${badge(o.status)}</div>`).join(''),
+    track: `<div class="card" style="display:grid;gap:10px"><b>Order #1004 · FedEx</b><span class="mono mist">771234567890</span><div class="meter"><i style="width:60%;background:var(--wax)"></i></div><span>Arrives Sunday, Oct 19</span><button class="btn" data-act="track">Open FedEx</button></div>`,
+    me: `<div class="card" style="display:grid;gap:6px"><b>Grant test</b><span class="mist">grant@example.com</span></div><div class="card row between"><span>Saved addresses</span><b>1</b></div><div class="card row between"><span>Email updates</span><span class="toggle" role="switch" aria-checked="false"></span></div><button class="btn ghost">Log out</button>`,
+  };
+  v.innerHTML = `<div class="phone"><div class="ph row between"><b class="brand">Your store</b><span class="cartpill">Cart <b>${cartCount}</b></span></div><div class="pb" id="pb"></div><div class="tabs" role="tablist">${[['home', 'Home'], ['orders', 'Orders'], ['track', 'Track'], ['me', 'Account']].map(([k, l], i) => `<button role="tab" data-tab="${k}" aria-selected="${i === 0}"><i></i>${l}</button>`).join('')}</div></div>`;
+  const show = (k) => { $('#pb', v).innerHTML = screens[k]; $$('[data-tab]', v).forEach((b) => b.setAttribute('aria-selected', b.dataset.tab === k)); };
+  v.addEventListener('click', (e) => { const t = e.target.closest('[data-tab]'); if (t) show(t.dataset.tab); if (e.target.closest('[data-act=add]')) { addToCart(1, 'Ski wax added to cart'); $('.ph .cartpill b', v).textContent = cartCount; } if (e.target.closest('[data-act=track]')) toast('Opening FedEx tracking'); const sw = e.target.closest('.toggle'); if (sw) sw.setAttribute('aria-checked', sw.getAttribute('aria-checked') !== 'true'); });
+  show('home');
+}});
+
+/* ---------- Gallery wiring ---------- */
+const indexList = document.getElementById('indexList');
+let lastGroup = '';
+indexList.innerHTML = C.map((c, i) => { const h = c.group !== lastGroup ? `<h2>${(lastGroup = c.group) === 'Redesigned' ? 'Redesigned · 1–10' : 'New concepts · 11–20'}</h2>` : ''; return `${h}<button type="button" data-c="${i}"><span>${String(i + 1).padStart(2, '0')}</span>${c.name}</button>`; }).join('');
+const frame = document.getElementById('frame');
+function open(i) {
+  const c = C[i];
+  $$('[data-c]', indexList).forEach((b) => b.setAttribute('aria-current', b.dataset.c == i));
+  document.getElementById('cTitle').innerHTML = `${c.name}<span class="tag">${c.group === 'Redesigned' ? 'Redesign of idea ' + (i + 1) : 'New concept'}</span>`;
+  document.getElementById('cDesc').textContent = c.desc;
+  document.getElementById('cNote').innerHTML = `<b>Data</b><span>${c.note}</span>`;
+  const old = document.getElementById('view'), view = old.cloneNode(false); old.replaceWith(view);
+  frame.querySelector('.dnav').style.display = c.phone ? 'none' : '';
+  frame.querySelector('.dash').style.gridTemplateColumns = c.phone ? '1fr' : '';
+  c.render(view);
+  history.replaceState(null, '', '#' + (i + 1));
+}
+indexList.addEventListener('click', (e) => { const b = e.target.closest('[data-c]'); if (b) { open(+b.dataset.c); window.scrollTo({ top: 0, behavior: 'smooth' }); } });
+$$('[data-w]').forEach((b) => b.addEventListener('click', () => { frame.classList.toggle('mobile', b.dataset.w === 'mobile'); $$('[data-w]').forEach((x) => x.setAttribute('aria-pressed', x === b)); }));
+document.addEventListener('keydown', (e) => { if (e.key === '/' && document.activeElement.tagName !== 'INPUT') { const q = document.getElementById('cq'); if (q) { e.preventDefault(); q.focus(); } } });
+open(Math.min(C.length - 1, Math.max(0, (parseInt(location.hash.slice(1), 10) || 1) - 1)));
+</script>
+</body>
+</html>

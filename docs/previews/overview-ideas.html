@@ -1,0 +1,390 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Overview design ideas</title>
+<style>
+  :root {
+    --page: #f1f1f1; --surface: #fff; --subdued: #f7f7f7; --fg: #303030; --muted: #616161; --faint: #8a8a8a;
+    --border: #e3e3e3; --border-strong: #cccccc; --link: #005bd3;
+    --neutral-bg: #e8e8e8; --success-bg: #cdfee1; --success-fg: #0c5132; --success: #29845a;
+    --info-bg: #e0f0ff; --info-fg: #00527c; --attention-bg: #ffeb78; --attention-fg: #4f4700; --amber: #e0b500;
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Assistant, Roboto, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  body { font-family: var(--font); font-size: 14px; color: var(--fg); background: #dcdcdc; font-variant-numeric: tabular-nums; }
+  button { font: inherit; cursor: pointer; }
+
+  /* Preview chrome */
+  .bar { position: sticky; top: 0; z-index: 10; background: #1a1a1a; color: #fff; padding: 12px 16px; display: grid; gap: 10px; }
+  .bar h1 { font-size: 15px; font-weight: 600; }
+  .bar p { font-size: 12px; color: #bdbdbd; }
+  .tabs { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tabs button { background: #2e2e2e; color: #eee; border: 0; padding: 6px 10px; font-size: 12px; }
+  .tabs button[aria-pressed="true"] { background: #fff; color: #1a1a1a; font-weight: 600; }
+  .tabs .rec { outline: 1px solid #29845a; }
+  .devices { display: flex; gap: 6px; align-items: center; font-size: 12px; color: #bdbdbd; }
+  .devices button { background: transparent; color: #eee; border: 1px solid #555; padding: 4px 10px; font-size: 12px; }
+  .devices button[aria-pressed="true"] { background: #fff; color: #1a1a1a; border-color: #fff; }
+  .note { max-width: 1240px; margin: 16px auto 0; padding: 0 16px; font-size: 13px; color: #303030; }
+  .note b { font-weight: 600; }
+
+  /* Fake storefront frame */
+  .frame { max-width: 1240px; margin: 12px auto 40px; background: var(--page); border: 1px solid #c9c9c9; transition: max-width .25s; }
+  .frame.mobile { max-width: 390px; }
+  .store-header { background: #fff; border-bottom: 1px solid var(--border); padding: 14px 24px; display: flex; justify-content: space-between; align-items: center; font-weight: 600; }
+  .store-header span { font-weight: 400; color: var(--muted); font-size: 13px; }
+  .layout { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 32px; padding: 28px 24px 40px; }
+  .frame.mobile .layout { grid-template-columns: 1fr; gap: 16px; padding: 16px; }
+  .side { display: grid; gap: 2px; align-content: start; }
+  .frame.mobile .side { display: none; }
+  .mobile-nav { display: none; background: #fff; border: 1px solid var(--border); padding: 12px 16px; font-weight: 600; justify-content: space-between; }
+  .frame.mobile .mobile-nav { display: flex; }
+  .who { display: flex; gap: 10px; align-items: center; padding: 0 8px 14px; }
+  .avatar { width: 36px; height: 36px; background: #5c6ac4; color: #fff; display: grid; place-items: center; font-weight: 650; font-size: 13px; }
+  .who small { display: block; color: var(--muted); font-size: 12px; }
+  .nav { padding: 8px 10px; font-weight: 550; }
+  .nav.on { background: #fff; box-shadow: 0 0 0 1px var(--border); font-weight: 650; }
+  .nav.sep { margin-top: 10px; border-top: 1px solid var(--border); padding-top: 14px; }
+  .main { display: grid; gap: 20px; align-content: start; min-width: 0; }
+
+  /* Shared dashboard pieces */
+  .card { background: var(--surface); border: 1px solid var(--border); padding: 20px; min-width: 0; }
+  .card.flush { padding: 0; }
+  .eyebrow { font-size: 13px; color: var(--muted); display: flex; gap: 6px; align-items: center; }
+  .eyebrow::before { content: ""; width: 6px; height: 6px; background: var(--success); }
+  h2.title { font-size: 34px; font-weight: 700; letter-spacing: -.03em; line-height: 1.15; }
+  .frame.mobile h2.title { font-size: 26px; }
+  .sub { color: var(--muted); max-width: 58ch; line-height: 1.5; }
+  h3 { font-size: 14px; font-weight: 650; }
+  .muted { color: var(--muted); }
+  .faint { color: var(--faint); font-size: 12px; }
+  .badge { display: inline-flex; gap: 6px; align-items: center; padding: 2px 8px; font-size: 12px; font-weight: 550; background: var(--neutral-bg); white-space: nowrap; }
+  .badge::before { content: ""; width: 6px; height: 6px; background: currentColor; }
+  .badge.success { background: var(--success-bg); color: var(--success-fg); }
+  .badge.info { background: var(--info-bg); color: var(--info-fg); }
+  .badge.attention { background: var(--attention-bg); color: var(--attention-fg); }
+  .btn { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 14px; font-weight: 600; font-size: 13px; border: 1px solid var(--fg); background: var(--fg); color: #fff; text-decoration: none; }
+  .btn.ghost { background: #fff; color: var(--fg); border-color: var(--border-strong); }
+  .link { color: var(--link); text-decoration: none; font-size: 13px; }
+  .row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  .between { justify-content: space-between; }
+  .thumb { width: 48px; height: 48px; flex: none; border: 1px solid var(--border); }
+  .t1 { background: #d9b45c; } .t2 { background: #a9b8a3; } .t3 { background: #b7cbd9; } .t4 { background: #d8b4b0; }
+  .stack { display: grid; gap: 12px; }
+  .table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .table th { text-align: left; font-weight: 550; color: var(--muted); background: var(--subdued); padding: 8px 12px; font-size: 12px; }
+  .table td { padding: 12px; border-top: 1px solid var(--border); white-space: nowrap; }
+  .table td:first-child, .table th:first-child { padding-left: 20px; }
+  .frame.mobile .table .hide-m { display: none; }
+
+  /* Idea specific */
+  .stats3 { display: grid; grid-template-columns: repeat(3, 1fr); }
+  .stats3 > div { padding: 20px; } .stats3 > div + div { border-left: 1px solid var(--border); }
+  .frame.mobile .stats3 { grid-template-columns: 1fr; } .frame.mobile .stats3 > div + div { border-left: 0; border-top: 1px solid var(--border); }
+  .big { font-size: 32px; font-weight: 700; letter-spacing: -.02em; }
+  .strip { display: flex; flex-wrap: wrap; gap: 8px 28px; padding: 14px 20px; }
+  .strip b { font-size: 18px; font-weight: 700; margin-right: 4px; }
+  .steps { display: grid; grid-template-columns: repeat(5, 1fr); }
+  .step { position: relative; display: grid; gap: 8px; font-size: 12px; color: var(--faint); }
+  .step::before { content: ""; position: absolute; top: 5px; left: 0; right: 0; height: 2px; background: var(--border); }
+  .step:last-child::before { right: auto; width: 12px; }
+  .step i { position: relative; width: 12px; height: 12px; background: #fff; box-shadow: inset 0 0 0 2px var(--border-strong); }
+  .step.done::before { background: var(--success); } .step.done i { background: var(--success); box-shadow: none; }
+  .step.now { color: var(--fg); font-weight: 650; } .step.now i { background: var(--success); box-shadow: 0 0 0 3px var(--success-bg); }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip { border: 1px solid var(--border-strong); background: #fff; padding: 10px 14px; display: grid; gap: 2px; min-width: 120px; text-align: left; }
+  .chip b { font-size: 22px; font-weight: 700; }
+  .chip.on { border-color: var(--fg); box-shadow: inset 0 0 0 1px var(--fg); }
+  .bars { display: flex; align-items: flex-end; gap: 8px; height: 110px; padding-top: 10px; }
+  .bars div { flex: 1; background: var(--border-strong); position: relative; }
+  .bars div.hi { background: var(--fg); }
+  .bars span { position: absolute; bottom: -20px; left: 0; right: 0; text-align: center; font-size: 11px; color: var(--faint); }
+  .kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .frame.mobile .kpis { grid-template-columns: 1fr 1fr; }
+  .kpis b { display: block; font-size: 22px; font-weight: 700; }
+  .shelf { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+  .frame.mobile .shelf { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .product { border: 1px solid var(--border); background: #fff; display: grid; }
+  .product .img { aspect-ratio: 1; }
+  .product .info { padding: 10px; display: grid; gap: 6px; font-size: 13px; }
+  .wallet { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; background: var(--fg); color: #fff; border-color: var(--fg); }
+  .wallet .faint { color: #bdbdbd; }
+  .check { display: grid; gap: 0; }
+  .check li { list-style: none; display: flex; gap: 12px; align-items: center; padding: 12px 0; border-top: 1px solid var(--border); }
+  .check li:first-child { border-top: 0; }
+  .box { width: 18px; height: 18px; border: 1.5px solid var(--border-strong); flex: none; display: grid; place-items: center; font-size: 12px; color: #fff; }
+  .box.ok { background: var(--success); border-color: var(--success); }
+  .check li .grow { flex: 1; }
+  .progress { height: 6px; background: var(--border); } .progress div { height: 6px; background: var(--success); }
+  .timeline { list-style: none; padding: 0; position: relative; }
+  .timeline::before { content: ""; position: absolute; left: 5px; top: 8px; bottom: 8px; width: 2px; background: var(--border); }
+  .timeline li { position: relative; padding: 0 0 18px 28px; display: grid; gap: 2px; }
+  .timeline li::before { content: ""; position: absolute; left: 0; top: 4px; width: 12px; height: 12px; background: #fff; box-shadow: inset 0 0 0 2px var(--border-strong); }
+  .timeline li.green::before { background: var(--success); box-shadow: none; }
+  .timeline .day { font-size: 12px; color: var(--faint); padding: 0 0 10px 28px; }
+  .hero-status { display: grid; gap: 16px; }
+  .hero-status .card { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+  .welcome { display: grid; gap: 14px; text-align: left; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+
+<div class="bar">
+  <div class="row between">
+    <div>
+      <h1>Overview design ideas</h1>
+      <p>Preview only, with sample data based on your test order #1001. Pick an idea, then tell me which ones to build.</p>
+    </div>
+    <div class="devices" role="group" aria-label="Preview width">
+      Width
+      <button type="button" data-device="desktop" aria-pressed="true">Desktop</button>
+      <button type="button" data-device="mobile" aria-pressed="false">Mobile</button>
+    </div>
+  </div>
+  <div class="tabs" role="group" aria-label="Design idea">
+    <button type="button" data-idea="0" aria-pressed="false">Current</button>
+    <button type="button" data-idea="1" aria-pressed="false">1 Status hero</button>
+    <button type="button" data-idea="2" aria-pressed="false">2 Summary strip</button>
+    <button type="button" data-idea="3" aria-pressed="false">3 Latest order</button>
+    <button type="button" data-idea="4" aria-pressed="false">4 Status filters</button>
+    <button type="button" data-idea="5" aria-pressed="false">5 Spending</button>
+    <button type="button" data-idea="6" aria-pressed="false">6 New customer</button>
+    <button type="button" data-idea="7" aria-pressed="false">7 Buy again shelf</button>
+    <button type="button" data-idea="8" aria-pressed="false">8 Wallet</button>
+    <button type="button" data-idea="9" aria-pressed="false">9 Checklist</button>
+    <button type="button" data-idea="10" aria-pressed="false">10 Timeline</button>
+    <button type="button" data-idea="11" class="rec" aria-pressed="true">Recommended combo</button>
+  </div>
+</div>
+
+<p class="note" id="note"></p>
+
+<div class="frame" id="frame">
+  <div class="store-header">Your store <span>Shop · Cart (0) · Account</span></div>
+  <div class="layout">
+    <aside class="side">
+      <div class="who"><div class="avatar">GT</div><div><small>My account</small>Grant test</div></div>
+      <div class="nav on">Overview</div><div class="nav">My Orders</div><div class="nav">Order Tracking</div><div class="nav">My Profile</div><div class="nav">Saved Addresses</div>
+      <div class="nav sep">Continue Shopping</div><div class="nav">Log Out</div>
+    </aside>
+    <div class="mobile-nav">Overview <span>▾</span></div>
+
+    <main class="main">
+
+      <!-- Shared greeting (used by several ideas) -->
+      <template id="greeting">
+        <div class="stack" style="gap:6px">
+          <p class="eyebrow">Customer since October 2026</p>
+          <h2 class="title">Welcome back, Grant</h2>
+          <p class="sub">Manage your orders, track deliveries, and update your account information in one place.</p>
+        </div>
+      </template>
+
+      <!-- 0 Current -->
+      <section data-show="0">
+        <div data-greeting></div>
+        <div class="card flush" style="margin-top:20px">
+          <div class="stats3">
+            <div><p class="muted">Total Orders</p><p class="big">1</p><p class="faint">All orders placed with your account</p></div>
+            <div><p class="muted">Orders In Progress</p><p class="big">0</p><p class="faint">Not yet fully fulfilled</p></div>
+            <div><p class="muted">Completed Orders</p><p class="big">1</p><p class="faint">Fully fulfilled</p></div>
+          </div>
+          <div style="padding:14px 20px;border-top:1px solid var(--border);background:var(--subdued)">
+            <div style="height:6px;background:var(--fg)"></div>
+            <p class="faint" style="margin-top:10px">Cancelled orders count toward the total only.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- 1 Status-first hero -->
+      <section data-show="1 11" class="hero-status">
+        <div class="stack" style="gap:6px">
+          <p class="eyebrow">Good evening</p>
+          <h2 class="title">Welcome back, Grant</h2>
+        </div>
+        <div class="card">
+          <div class="thumb t1"></div>
+          <div style="flex:1;min-width:200px;display:grid;gap:4px">
+            <div class="row"><b>Your order #1001 was delivered</b><span class="badge success">Delivered</span></div>
+            <span class="muted">Selling Plans Ski Wax · Delivered Oct 14 · $32.95</span>
+          </div>
+          <div class="row"><a class="btn ghost" href="#">View order</a><a class="btn" href="#">Buy again</a></div>
+        </div>
+      </section>
+
+      <!-- 2 Summary strip -->
+      <section data-show="2 11">
+        <div data-greeting data-only="2"></div>
+        <div class="card flush strip" style="margin-top:0">
+          <span><b>1</b><span class="muted">order</span></span>
+          <span><b>0</b><span class="muted">in progress</span></span>
+          <span><b>1</b><span class="muted">completed</span></span>
+          <span><b>$32.95</b><span class="muted">spent</span></span>
+          <a class="link" href="#" style="margin-left:auto">View all orders →</a>
+        </div>
+      </section>
+
+      <!-- 3 Latest order spotlight -->
+      <section data-show="3">
+        <div data-greeting></div>
+        <div class="card stack" style="margin-top:20px;gap:16px">
+          <div class="row between"><h3>Latest order</h3><span class="badge">Fulfilled</span></div>
+          <div class="row" style="align-items:flex-start">
+            <div class="thumb t1" style="width:96px;height:96px"></div>
+            <div style="flex:1;min-width:200px;display:grid;gap:4px">
+              <b style="font-size:18px">#1001</b>
+              <span class="muted">Placed October 11, 2026 · 1 item · $32.95</span>
+              <span>Selling Plans Ski Wax <span class="faint">× 1</span></span>
+            </div>
+          </div>
+          <div class="steps">
+            <div class="step done"><i></i>Ordered</div><div class="step done"><i></i>Shipped</div><div class="step done"><i></i>In transit</div><div class="step done"><i></i>Out for delivery</div><div class="step now"><i></i>Delivered</div>
+          </div>
+          <div class="row"><a class="btn" href="#">Track shipment</a><a class="btn ghost" href="#">View order</a><a class="btn ghost" href="#">Buy again</a></div>
+        </div>
+      </section>
+
+      <!-- 4 Clickable status filters -->
+      <section data-show="4">
+        <div data-greeting></div>
+        <div class="stack" style="margin-top:20px">
+          <div class="chips">
+            <button class="chip" type="button"><span class="muted">All orders</span><b>1</b></button>
+            <button class="chip" type="button"><span class="muted">In progress</span><b>0</b></button>
+            <button class="chip on" type="button"><span class="muted">Completed</span><b>1</b></button>
+            <button class="chip" type="button"><span class="muted">Cancelled</span><b>0</b></button>
+          </div>
+          <div class="card flush">
+            <table class="table"><thead><tr><th>Order</th><th>Date</th><th>Total</th><th class="hide-m">Payment</th><th>Fulfillment</th></tr></thead>
+            <tbody><tr><td><b>#1001</b></td><td>Oct 11, 2026</td><td>$32.95</td><td class="hide-m"><span class="badge">Paid</span></td><td><span class="badge">Fulfilled</span></td></tr></tbody></table>
+          </div>
+          <p class="faint">Each count is a filter. The table below updates when you click one.</p>
+        </div>
+      </section>
+
+      <!-- 5 Spending at a glance -->
+      <section data-show="5">
+        <div data-greeting></div>
+        <div class="card stack" style="margin-top:20px;gap:20px">
+          <div class="row between"><h3>Your shopping</h3><span class="faint">Last 6 months</span></div>
+          <div class="kpis">
+            <div><span class="muted">Total spent</span><b>$32.95</b></div>
+            <div><span class="muted">Orders</span><b>1</b></div>
+            <div><span class="muted">Average order</span><b>$32.95</b></div>
+          </div>
+          <div class="bars" aria-label="Orders per month">
+            <div style="height:4%"><span>May</span></div><div style="height:4%"><span>Jun</span></div><div style="height:4%"><span>Jul</span></div>
+            <div style="height:4%"><span>Aug</span></div><div style="height:4%"><span>Sep</span></div><div class="hi" style="height:100%"><span>Oct</span></div>
+          </div>
+          <div style="height:8px"></div>
+        </div>
+      </section>
+
+      <!-- 6 Adaptive for new customers -->
+      <section data-show="6">
+        <div class="card welcome" style="padding:32px">
+          <p class="eyebrow">Customer since October 2026</p>
+          <h2 class="title">Welcome, Grant</h2>
+          <p class="sub">Your first order is complete. As you shop, your order history, spending and shipments will build up here.</p>
+          <div class="row"><a class="btn" href="#">Continue shopping</a><a class="btn ghost" href="#">View order #1001</a></div>
+          <p class="faint">Shown while a customer has 0–1 orders. The full stats appear from the second order.</p>
+        </div>
+      </section>
+
+      <!-- 7 Buy-again shelf -->
+      <section data-show="7 11">
+        <div data-greeting data-only="7"></div>
+        <div class="card stack" style="gap:14px">
+          <div class="row between"><h3>Buy it again</h3><a class="link" href="#">All orders →</a></div>
+          <div class="shelf">
+            <div class="product"><div class="img t1"></div><div class="info"><span>Selling Plans Ski Wax</span><span class="muted">$24.95</span><a class="btn" href="#" style="justify-content:center">Add to cart</a></div></div>
+            <div class="product"><div class="img t2"></div><div class="info"><span>Sample product</span><span class="muted">$18.00</span><a class="btn" href="#" style="justify-content:center">Add to cart</a></div></div>
+            <div class="product"><div class="img t3"></div><div class="info"><span>Sample product</span><span class="muted">$45.00</span><a class="btn ghost" href="#" style="justify-content:center">Sold out</a></div></div>
+            <div class="product"><div class="img t4"></div><div class="info"><span>Sample product</span><span class="muted">$29.00</span><a class="btn" href="#" style="justify-content:center">Add to cart</a></div></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 8 Wallet -->
+      <section data-show="8 11">
+        <div data-greeting data-only="8"></div>
+        <div class="card wallet">
+          <div><p class="faint">Store credit</p><p style="font-size:28px;font-weight:700">$25.00</p><p class="faint">Applied automatically at checkout</p></div>
+          <a class="btn ghost" href="#">Shop now</a>
+        </div>
+        <p class="faint" data-only="8" style="margin-top:8px">Only shown when the customer has a balance.</p>
+      </section>
+
+      <!-- 9 Checklist -->
+      <section data-show="9">
+        <div data-greeting></div>
+        <div class="card stack" style="margin-top:20px;gap:12px">
+          <div class="row between"><h3>Finish setting up your account</h3><span class="muted">1 of 3 done</span></div>
+          <div class="progress"><div style="width:33%"></div></div>
+          <ul class="check" style="padding:0">
+            <li><span class="box ok">✓</span><span class="grow">Place your first order</span><span class="faint">Done</span></li>
+            <li><span class="box"></span><span class="grow">Add a default shipping address<br><span class="faint">Checkout goes faster</span></span><a class="btn ghost" href="#">Add address</a></li>
+            <li><span class="box"></span><span class="grow">Get news and offers by email</span><a class="btn ghost" href="#">Turn on</a></li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- 10 Timeline -->
+      <section data-show="10 11">
+        <div data-greeting data-only="10"></div>
+        <div class="card stack" style="gap:16px">
+          <div class="row between"><h3>Recent activity</h3><a class="link" href="#">Order tracking →</a></div>
+          <ul class="timeline">
+            <li class="green"><b>Order #1001 delivered</b><span class="muted">Selling Plans Ski Wax</span><span class="faint">Oct 14 · 2:12 pm</span></li>
+            <li><b>Order #1001 shipped</b><span class="muted">UPS · 1Z999AA10123456784</span><span class="faint">Oct 11 · 11:05 pm</span></li>
+            <li><b>Order #1001 placed</b><span class="muted">$32.95 · Paid</span><span class="faint">Oct 11 · 10:34 pm</span></li>
+          </ul>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<script>
+  const notes = {
+    0: '<b>Current.</b> Three large cards mostly show 0 and 1, and the bar is a solid line when every order is complete.',
+    1: '<b>1 · Status-first hero.</b> Leads with what just happened to the latest order, with the next action right there.',
+    2: '<b>2 · Summary strip.</b> The three cards become one quiet line, with lifetime spend added.',
+    3: '<b>3 · Latest order spotlight.</b> One big card for the most recent order: image, progress and actions.',
+    4: '<b>4 · Status filters.</b> Counts become clickable filters for the orders table.',
+    5: '<b>5 · Spending at a glance.</b> Total spent, average order and orders per month.',
+    6: '<b>6 · New customer.</b> With 0–1 orders, a welcome card replaces empty-looking stats.',
+    7: '<b>7 · Buy-again shelf.</b> Past products with one-tap Add to cart. Sold-out items say so.',
+    8: '<b>8 · Wallet.</b> Store credit as a prominent card, only when there is a balance.',
+    9: '<b>9 · Checklist.</b> Real to-dos from the account: default address, email updates.',
+    10: '<b>10 · Activity timeline.</b> Shopify-style timeline of placed, shipped and delivered events.',
+    11: '<b>Recommended combo.</b> 1 status hero + 2 summary strip + 8 wallet (only with a balance) + 7 buy again + 10 timeline.',
+  };
+  const greeting = document.getElementById('greeting');
+  document.querySelectorAll('[data-greeting]').forEach((slot) => slot.append(greeting.content.cloneNode(true)));
+
+  function showIdea(id) {
+    document.querySelectorAll('[data-show]').forEach((section) => {
+      const ids = section.dataset.show.split(' ');
+      section.hidden = !ids.includes(String(id));
+      section.querySelectorAll('[data-only]').forEach((el) => (el.hidden = el.dataset.only !== String(id)));
+    });
+    document.querySelectorAll('[data-idea]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.idea === String(id))));
+    document.getElementById('note').innerHTML = notes[id];
+  }
+  document.querySelectorAll('[data-idea]').forEach((b) => b.addEventListener('click', () => showIdea(b.dataset.idea)));
+  document.querySelectorAll('[data-device]').forEach((b) =>
+    b.addEventListener('click', () => {
+      document.getElementById('frame').classList.toggle('mobile', b.dataset.device === 'mobile');
+      document.querySelectorAll('[data-device]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+    })
+  );
+  document.querySelectorAll('a[href="#"]').forEach((a) => a.addEventListener('click', (e) => e.preventDefault()));
+  showIdea(11);
+</script>
+</body>
+</html>

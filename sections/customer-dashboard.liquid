@@ -34,22 +34,79 @@
   endif
 -%}
 
+{%- liquid
+  assign wordmark = section.settings.wordmark_text | strip | default: 'Dashboard'
+  if section.settings.wordmark_source == 'page'
+    assign wordmark = 'customer_dashboard.nav.overview' | t
+  endif
+  assign display_font = section.settings.display_font
+
+  comment
+    Cover photo per page. Each falls back to the default cover, which falls
+    back to the bundled black-and-white photo.
+  endcomment
+  assign cover_default = 'customer-dashboard-cover.jpg' | asset_url
+  if section.settings.cover_image != blank
+    assign cover_default = section.settings.cover_image | image_url: width: 2400
+  endif
+  assign focus_default = '50% 45%'
+  if section.settings.cover_image != blank and section.settings.cover_image.presentation.focal_point != blank
+    assign focus_default = section.settings.cover_image.presentation.focal_point
+  endif
+  assign cover_orders = cover_default
+  assign focus_orders = focus_default
+  if section.settings.cover_orders != blank
+    assign cover_orders = section.settings.cover_orders | image_url: width: 2400
+    assign focus_orders = section.settings.cover_orders.presentation.focal_point | default: '50% 45%'
+  endif
+  assign cover_tracking = cover_default
+  assign focus_tracking = focus_default
+  if section.settings.cover_tracking != blank
+    assign cover_tracking = section.settings.cover_tracking | image_url: width: 2400
+    assign focus_tracking = section.settings.cover_tracking.presentation.focal_point | default: '50% 45%'
+  endif
+  assign cover_profile = cover_default
+  assign focus_profile = focus_default
+  if section.settings.cover_profile != blank
+    assign cover_profile = section.settings.cover_profile | image_url: width: 2400
+    assign focus_profile = section.settings.cover_profile.presentation.focal_point | default: '50% 45%'
+  endif
+  assign cover_addresses = cover_default
+  assign focus_addresses = focus_default
+  if section.settings.cover_addresses != blank
+    assign cover_addresses = section.settings.cover_addresses | image_url: width: 2400
+    assign focus_addresses = section.settings.cover_addresses.presentation.focal_point | default: '50% 45%'
+  endif
+-%}
+
 {% style %}
+  {{ display_font | font_face: font_display: 'swap' }}
+  #CustomerDashboard-{{ section.id }} {
+    {%- if display_font != blank %}
+    --cd-display: {{ display_font.family }}, "Helvetica Neue", Arial, {{ display_font.fallback_families }};
+    {%- else %}
+    --cd-display: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    {%- endif %}
+    --cd-cover-shade: {{ section.settings.cover_shade | divided_by: 100.0 }};
+    {%- if section.settings.cover_image != blank %}
+    --cd-cover-url: url({{ section.settings.cover_image | image_url: width: 900 }});
+    {%- else %}
+    --cd-cover-url: url({{ 'customer-dashboard-cover.jpg' | asset_url }});
+    {%- endif %}
+  }
   .section-{{ section.id }}-padding {
-    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
     padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
   }
   @media screen and (min-width: 750px) {
     .section-{{ section.id }}-padding {
-      padding-top: {{ section.settings.padding_top }}px;
       padding-bottom: {{ section.settings.padding_bottom }}px;
     }
   }
 {% endstyle %}
 
-<div class="cd-page color-{{ section.settings.color_scheme }} gradient">
+<div class="cd-page color-{{ section.settings.color_scheme }} gradient" id="CustomerDashboard-{{ section.id }}">
   <div
-    class="cd page-width section-{{ section.id }}-padding"
+    class="cd section-{{ section.id }}-padding"
     data-cd-root
     data-client-id="{{ client_id | escape }}"
     data-redirect-uri="{{ redirect_uri | escape }}"
@@ -69,18 +126,44 @@
   >
     {%- render 'customer-dashboard-icons' -%}
 
-    <div class="cd__layout">
-      <aside class="cd__sidebar" aria-label="{{ 'customer_dashboard.nav.label' | t }}">
-        <div class="cd__identity" data-cd-identity>
-          <span class="cd__avatar" aria-hidden="true" data-cd-avatar></span>
-          <div class="cd__identity-text">
-            <p class="cd__identity-eyebrow">{{ 'customer_dashboard.nav.eyebrow' | t }}</p>
-            <p class="cd__identity-name" data-cd-name>
-              <span class="cd-skeleton cd-skeleton--text" aria-hidden="true"></span>
-            </p>
-          </div>
-        </div>
+    {%- comment -%}
+      Cover: merchant photo + translucent wordmark. The claim text and the
+      floating card are filled in per page by customer-dashboard.js.
+    {%- endcomment -%}
+    <header
+      class="cd-cover"
+      data-cd-cover
+      data-size="tall"
+      data-wordmark-mode="{{ section.settings.wordmark_source | escape }}"
+      data-cover-overview="{{ cover_default | escape }}"
+      data-cover-orders="{{ cover_orders | escape }}"
+      data-cover-tracking="{{ cover_tracking | escape }}"
+      data-cover-profile="{{ cover_profile | escape }}"
+      data-cover-addresses="{{ cover_addresses | escape }}"
+      data-focus-overview="{{ focus_default | escape }}"
+      data-focus-orders="{{ focus_orders | escape }}"
+      data-focus-tracking="{{ focus_tracking | escape }}"
+      data-focus-profile="{{ focus_profile | escape }}"
+      data-focus-addresses="{{ focus_addresses | escape }}"
+    >
+      <div class="cd-cover__media" aria-hidden="true">
+        {%- comment -%}
+          Default cover: photo by Martin Wessely on Unsplash (Unsplash License),
+          black and white, bundled as assets/customer-dashboard-cover.jpg.
+        {%- endcomment -%}
+        <img
+          class="cd-cover__img"
+          src="{{ cover_default }}"
+          style="object-position: {{ focus_default }};"
+          width="2400"
+          height="1350"
+          alt=""
+          fetchpriority="high"
+          data-cd-cover-img
+        >
+      </div>
 
+      <div class="cd-cover__bar cd__sidebar">
         <button
           type="button"
           class="cd__menu-toggle"
@@ -92,59 +175,47 @@
             <svg class="cd-icon" aria-hidden="true" focusable="false"><use href="#cd-i-menu"/></svg>
             <span data-cd-menu-current>{{ 'customer_dashboard.nav.overview' | t }}</span>
           </span>
-          <svg class="cd-icon cd__menu-toggle-chevron" aria-hidden="true" focusable="false"><use href="#cd-i-chevron-down"/></svg>
         </button>
 
-        <nav class="cd__nav" id="CustomerDashboardNav-{{ section.id }}" data-cd-nav>
+        <nav class="cd__nav" id="CustomerDashboardNav-{{ section.id }}" aria-label="{{ 'customer_dashboard.nav.label' | t }}" data-cd-nav>
           <ul class="cd__nav-list" role="list">
-            {%- liquid
-              assign nav_items = 'overview:grid,orders:package,tracking:truck,profile:user,addresses:pin' | split: ','
-            -%}
+            {%- assign nav_items = 'overview,orders,tracking,profile,addresses' | split: ',' -%}
             {%- for item in nav_items -%}
-              {%- assign parts = item | split: ':' -%}
-              {%- assign nav_key = 'customer_dashboard.nav.' | append: parts[0] -%}
-              <li>
-                <a href="#{{ parts[0] }}" class="cd__nav-link" data-cd-route="{{ parts[0] }}">
-                  <svg class="cd-icon" aria-hidden="true" focusable="false"><use href="#cd-i-{{ parts[1] }}"/></svg>
-                  <span>{{ nav_key | t }}</span>
-                </a>
-              </li>
+              {%- assign nav_key = 'customer_dashboard.nav.' | append: item -%}
+              <li><a href="#{{ item }}" class="cd__nav-link" data-cd-route="{{ item }}">{{ nav_key | t }}</a></li>
             {%- endfor -%}
           </ul>
-
           <ul class="cd__nav-list cd__nav-list--secondary" role="list">
-            <li>
-              <a href="{{ continue_url }}" class="cd__nav-link">
-                <svg class="cd-icon" aria-hidden="true" focusable="false"><use href="#cd-i-bag"/></svg>
-                <span>{{ 'customer_dashboard.nav.continue_shopping' | t }}</span>
-              </a>
-            </li>
-            <li>
-              <a href="{{ routes.account_logout_url }}" class="cd__nav-link" data-cd-logout>
-                <svg class="cd-icon" aria-hidden="true" focusable="false"><use href="#cd-i-logout"/></svg>
-                <span>{{ 'customer_dashboard.nav.log_out' | t }}</span>
-              </a>
-            </li>
+            <li><a href="{{ routes.account_logout_url }}" class="cd__nav-link" data-cd-logout>{{ 'customer_dashboard.nav.log_out' | t }}</a></li>
+            <li><a href="{{ continue_url }}" class="cd__nav-link cd__nav-link--cta">{{ 'customer_dashboard.nav.continue_shopping' | t }}</a></li>
           </ul>
         </nav>
-      </aside>
+      </div>
 
-      <div class="cd__main">
-        <div class="cd__view" data-cd-view tabindex="-1" aria-busy="true">
-          <div class="cd-loading" aria-hidden="true">
-            <span class="cd-skeleton cd-skeleton--title"></span>
-            <span class="cd-skeleton cd-skeleton--text"></span>
-            <div class="cd-grid cd-grid--stats">
-              <span class="cd-skeleton cd-skeleton--card"></span>
-              <span class="cd-skeleton cd-skeleton--card"></span>
-              <span class="cd-skeleton cd-skeleton--card"></span>
-            </div>
-          </div>
-          <p class="visually-hidden">{{ 'customer_dashboard.loading' | t }}</p>
-          <noscript>
-            <p class="cd-notice">{{ 'customer_dashboard.noscript' | t }}</p>
-          </noscript>
+      <p class="cd-cover__word" aria-hidden="true">{{ wordmark | escape }}</p>
+
+      <a class="cd-float" href="#orders" data-cd-float hidden></a>
+
+      <div class="cd-cover__claim">
+        <p class="cd-cover__who">
+          <span class="cd__avatar" aria-hidden="true" data-cd-avatar></span>
+          <span data-cd-name><span class="cd-skeleton cd-skeleton--text" aria-hidden="true"></span></span>
+        </p>
+        <p class="cd-cover__text" data-cd-claim></p>
+      </div>
+    </header>
+
+    <div class="cd-body page-width">
+      <div class="cd__view" data-cd-view tabindex="-1" aria-busy="true">
+        <div class="cd-loading" aria-hidden="true">
+          <span class="cd-skeleton cd-skeleton--title"></span>
+          <span class="cd-skeleton cd-skeleton--text"></span>
+          <span class="cd-skeleton cd-skeleton--panel"></span>
         </div>
+        <p class="visually-hidden">{{ 'customer_dashboard.loading' | t }}</p>
+        <noscript>
+          <p class="cd-notice">{{ 'customer_dashboard.noscript' | t }}</p>
+        </noscript>
       </div>
     </div>
 
@@ -188,17 +259,72 @@
     },
     {
       "type": "header",
-      "content": "t:sections.all.padding.section_padding_heading"
+      "content": "Cover"
+    },
+    {
+      "type": "image_picker",
+      "id": "cover_image",
+      "label": "Cover photo (Overview and default)",
+      "info": "Wide landscape or lifestyle photo, at least 2000 px wide. Used on Overview and on any page without its own photo. Leave empty for the default black-and-white photo."
+    },
+    {
+      "type": "image_picker",
+      "id": "cover_orders",
+      "label": "My Orders cover photo",
+      "info": "Also used on order details."
+    },
+    {
+      "type": "image_picker",
+      "id": "cover_tracking",
+      "label": "Order Tracking cover photo"
+    },
+    {
+      "type": "image_picker",
+      "id": "cover_profile",
+      "label": "My Profile cover photo"
+    },
+    {
+      "type": "image_picker",
+      "id": "cover_addresses",
+      "label": "Saved Addresses cover photo"
+    },
+    {
+      "type": "select",
+      "id": "wordmark_source",
+      "label": "Wordmark",
+      "options": [
+        { "value": "page", "label": "Page name (Overview, My Orders…)" },
+        { "value": "custom", "label": "Custom text" }
+      ],
+      "default": "page"
+    },
+    {
+      "type": "text",
+      "id": "wordmark_text",
+      "label": "Custom wordmark text",
+      "default": "Dashboard",
+      "info": "Used when Wordmark is set to Custom text. Short words work best; long text shrinks to fit."
+    },
+    {
+      "type": "font_picker",
+      "id": "display_font",
+      "label": "Wordmark and headings font",
+      "default": "inter_n4"
     },
     {
       "type": "range",
-      "id": "padding_top",
+      "id": "cover_shade",
       "min": 0,
-      "max": 100,
-      "step": 4,
-      "unit": "px",
-      "label": "t:sections.all.padding.padding_top",
-      "default": 36
+      "max": 60,
+      "step": 5,
+      "unit": "%",
+      "label": "Photo shade",
+      "info": "Darkens the photo so the menu and text stay readable.",
+      "default": 25
+    },
+    {
+      "type": "header",
+      "content": "t:sections.all.padding.section_padding_heading"
     },
     {
       "type": "range",

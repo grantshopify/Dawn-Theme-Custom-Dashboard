@@ -55,7 +55,30 @@ If the store moves to a custom domain, the stricter server-backed version in
 [`auth-service/`](../auth-service/README.md) can replace this. It's kept in the
 repository but **is not used** by the theme right now.
 
-## Files
+## Designs and switching back (blue-green)
+
+Two complete designs are installed side by side. Both are on the same URL
+(`/pages/dashboard`), use the same sign-in and the same Shopify data; only the
+page template differs.
+
+| Design | Template | Section | Assets |
+|---|---|---|---|
+| **Wordmark** (current) | `page.dashboard` | `sections/customer-dashboard.liquid` | `customer-dashboard.css`, `customer-dashboard.js`, `customer-dashboard-cover.jpg` |
+| **Classic** (archived, Shopify-admin style) | `page.dashboard-classic` | `sections/customer-dashboard-classic.liquid` | `customer-dashboard-classic.css`, `customer-dashboard-classic.js` |
+
+**To switch** (instant, no code change): Shopify admin → *Online Store → Pages*
+→ your dashboard page → *Theme template* → choose `page.dashboard-classic`
+(or back to `page.dashboard`) → Save. The header account link keeps working
+because it points to the page, not the template.
+
+**In git:** the tag `dashboard-classic-v1` marks the commit (`2be4f65`) the
+Classic design came from.
+
+Shared by both designs: `snippets/customer-dashboard-icons.liquid`,
+`assets/customer-dashboard-countries.json`, the header account link and the
+Customer Account API client ID. A fix to sign-in or data loading should be
+applied to both `customer-dashboard.js` and `customer-dashboard-classic.js`.
+
 
 ### New
 

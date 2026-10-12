@@ -29,6 +29,21 @@
     completedHint: 'Fully fulfilled',
     statsCancelledNote: 'Cancelled orders count toward the total only.',
     orderSummary: 'Order summary',
+    coverWelcome: (name) => (name ? `Good to see you again, ${name}.` : 'Good to see you again.'),
+    coverOrders: 'Every order, in one place.',
+    coverTracking: 'Where your orders are right now.',
+    coverProfile: 'Your details, kept up to date.',
+    coverAddresses: 'Where we deliver to you.',
+    coverOrder: (name, status) => `Order ${name} is ${status.toLowerCase()}.`,
+    sectionLabels: { overview: 'Account', orders: 'Orders', tracking: 'Tracking', profile: 'Profile', addresses: 'Addresses' },
+    aboutTitle: 'Everything you’ve ordered, brought together.',
+    ordersPlaced: 'Orders you’ve placed',
+    shipsTo: (place) => `Ships to ${place}`,
+    noDefaultAddress: 'No default address yet',
+    addressLead: 'Your default address fills in at checkout, so ordering takes a moment.',
+    addressNote: 'Change it, or add another for gifts and trips, in Saved Addresses.',
+    addressCta: 'Manage addresses',
+    placedShort: (date) => `Placed ${date}`,
     storeCredit: 'Store credit',
     storeCreditHint: 'Applied automatically at checkout',
     latestShipment: 'On its way',
@@ -290,6 +305,9 @@
   const identityName = root.querySelector('[data-cd-name]');
   const identityAvatar = root.querySelector('[data-cd-avatar]');
   const logoutLink = root.querySelector('[data-cd-logout]');
+  const cover = root.querySelector('[data-cd-cover]');
+  const coverClaim = root.querySelector('[data-cd-claim]');
+  const coverFloat = root.querySelector('[data-cd-float]');
 
   // ---------------------------------------------------------------------------
   // DOM helpers
@@ -387,12 +405,129 @@
     return ['In progress', 'info'];
   }
 
+  // Section name shown in the left gutter next to each page heading.
+  let currentSection = 'overview';
+
+  function gutter() {
+    return h('div', { class: 'cd-gutter', 'aria-hidden': 'true' }, h('span', null, STRINGS.sectionLabels[currentSection]));
+  }
+
   function pageHeader(title, intro, actions) {
     return h(
       'header',
       { class: 'cd-page-header' },
+      gutter(),
       h('div', { class: 'cd-page-header__text' }, h('h1', { class: 'cd-title', tabindex: '-1' }, title), intro ? h('p', { class: 'cd-subtitle' }, intro) : null),
       actions ? h('div', { class: 'cd-page-header__actions' }, actions) : null
+    );
+  }
+
+  // ---- Cover (photo + wordmark): claim text and the floating card per page ----
+  // Shrinks the wordmark so it always fits on one line, whatever its length.
+  const wordmark = root.querySelector('.cd-cover__word');
+  function fitWordmark() {
+    if (!wordmark) return;
+    wordmark.style.fontSize = '';
+    const available = wordmark.clientWidth * 0.94;
+    if (wordmark.scrollWidth > available && wordmark.scrollWidth > 0) {
+      const size = parseFloat(getComputedStyle(wordmark).fontSize);
+      wordmark.style.fontSize = `${Math.floor((size * available) / wordmark.scrollWidth)}px`;
+    }
+  }
+  let fitFrame;
+  window.addEventListener('resize', () => {
+    cancelAnimationFrame(fitFrame);
+    fitFrame = requestAnimationFrame(fitWordmark);
+  });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitWordmark);
+
+  // Per-page wordmark (the page name) and cover photo, from the section settings.
+  const coverImg = root.querySelector('[data-cd-cover-img]');
+  let coverSrc = coverImg ? coverImg.getAttribute('src') : '';
+  function applyCoverPage() {
+    if (!cover) return;
+    const key = currentSection.charAt(0).toUpperCase() + currentSection.slice(1);
+    if (wordmark && cover.dataset.wordmarkMode !== 'custom') {
+      const link = root.querySelector(`[data-cd-route="${currentSection}"]`);
+      if (link) wordmark.textContent = link.textContent.trim();
+    }
+    const src = cover.dataset['cover' + key];
+    const focus = cover.dataset['focus' + key] || '50% 45%';
+    if (!coverImg || !src) return;
+    if (src === coverSrc) {
+      coverImg.style.objectPosition = focus;
+      return;
+    }
+    coverSrc = src;
+    coverImg.style.opacity = '0';
+    const next = new Image();
+    next.onload = next.onerror = () => {
+      if (coverSrc !== src) return;
+      coverImg.src = src;
+      coverImg.style.objectPosition = focus;
+      coverImg.style.opacity = '1';
+    };
+    next.src = src;
+  }
+
+  function setCover({ size = 'compact', claim = '', float = null } = {}) {
+    if (!cover) return;
+    cover.dataset.size = size;
+    applyCoverPage();
+    fitWordmark();
+    coverClaim.textContent = claim;
+    if (!float) {
+      coverFloat.hidden = true;
+      return;
+    }
+    const src = float.image && imageUrl(float.image.url, 240);
+    coverFloat.href = float.href;
+    coverFloat.replaceChildren(
+      src ? h('img', { class: 'cd-float__img', src, alt: float.image.altText || '', width: 96, height: 96 }) : h('span', { class: 'cd-float__img cd-float__img--empty' }, icon('package')),
+      h('span', { class: 'cd-float__body' }, float.chip ? h('span', { class: 'cd-chip' }, float.chip) : null, h('b', null, float.title), float.sub ? h('span', { class: 'cd-float__sub' }, float.sub) : null),
+      h('span', { class: 'cd-float__go', 'aria-hidden': 'true' }, icon('arrow-left', 'cd-icon cd-icon--sm cd-flip'))
+    );
+    coverFloat.setAttribute('aria-label', [float.chip, float.title, float.sub].filter(Boolean).join(', '));
+    coverFloat.hidden = false;
+  }
+
+  function orderChip(order) {
+    if (order.cancelledAt) return STRINGS.orderCancelled.replace(/\.$/, '');
+    return (FULFILLMENT_STATUS[order.fulfillmentStatus] || [''])[0];
+  }
+
+  function orderFloat(order) {
+    const items = order.lineItems ? order.lineItems.nodes : [];
+    return {
+      href: orderHref(order),
+      image: items[0] && items[0].image,
+      chip: orderChip(order),
+      title: STRINGS.orderNamed(order.name),
+      sub: `${STRINGS.placedShort(formatDate(order.processedAt))} · ${formatMoney(order.totalPrice)}`,
+    };
+  }
+
+  // Dark band listing orders as rows (thumbnail, number, items, status, total).
+  function orderRows(orders) {
+    return h(
+      'div',
+      { class: 'cd-rows' },
+      orders.map((order) => {
+        const items = order.lineItems ? order.lineItems.nodes : [];
+        return h(
+          'a',
+          { href: orderHref(order), class: 'cd-orow' },
+          thumbnail(items[0] && items[0].image, 64),
+          h(
+            'span',
+            { class: 'cd-orow__main' },
+            h('b', null, order.name),
+            h('span', { class: 'cd-orow__sub' }, [formatDate(order.processedAt), items.map((i) => i.title).join(', ')].filter(Boolean).join(' · '))
+          ),
+          h('span', { class: 'cd-orow__status' }, orderChip(order)),
+          h('span', { class: 'cd-orow__total' }, formatMoney(order.totalPrice))
+        );
+      })
     );
   }
 
@@ -830,7 +965,10 @@
       query: `query Overview {
         customer {
           id firstName lastName displayName creationDate
-          orders(first: 5, sortKey: PROCESSED_AT, reverse: true) { nodes { ${ORDER_SUMMARY} } }
+          defaultAddress { city province country }
+          orders(first: 5, sortKey: PROCESSED_AT, reverse: true) {
+            nodes { ${ORDER_SUMMARY} lineItems(first: 3) { nodes { title image { url altText } } } }
+          }
         }
       }`,
     },
@@ -1116,6 +1254,7 @@
 
   function renderDesignMode() {
     view.setAttribute('aria-busy', 'false');
+    setCover({ size: 'tall', claim: STRINGS.coverWelcome('') });
     identityName.textContent = STRINGS.designModeTitle;
     view.replaceChildren(
       pageHeader(STRINGS.welcome(''), STRINGS.overviewIntro),
@@ -1572,52 +1711,56 @@
         .catch(() => {});
     }
 
-    const recentHeadingId = nextId('recent');
     const quickHeadingId = nextId('quick');
-    const quickAction = (href, iconName, label, hint) =>
-      h(
-        'a',
-        { href, class: 'cd-card cd-quick' },
-        h('span', { class: 'cd-quick__icon' }, icon(iconName)),
-        h('span', { class: 'cd-quick__text' }, h('span', { class: 'cd-quick__label' }, label), h('span', { class: 'cd-quick__hint' }, hint)),
-        icon('chevron-right', 'cd-icon cd-quick__chevron')
-      );
+    const quickAction = (href, label, hint) =>
+      h('a', { href, class: 'cd-quick' }, h('span', { class: 'cd-quick__label' }, label), h('span', { class: 'cd-quick__hint' }, hint), h('span', { class: 'cd-quick__go', 'aria-hidden': 'true' }, '↗'));
+
+    const address = customer.defaultAddress;
+    const place = address ? [address.city, address.province || address.country].filter(Boolean).join(', ') : '';
+
+    setCover({ size: 'tall', claim: STRINGS.coverWelcome(customer.firstName), float: orders[0] ? orderFloat(orders[0]) : null });
 
     return h(
       'div',
       { class: 'cd-stack' },
       h(
-        'header',
-        { class: 'cd-hero' },
-        since ? h('p', { class: 'cd-eyebrow' }, STRINGS.customerSince(since)) : null,
-        h('h1', { class: 'cd-title cd-title--display', tabindex: '-1' }, STRINGS.welcome(customer.firstName)),
-        h('p', { class: 'cd-subtitle' }, STRINGS.overviewIntro),
-        creditSlot
+        'section',
+        { class: 'cd-about' },
+        gutter(),
+        h(
+          'div',
+          { class: 'cd-about__main' },
+          since ? h('p', { class: 'cd-eyebrow' }, STRINGS.customerSince(since)) : null,
+          h('h1', { class: 'cd-title', tabindex: '-1' }, STRINGS.aboutTitle),
+          stats.el,
+          creditSlot
+        ),
+        h(
+          'div',
+          { class: 'cd-about__aside' },
+          h('a', { href: '#addresses', class: 'cd-place' }, h('span', { class: 'cd-place__pin', 'aria-hidden': 'true' }, icon('pin', 'cd-icon cd-icon--sm')), h('span', null, place ? STRINGS.shipsTo(place) : STRINGS.noDefaultAddress)),
+          h('p', { class: 'cd-about__lead' }, STRINGS.addressLead),
+          h('p', { class: 'cd-about__note' }, STRINGS.addressNote)
+        )
       ),
-      stats.el,
       shipmentSlot,
       h(
         'section',
-        { class: 'cd-card cd-card--flush', 'aria-labelledby': recentHeadingId },
-        h(
-          'div',
-          { class: 'cd-card__header' },
-          h('h2', { class: 'cd-card__title', id: recentHeadingId }, STRINGS.recentOrders)
-        ),
-        orders.length ? ordersTable(orders) : ordersEmptyState(),
-        orders.length ? h('div', { class: 'cd-card__footer' }, button(STRINGS.viewAllOrders, { variant: 'secondary', href: '#orders' })) : null
+        { class: 'cd-dark', 'aria-label': STRINGS.ordersPlaced },
+        h('div', { class: 'cd-dark__head' }, h('h2', { class: 'cd-dark__title' }, STRINGS.ordersPlaced), orders.length ? h('a', { href: '#orders', class: 'cd-dark__link' }, STRINGS.viewAllOrders, ' ↗') : null),
+        orders.length ? orderRows(orders) : ordersEmptyState()
       ),
       h(
         'section',
-        { 'aria-labelledby': quickHeadingId },
+        { class: 'cd-quicks', 'aria-labelledby': quickHeadingId },
         h('h2', { class: 'cd-section-title', id: quickHeadingId }, STRINGS.quickActions),
         h(
           'div',
-          { class: 'cd-grid cd-grid--quick' },
-          quickAction('#tracking', 'truck', STRINGS.trackOrders, STRINGS.trackOrdersHint),
-          quickAction('#profile', 'user', STRINGS.manageProfile, STRINGS.manageProfileHint),
-          quickAction('#addresses', 'pin', STRINGS.viewAddresses, STRINGS.viewAddressesHint),
-          quickAction(config.shopUrl, 'bag', STRINGS.continueShopping, STRINGS.continueShoppingHint)
+          { class: 'cd-quicks__grid' },
+          quickAction('#tracking', STRINGS.trackOrders, STRINGS.trackOrdersHint),
+          quickAction('#profile', STRINGS.manageProfile, STRINGS.manageProfileHint),
+          quickAction('#addresses', STRINGS.viewAddresses, STRINGS.viewAddressesHint),
+          quickAction(config.shopUrl, STRINGS.continueShopping, STRINGS.continueShoppingHint)
         )
       )
     );
@@ -1698,7 +1841,8 @@
     });
 
     await show(null);
-    return h('div', { class: 'cd-stack' }, h('div', { class: 'cd-page-header' }, header.firstChild, form), list);
+    header.append(h('div', { class: 'cd-page-header__actions' }, form));
+    return h('div', { class: 'cd-stack' }, header, list);
   }
 
   const cursorUsed = (pageInfo) => pageInfo && (pageInfo.hasPreviousPage || pageInfo.hasNextPage);
@@ -1775,6 +1919,17 @@
     const discount = sumMoney([...lineItems.flatMap((item) => item.discountAllocations || []), ...(order.shippingDiscountAllocations || [])], currency);
     const statusUrl = safeUrl(order.statusPageUrl);
     const fulfillments = order.fulfillments.nodes.filter((f) => f.status !== 'CANCELLED');
+    setCover({
+      size: 'compact',
+      claim: STRINGS.coverOrder(order.name, orderChip(order) || STRINGS.order),
+      float: {
+        href: '#orders',
+        image: lineItems[0] && lineItems[0].image,
+        chip: orderChip(order),
+        title: formatMoney(order.totalPrice),
+        sub: STRINGS.itemCount(lineItems.reduce((sum, item) => sum + item.quantity, 0)),
+      },
+    });
 
     // Shipments, as Shopify groups them.
     const shipmentSections = fulfillments.map((fulfillment, index) => {
@@ -1901,6 +2056,7 @@
       h(
         'header',
         { class: 'cd-page-header cd-order-head' },
+        gutter(),
         h(
           'div',
           { class: 'cd-page-header__text' },
@@ -2718,6 +2874,9 @@
     const route = parseRoute();
     const definition = ROUTES[route.name];
     const id = ++renderId;
+    currentSection = definition.nav || route.name;
+    const claims = { orders: STRINGS.coverOrders, tracking: STRINGS.coverTracking, profile: STRINGS.coverProfile, addresses: STRINGS.coverAddresses };
+    setCover({ size: route.name === 'overview' ? 'tall' : 'compact', claim: claims[route.name] || '' });
     setActiveNav(definition.nav || route.name);
     setMenuOpen(false);
     view.setAttribute('aria-busy', 'true');
