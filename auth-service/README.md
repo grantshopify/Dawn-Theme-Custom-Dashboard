@@ -1,4 +1,10 @@
-# Customer dashboard auth service
+# Customer dashboard auth service (optional, not currently used)
+
+> **Status:** the theme currently uses the no-server version: an in-browser
+> public client (see [`docs/customer-dashboard.md`](../docs/customer-dashboard.md)).
+> This service is kept as an upgrade path for when the store has its own domain.
+> To use it, the dashboard JavaScript would need to switch back to calling this
+> service.
 
 A small backend (one Netlify Function) that connects the Dawn customer dashboard
 at `/pages/dashboard` to Shopify's **Customer Account API**. It's a

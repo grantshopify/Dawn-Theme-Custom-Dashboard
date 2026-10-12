@@ -1,12 +1,11 @@
 /*
  * Customer dashboard for Dawn.
  *
- * Vanilla JavaScript, no dependencies. All customer data comes from the
- * Shopify Customer Account API through the auth service configured on the
- * section (`data-auth-url`). This script never sees an access token: the
- * session lives in an HttpOnly cookie on the auth service's domain, and the
- * service only runs a fixed allowlist of operations scoped to the signed-in
- * customer.
+ * Vanilla JavaScript, no dependencies. All customer data comes directly from
+ * the Shopify Customer Account API. Authentication is Shopify's documented
+ * public-client flow for browser apps (authorization code + PKCE): tokens are
+ * held in memory only and the customer's existing Shopify login is reused
+ * silently with prompt=none. See docs/customer-dashboard.md.
  *
  * Every piece of API data is rendered with textContent / validated URLs.
  */
@@ -30,6 +29,51 @@
     completedHint: 'Fully fulfilled',
     statsCancelledNote: 'Cancelled orders count toward the total only.',
     orderSummary: 'Order summary',
+    storeCredit: 'Store credit',
+    storeCreditHint: 'Applied automatically at checkout',
+    latestShipment: 'On its way',
+    viewTracking: 'View all tracking',
+    searchOrders: 'Search orders',
+    searchPlaceholder: 'Order number, e.g. 1024',
+    search: 'Search',
+    clearSearch: 'Clear',
+    noResultsTitle: 'No matching orders.',
+    noResultsText: 'Check the order number and try again.',
+    resultsFor: (term) => `Results for “${term}”`,
+    buyAgain: 'Buy again',
+    adding: 'Adding…',
+    addedToCart: (count) => (count === 1 ? '1 item added to your cart.' : `${count} items added to your cart.`),
+    someUnavailable: (names) => `Not available anymore: ${names}.`,
+    nothingAdded: "These items aren't available anymore.",
+    viewCart: 'View cart',
+    printOrder: 'Print',
+    fulfilledTitle: 'Fulfilled',
+    shipmentCount: (index, total) => `${index} of ${total}`,
+    unfulfilledTitle: 'Unfulfilled',
+    payment: 'Payment',
+    paidByCustomer: 'Paid',
+    itemCount: (count) => (count === 1 ? '1 item' : `${count} items`),
+    productCount: (count, more) => `${count}${more ? '+' : ''} ${count === 1 && !more ? 'product' : 'products'}`,
+    taxes: 'Taxes',
+    contact: 'Contact information',
+    billingAddress: 'Billing address',
+    sameAsShipping: 'Same as shipping address',
+    shippingMethod: 'Shipping method',
+    viewMap: 'View map',
+    cancelledBanner: (date) => `This order was cancelled on ${date}.`,
+    payment_status: 'Payment status',
+    fulfillment_status: 'Fulfillment status',
+    needHelp: 'Need help with this order?',
+    contactUs: 'Contact us',
+    copy: 'Copy',
+    copied: 'Tracking number copied.',
+    copyTracking: (number) => `Copy tracking number ${number}`,
+    preferences: 'Communication preferences',
+    marketingLabel: 'Email me with news and offers',
+    marketingHint: 'You can unsubscribe at any time.',
+    marketingPending: 'Check your inbox to confirm your subscription.',
+    marketingUnavailable: "Email preferences can't be changed for this account.",
+    marketingSaved: 'Your email preference has been updated.',
     customerSince: (date) => `Customer since ${date}`,
     stepOrdered: 'Ordered',
     stepShipped: 'Shipped',
@@ -165,6 +209,7 @@
     authDenied: 'Sign-in was cancelled.',
     authFailed: "We couldn't complete your sign-in.",
     authLoop: "We couldn't keep you signed in. Please make sure cookies are enabled for this site.",
+    authStorage: 'Your browser blocked the storage needed to sign in. Allow site data for this store and try again.',
     signIn: 'Sign in',
     unavailableTitle: 'Your account dashboard is temporarily unavailable.',
     unavailableText: 'You can still view your orders and details in your Shopify account.',
@@ -174,26 +219,28 @@
     opensInNewWindow: '(opens in a new window)',
   };
 
+  // Tones follow Shopify admin conventions: completed states are neutral,
+  // states that still need to happen are "attention" (yellow).
   const FULFILLMENT_STATUS = {
-    FULFILLED: ['Fulfilled', 'success'],
-    PARTIALLY_FULFILLED: ['Partially fulfilled', 'warning'],
-    IN_PROGRESS: ['In progress', 'info'],
-    PENDING_FULFILLMENT: ['In progress', 'info'],
+    FULFILLED: ['Fulfilled', 'neutral'],
+    PARTIALLY_FULFILLED: ['Partially fulfilled', 'attention'],
+    IN_PROGRESS: ['In progress', 'attention'],
+    PENDING_FULFILLMENT: ['In progress', 'attention'],
     SCHEDULED: ['Scheduled', 'info'],
     ON_HOLD: ['On hold', 'warning'],
-    UNFULFILLED: ['Unfulfilled', 'neutral'],
-    OPEN: ['Unfulfilled', 'neutral'],
-    RESTOCKED: ['Unfulfilled', 'neutral'],
+    UNFULFILLED: ['Unfulfilled', 'attention'],
+    OPEN: ['Unfulfilled', 'attention'],
+    RESTOCKED: ['Unfulfilled', 'attention'],
   };
 
   const FINANCIAL_STATUS = {
-    PAID: ['Paid', 'success'],
+    PAID: ['Paid', 'neutral'],
     PARTIALLY_PAID: ['Partially paid', 'warning'],
     PENDING: ['Payment pending', 'warning'],
-    AUTHORIZED: ['Authorized', 'info'],
+    AUTHORIZED: ['Authorized', 'warning'],
     PARTIALLY_REFUNDED: ['Partially refunded', 'neutral'],
     REFUNDED: ['Refunded', 'neutral'],
-    VOIDED: ['Voided', 'critical'],
+    VOIDED: ['Voided', 'neutral'],
     EXPIRED: ['Expired', 'critical'],
   };
 
@@ -216,13 +263,18 @@
   // Configuration from the section markup
   // ---------------------------------------------------------------------------
   const config = {
-    authUrl: (root.dataset.authUrl || '').replace(/\/+$/, ''),
+    clientId: (root.dataset.clientId || '').trim(),
+    redirectUri: root.dataset.redirectUri,
+    shopOrigin: root.dataset.shopOrigin || window.location.origin,
     signedIn: root.dataset.signedIn === 'true',
     storefrontLoginUrl: root.dataset.storefrontLoginUrl,
     profileUrl: root.dataset.profileUrl,
     accountUrl: root.dataset.accountUrl,
     logoutUrl: root.dataset.logoutUrl,
     shopUrl: root.dataset.shopUrl || '/',
+    helpUrl: root.dataset.helpUrl || '',
+    cartUrl: root.dataset.cartUrl || '/cart',
+    shopRoot: (window.Shopify && window.Shopify.routes && window.Shopify.routes.root) || '/',
     countriesUrl: root.dataset.countriesUrl,
     locale: root.dataset.locale || document.documentElement.lang || 'en',
     country: root.dataset.country,
@@ -237,7 +289,7 @@
   const navLinks = [...root.querySelectorAll('[data-cd-route]')];
   const identityName = root.querySelector('[data-cd-name]');
   const identityAvatar = root.querySelector('[data-cd-avatar]');
-  const logoutForm = root.querySelector('[data-cd-logout]');
+  const logoutLink = root.querySelector('[data-cd-logout]');
 
   // ---------------------------------------------------------------------------
   // DOM helpers
@@ -394,10 +446,16 @@
   }
 
   let toastTimer;
-  function toast(message, tone = 'success') {
+  function toast(message, tone = 'success', action) {
     clearTimeout(toastTimer);
     toastRegion.replaceChildren(
-      h('div', { class: `cd-toast__message cd-toast__message--${tone}` }, icon(tone === 'success' ? 'check-circle' : 'alert'), h('span', null, message))
+      h(
+        'div',
+        { class: `cd-toast__message cd-toast__message--${tone}` },
+        icon(tone === 'success' ? 'check-circle' : 'alert'),
+        h('span', null, message),
+        action ? h('a', { href: action.href, class: 'cd-toast__action' }, action.label) : null
+      )
     );
     toastRegion.classList.add('is-visible');
     toastTimer = setTimeout(() => {
@@ -425,6 +483,13 @@
     const date = new Date(iso);
     if (Number.isNaN(date.getTime())) return '';
     return dateFormat ? dateFormat.format(date) : date.toDateString();
+  }
+
+  const dateTimeFormat = safeFormatter(() => new Intl.DateTimeFormat(config.locale, { dateStyle: 'long', timeStyle: 'short' }));
+  function formatDateTime(iso) {
+    const date = new Date(iso);
+    if (Number.isNaN(date.getTime())) return '';
+    return dateTimeFormat ? dateTimeFormat.format(date) : date.toString();
   }
 
   const monthYearFormat = safeFormatter(() => new Intl.DateTimeFormat(config.locale, { month: 'long', year: 'numeric' }));
@@ -471,7 +536,15 @@
   }
 
   // ---------------------------------------------------------------------------
-  // API client (talks only to the auth service; cookies carry the session)
+  // Customer Account API client: a public OAuth 2.0 client using the
+  // authorization code flow with PKCE, as Shopify documents for browser apps.
+  //
+  // Tokens live only in this closure's memory. They are never written to
+  // localStorage, sessionStorage, cookies or URLs, and never exposed on
+  // `window`. A full page reload forgets them and the dashboard re-authorizes
+  // silently (prompt=none) using the customer's existing Shopify login.
+  // sessionStorage holds only the one-time PKCE/state/nonce values for the
+  // redirect round trip, and they are deleted as soon as the customer returns.
   // ---------------------------------------------------------------------------
   class ApiError extends Error {
     constructor(kind, message) {
@@ -480,8 +553,254 @@
     }
   }
 
-  // Requests run one at a time so that, if the access token needs refreshing,
-  // only one request performs the refresh-token exchange.
+  // Captured before any later script can wrap it.
+  const nativeFetch = window.fetch.bind(window);
+  const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+  const SCOPES = 'openid email customer-account-api:full';
+  const SILENT_ERRORS = new Set(['login_required', 'interaction_required', 'consent_required']);
+  const TRANSACTION_KEY = 'cd-oauth-transaction';
+  const TRANSACTION_TTL = 10 * 60 * 1000;
+  const REFRESH_MARGIN = 60 * 1000;
+
+  let tokens = null;
+  let discoveryPromise = null;
+
+  function base64Url(bytes) {
+    let binary = '';
+    for (const byte of bytes) binary += String.fromCharCode(byte);
+    return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  }
+
+  function randomToken(length = 32) {
+    return base64Url(crypto.getRandomValues(new Uint8Array(length)));
+  }
+
+  async function pkceChallenge(verifier) {
+    const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier));
+    return base64Url(new Uint8Array(digest));
+  }
+
+  function safeEqual(a, b) {
+    if (typeof a !== 'string' || typeof b !== 'string' || a.length !== b.length) return false;
+    let diff = 0;
+    for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+    return diff === 0;
+  }
+
+  function decodeJwtPayload(jwt) {
+    const part = typeof jwt === 'string' ? jwt.split('.')[1] : null;
+    if (!part) throw new ApiError('auth', 'Missing id_token');
+    const binary = atob(part.replace(/-/g, '+').replace(/_/g, '/'));
+    return JSON.parse(new TextDecoder().decode(Uint8Array.from(binary, (c) => c.charCodeAt(0))));
+  }
+
+  async function fetchJson(url) {
+    let response;
+    try {
+      response = await nativeFetch(url, { headers: { Accept: 'application/json' }, credentials: 'omit' });
+    } catch {
+      throw new ApiError('network');
+    }
+    if (!response.ok) throw new ApiError('config', `Discovery failed (${response.status})`);
+    return response.json();
+  }
+
+  // Endpoints come from Shopify's discovery documents on the storefront domain.
+  function discover() {
+    if (!discoveryPromise) {
+      discoveryPromise = Promise.all([
+        fetchJson(`${config.shopOrigin}/.well-known/openid-configuration`),
+        fetchJson(`${config.shopOrigin}/.well-known/customer-account-api`),
+      ])
+        .then(([openid, accountApi]) => {
+          for (const key of ['issuer', 'authorization_endpoint', 'token_endpoint', 'end_session_endpoint']) {
+            if (!openid[key]) throw new ApiError('config', `Discovery missing ${key}`);
+          }
+          if (!accountApi.graphql_api) throw new ApiError('config', 'Discovery missing graphql_api');
+          return { ...openid, graphqlApi: accountApi.graphql_api };
+        })
+        .catch((error) => {
+          discoveryPromise = null;
+          throw error;
+        });
+    }
+    return discoveryPromise;
+  }
+
+  function saveTransaction(transaction) {
+    sessionStorage.setItem(TRANSACTION_KEY, JSON.stringify(transaction));
+  }
+
+  // Reads and deletes the transaction: each one can be used once.
+  function takeTransaction() {
+    try {
+      const raw = sessionStorage.getItem(TRANSACTION_KEY);
+      sessionStorage.removeItem(TRANSACTION_KEY);
+      const transaction = raw ? JSON.parse(raw) : null;
+      return transaction && transaction.exp > Date.now() ? transaction : null;
+    } catch {
+      return null;
+    }
+  }
+
+  async function startAuthorization({ silent }) {
+    const discovery = await discover();
+    const state = randomToken();
+    const nonce = randomToken();
+    const verifier = randomToken(48);
+    try {
+      saveTransaction({ state, nonce, verifier, silent, returnHash: window.location.hash, exp: Date.now() + TRANSACTION_TTL });
+    } catch {
+      renderAuthProblem('storage');
+      return;
+    }
+    const url = new URL(discovery.authorization_endpoint);
+    url.searchParams.set('scope', SCOPES);
+    url.searchParams.set('client_id', config.clientId);
+    url.searchParams.set('response_type', 'code');
+    url.searchParams.set('redirect_uri', config.redirectUri);
+    url.searchParams.set('state', state);
+    url.searchParams.set('nonce', nonce);
+    url.searchParams.set('code_challenge', await pkceChallenge(verifier));
+    url.searchParams.set('code_challenge_method', 'S256');
+    if (silent) url.searchParams.set('prompt', 'none');
+    if (config.locale) url.searchParams.set('locale', config.locale);
+    // replace(), not assign(): the redirect round trip must not leave entries
+    // that the Back button would replay.
+    window.location.replace(url.toString());
+  }
+
+  async function tokenRequest(params) {
+    const discovery = await discover();
+    let response;
+    try {
+      response = await nativeFetch(discovery.token_endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded', Accept: 'application/json' },
+        body: new URLSearchParams({ client_id: config.clientId, ...params }),
+        credentials: 'omit',
+      });
+    } catch {
+      throw new ApiError('network');
+    }
+    const body = await response.json().catch(() => ({}));
+    if (!response.ok || !body.access_token) throw new ApiError('auth', body.error || `Token request failed (${response.status})`);
+    return body;
+  }
+
+  function storeTokens(body) {
+    tokens = {
+      accessToken: body.access_token,
+      expiresAt: Date.now() + Number(body.expires_in || 0) * 1000,
+      refreshToken: body.refresh_token || (tokens && tokens.refreshToken) || null,
+      idToken: body.id_token || (tokens && tokens.idToken) || null,
+    };
+  }
+
+  async function refreshTokens() {
+    if (!tokens || !tokens.refreshToken) throw new ApiError('auth');
+    try {
+      storeTokens(await tokenRequest({ grant_type: 'refresh_token', refresh_token: tokens.refreshToken }));
+    } catch (error) {
+      tokens = null;
+      throw error.kind === 'network' ? error : new ApiError('auth');
+    }
+  }
+
+  async function accessToken() {
+    if (!tokens) throw new ApiError('auth');
+    if (tokens.expiresAt - Date.now() < REFRESH_MARGIN) await refreshTokens();
+    return tokens.accessToken;
+  }
+
+  // Handles the redirect back from Shopify. Returns 'authenticated', 'stopped'
+  // (an error was shown or another redirect started), or null (not a callback).
+  async function handleCallback() {
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get('code');
+    const state = params.get('state');
+    const error = params.get('error');
+    if (!state || (!code && !error)) return null;
+
+    const transaction = takeTransaction();
+    // Remove the authorization code from the address bar and history.
+    window.history.replaceState(null, '', `${window.location.pathname}${transaction ? transaction.returnHash || '' : ''}`);
+
+    // A stale or replayed callback (for example from history): start over.
+    if (!transaction) return null;
+    if (!safeEqual(state, transaction.state)) {
+      renderAuthProblem('failed');
+      return 'stopped';
+    }
+    if (error) {
+      if (transaction.silent && SILENT_ERRORS.has(error)) {
+        await startAuthorization({ silent: false });
+        return 'stopped';
+      }
+      renderAuthProblem(error === 'access_denied' ? 'denied' : 'failed');
+      return 'stopped';
+    }
+
+    const body = await tokenRequest({
+      grant_type: 'authorization_code',
+      redirect_uri: config.redirectUri,
+      code,
+      code_verifier: transaction.verifier,
+    });
+    // The ID token comes straight from the token endpoint over TLS, so its
+    // claims are checked here (OpenID Connect Core 3.1.3.7).
+    const discovery = await discover();
+    const claims = decodeJwtPayload(body.id_token);
+    const audience = Array.isArray(claims.aud) ? claims.aud : [claims.aud];
+    if (claims.iss !== discovery.issuer) throw new ApiError('auth', 'id_token issuer mismatch');
+    if (!audience.includes(config.clientId)) throw new ApiError('auth', 'id_token audience mismatch');
+    if (typeof claims.exp !== 'number' || claims.exp * 1000 < Date.now() - 120000) throw new ApiError('auth', 'id_token expired');
+    if (!safeEqual(claims.nonce, transaction.nonce)) throw new ApiError('auth', 'id_token nonce mismatch');
+    storeTokens(body);
+    return 'authenticated';
+  }
+
+  async function graphqlRequest(query, variables, attempt = 0) {
+    const discovery = await discover();
+    const token = await accessToken();
+    let response;
+    try {
+      response = await nativeFetch(discovery.graphqlApi, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json', Authorization: token },
+        body: JSON.stringify({ query, variables }),
+        credentials: 'omit',
+        cache: 'no-store',
+      });
+    } catch {
+      throw new ApiError('network');
+    }
+    if (response.status === 401) {
+      if (attempt === 0 && tokens && tokens.refreshToken) {
+        await refreshTokens();
+        return graphqlRequest(query, variables, attempt + 1);
+      }
+      tokens = null;
+      throw new ApiError('auth');
+    }
+    if (response.status === 429) {
+      if (attempt >= 2) throw new ApiError('rate_limited');
+      await sleep(Math.min(Number(response.headers.get('Retry-After')) || 2, 10) * 1000);
+      return graphqlRequest(query, variables, attempt + 1);
+    }
+    if (!response.ok) throw new ApiError('server');
+    const body = await response.json().catch(() => null);
+    if (!body) throw new ApiError('server');
+    const errors = Array.isArray(body.errors) ? body.errors : [];
+    if (errors.some((e) => e && e.extensions && e.extensions.code === 'THROTTLED')) {
+      if (attempt >= 2) throw new ApiError('rate_limited');
+      await sleep(2000);
+      return graphqlRequest(query, variables, attempt + 1);
+    }
+    return body;
+  }
+
+  // Requests run one at a time so only one refresh-token exchange can happen.
   let queue = Promise.resolve();
   function serialized(task) {
     const run = queue.then(task, task);
@@ -489,51 +808,178 @@
     return run;
   }
 
-  const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+  // ---- Operations (fields verified against the 2026-10 API reference) ----
+  // Every query is scoped by Shopify to the customer who owns the token; no
+  // customer ID is ever sent.
+  const MONEY = 'amount currencyCode';
+  const ORDER_SUMMARY = `id name number processedAt cancelledAt financialStatus fulfillmentStatus totalPrice { ${MONEY} }`;
+  const ADDRESS = 'id firstName lastName company address1 address2 city province zoneCode zip country countryCode phoneNumber formatted(withName: true)';
+  const TRACKING_FULFILLMENT = 'id createdAt status latestShipmentStatus estimatedDeliveryAt requiresShipping trackingInformation { company number url }';
+  const USER_ERRORS = 'userErrors { field message code }';
+  const ORDERS_PAGE_SIZE = 10;
+  const STATS_PAGE_SIZE = 100;
+  const ADDRESSES_PAGE_SIZE = 50;
+  // Kept small so the order detail query stays well under the per-query cost limit.
+  const ORDER_LINE_ITEMS = 50;
 
-  async function request(path, init = {}, attempt = 0) {
-    let response;
-    try {
-      response = await fetch(`${config.authUrl}${path}`, { credentials: 'include', cache: 'no-store', ...init });
-    } catch {
-      throw new ApiError('network');
-    }
-    if (response.status === 429 && attempt < 2) {
-      const retryAfter = Math.min(Number(response.headers.get('Retry-After')) || 2, 10);
-      await sleep(retryAfter * 1000);
-      return request(path, init, attempt + 1);
-    }
-    let body = null;
-    try {
-      body = await response.json();
-    } catch {
-      // Non-JSON error body.
-    }
-    return { status: response.status, body };
-  }
+  const pageVariables = (cursor = {}) =>
+    cursor.before ? { last: ORDERS_PAGE_SIZE, before: cursor.before } : { first: ORDERS_PAGE_SIZE, after: cursor.after || null };
+
+  const OPERATIONS = {
+    Overview: {
+      query: `query Overview {
+        customer {
+          id firstName lastName displayName creationDate
+          orders(first: 5, sortKey: PROCESSED_AT, reverse: true) { nodes { ${ORDER_SUMMARY} } }
+        }
+      }`,
+    },
+    OrderStats: {
+      query: `query OrderStats($after: String) {
+        customer {
+          orders(first: ${STATS_PAGE_SIZE}, after: $after) {
+            nodes { fulfillmentStatus cancelledAt }
+            pageInfo { hasNextPage endCursor }
+          }
+        }
+      }`,
+      variables: (v) => ({ after: v.after || null }),
+    },
+    Orders: {
+      query: `query Orders($first: Int, $after: String, $last: Int, $before: String, $query: String) {
+        customer {
+          orders(first: $first, after: $after, last: $last, before: $before, query: $query, sortKey: PROCESSED_AT, reverse: true) {
+            nodes {
+              ${ORDER_SUMMARY}
+              lineItems(first: 4) { nodes { title quantity image { url altText } } pageInfo { hasNextPage } }
+            }
+            pageInfo { hasNextPage hasPreviousPage startCursor endCursor }
+          }
+        }
+      }`,
+      variables: (v) => ({ ...pageVariables(v), query: v.query || null }),
+    },
+    Order: {
+      query: `query Order($id: ID!) {
+        order(id: $id) {
+          ${ORDER_SUMMARY}
+          cancelReason currencyCode statusPageUrl requiresShipping
+          subtotal { ${MONEY} }
+          totalShipping { ${MONEY} }
+          totalTax { ${MONEY} }
+          totalDuties { ${MONEY} }
+          totalRefunded { ${MONEY} }
+          shippingDiscountAllocations { allocatedAmount { ${MONEY} } }
+          email
+          shippingAddress { formatted(withName: true) }
+          billingAddress { formatted(withName: true) }
+          shippingLine { title }
+          lineItems(first: ${ORDER_LINE_ITEMS}) {
+            nodes {
+              id title variantTitle quantity sku variantId giftCard
+              variantOptions { name value }
+              price { ${MONEY} }
+              totalPrice { ${MONEY} }
+              discountAllocations { allocatedAmount { ${MONEY} } }
+              image { url altText }
+            }
+            pageInfo { hasNextPage }
+          }
+          fulfillments(first: 5) {
+            nodes {
+              ${TRACKING_FULFILLMENT}
+              fulfillmentLineItems(first: 25) { nodes { quantity lineItem { id title } } pageInfo { hasNextPage } }
+            }
+          }
+        }
+      }`,
+      variables: (v) => ({ id: v.id }),
+    },
+    Tracking: {
+      query: `query Tracking($first: Int, $after: String, $last: Int, $before: String) {
+        customer {
+          orders(first: $first, after: $after, last: $last, before: $before, sortKey: PROCESSED_AT, reverse: true) {
+            nodes {
+              id name processedAt cancelledAt fulfillmentStatus requiresShipping statusPageUrl
+              fulfillments(first: 10) { nodes { ${TRACKING_FULFILLMENT} } }
+            }
+            pageInfo { hasNextPage hasPreviousPage startCursor endCursor }
+          }
+        }
+      }`,
+      variables: pageVariables,
+    },
+    StoreCredit: {
+      query: `query StoreCredit {
+        customer { storeCreditAccounts(first: 5) { nodes { balance { ${MONEY} } } } }
+      }`,
+    },
+    EmailSubscribe: {
+      query: `mutation EmailSubscribe {
+        customerEmailMarketingSubscribe { emailAddress { marketingState } ${USER_ERRORS} }
+      }`,
+    },
+    EmailUnsubscribe: {
+      query: `mutation EmailUnsubscribe {
+        customerEmailMarketingUnsubscribe { emailAddress { marketingState } ${USER_ERRORS} }
+      }`,
+    },
+    Profile: {
+      query: `query Profile {
+        customer { id firstName lastName emailAddress { emailAddress marketingState } phoneNumber { phoneNumber } }
+      }`,
+    },
+    ProfileUpdate: {
+      query: `mutation ProfileUpdate($input: CustomerUpdateInput!) {
+        customerUpdate(input: $input) { customer { id firstName lastName } ${USER_ERRORS} }
+      }`,
+      variables: (v) => ({ input: v.input }),
+    },
+    Addresses: {
+      query: `query Addresses($after: String) {
+        customer {
+          defaultAddress { id }
+          addresses(first: ${ADDRESSES_PAGE_SIZE}, after: $after) { nodes { ${ADDRESS} } pageInfo { hasNextPage endCursor } }
+        }
+      }`,
+      variables: (v) => ({ after: v.after || null }),
+    },
+    AddressCreate: {
+      query: `mutation AddressCreate($address: CustomerAddressInput!, $defaultAddress: Boolean) {
+        customerAddressCreate(address: $address, defaultAddress: $defaultAddress) { customerAddress { ${ADDRESS} } ${USER_ERRORS} }
+      }`,
+      variables: (v) => ({ address: v.address, defaultAddress: Boolean(v.defaultAddress) }),
+    },
+    AddressUpdate: {
+      query: `mutation AddressUpdate($addressId: ID!, $address: CustomerAddressInput, $defaultAddress: Boolean) {
+        customerAddressUpdate(addressId: $addressId, address: $address, defaultAddress: $defaultAddress) { customerAddress { ${ADDRESS} } ${USER_ERRORS} }
+      }`,
+      variables: (v) => {
+        const out = { addressId: v.addressId };
+        if (v.address) out.address = v.address;
+        if (v.defaultAddress) out.defaultAddress = true;
+        return out;
+      },
+    },
+    AddressDelete: {
+      query: `mutation AddressDelete($addressId: ID!) {
+        customerAddressDelete(addressId: $addressId) { deletedAddressId ${USER_ERRORS} }
+      }`,
+      variables: (v) => ({ addressId: v.addressId }),
+    },
+  };
 
   const api = {
-    async session() {
-      const { status } = await serialized(() => request('/api/session'));
-      if (status === 200) return true;
-      if (status === 401) return false;
-      throw new ApiError(status === 429 ? 'rate_limited' : 'server');
-    },
-
     async call(operation, variables = {}) {
-      const { status, body } = await serialized(() =>
-        request('/api/graphql', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ operation, variables }),
-        })
-      );
-      if (status === 401) {
-        auth.signIn();
-        throw new ApiError('auth');
-      }
-      if (status === 429) throw new ApiError('rate_limited');
-      if (status !== 200 || !body) throw new ApiError('server');
+      const definition = OPERATIONS[operation];
+      const body = await serialized(async () => {
+        try {
+          return await graphqlRequest(definition.query, definition.variables ? definition.variables(variables) : {});
+        } catch (error) {
+          if (error.kind === 'auth') auth.signIn();
+          throw error;
+        }
+      });
       // Partial data is accepted (for example a restricted field); a missing
       // root object is an error.
       if (!body.data) throw new ApiError('graphql', body.errors && body.errors[0] && body.errors[0].message);
@@ -557,9 +1003,10 @@
   const ATTEMPTS_KEY = 'cd-auth-attempts';
 
   const auth = {
-    // Counts sign-in redirects in a short window so a misconfiguration (for
-    // example blocked cookies) shows an error instead of redirecting forever.
-    // Only timestamps are stored; never tokens.
+    handleCallback,
+
+    // Counts sign-in redirects in a short window so a misconfiguration shows an
+    // error instead of redirecting forever. Only timestamps are stored.
     recordAttempt() {
       try {
         const now = Date.now();
@@ -580,12 +1027,6 @@
       }
     },
 
-    returnTo() {
-      const url = new URL(window.location.href);
-      url.searchParams.delete('cd_auth_error');
-      return `${url.pathname}${url.search}${url.hash}`;
-    },
-
     // Signed in to the storefront: Shopify already knows the customer, so the
     // authorization request uses prompt=none and returns without a login form.
     // Otherwise the customer signs in once through Shopify's storefront login,
@@ -595,16 +1036,37 @@
         renderAuthProblem('loop');
         return;
       }
+      tokens = null;
       clearProtectedContent();
-      if (config.signedIn || interactive || !config.storefrontLoginUrl) {
-        const url = new URL('/auth/login', config.authUrl);
-        url.searchParams.set('return_to', auth.returnTo());
-        if (!interactive && config.signedIn) url.searchParams.set('prompt', 'none');
-        if (config.locale) url.searchParams.set('locale', config.locale);
-        window.location.assign(url.toString());
-      } else {
-        window.location.assign(config.storefrontLoginUrl);
+      if (!interactive && !config.signedIn && config.storefrontLoginUrl) {
+        window.location.replace(config.storefrontLoginUrl);
+        return;
       }
+      startAuthorization({ silent: !interactive && config.signedIn }).catch((error) => {
+        view.setAttribute('aria-busy', 'false');
+        view.replaceChildren(errorState(error, () => window.location.reload()));
+      });
+    },
+
+    async logout() {
+      const idToken = tokens && tokens.idToken;
+      tokens = null;
+      clearProtectedContent();
+      auth.resetAttempts();
+      const storefrontLogout = new URL(config.logoutUrl || '/account/logout', window.location.origin).toString();
+      if (idToken) {
+        try {
+          const discovery = await discover();
+          const url = new URL(discovery.end_session_endpoint);
+          url.searchParams.set('id_token_hint', idToken);
+          url.searchParams.set('post_logout_redirect_uri', storefrontLogout);
+          window.location.assign(url.toString());
+          return;
+        } catch {
+          // Fall through to the storefront logout.
+        }
+      }
+      window.location.assign(storefrontLogout);
     },
   };
 
@@ -616,7 +1078,7 @@
   }
 
   function renderAuthProblem(reason) {
-    const messages = { expired: STRINGS.authExpired, denied: STRINGS.authDenied, loop: STRINGS.authLoop };
+    const messages = { expired: STRINGS.authExpired, denied: STRINGS.authDenied, loop: STRINGS.authLoop, storage: STRINGS.authStorage };
     view.setAttribute('aria-busy', 'false');
     view.replaceChildren(
       h(
@@ -699,40 +1161,109 @@
     });
   }
 
-  function recentOrdersTable(orders) {
+  // Order index table, styled after Shopify admin's order list.
+  function ordersTable(orders, { showItems = false } = {}) {
+    const columns = [STRINGS.order, STRINGS.date, showItems ? STRINGS.items : null, STRINGS.total, STRINGS.payment_status, STRINGS.fulfillment_status].filter(Boolean);
     const head = h(
       'thead',
       null,
-      h(
-        'tr',
-        null,
-        [STRINGS.order, STRINGS.date, STRINGS.total, STRINGS.fulfillment, STRINGS.status].map((label) => h('th', { scope: 'col' }, label)),
-        h('th', { scope: 'col' }, h('span', { class: 'visually-hidden' }, STRINGS.viewDetails))
-      )
+      h('tr', null, columns.map((label) => h('th', { scope: 'col' }, label)), h('th', { scope: 'col' }, h('span', { class: 'visually-hidden' }, STRINGS.viewDetails)))
     );
-    const rows = orders.map((order) =>
-      h(
+    const rows = orders.map((order) => {
+      const items = showItems && order.lineItems ? order.lineItems.nodes : [];
+      const more = showItems && order.lineItems && order.lineItems.pageInfo && order.lineItems.pageInfo.hasNextPage;
+      return h(
         'tr',
-        null,
-        h('th', { scope: 'row', 'data-label': STRINGS.order }, order.name),
+        { class: 'cd-row' },
+        h(
+          'th',
+          { scope: 'row', 'data-label': STRINGS.order },
+          h('a', { href: orderHref(order), class: 'cd-row__link' }, order.name),
+          order.cancelledAt ? h('span', { class: 'cd-row__flag' }, badge(orderStatus(order))) : null
+        ),
         h('td', { 'data-label': STRINGS.date }, formatDate(order.processedAt)),
-        h('td', { 'data-label': STRINGS.total }, moneyWithCode(order.totalPrice)),
-        h('td', { 'data-label': STRINGS.fulfillment }, statusBadge(FULFILLMENT_STATUS, order.fulfillmentStatus)),
-        h('td', { 'data-label': STRINGS.status }, badge(orderStatus(order))),
+        showItems
+          ? h(
+              'td',
+              { 'data-label': STRINGS.items },
+              h(
+                'span',
+                { class: 'cd-row__items' },
+                h('span', { class: 'cd-row__thumbs' }, items.slice(0, 3).map((item) => thumbnail(item.image, 32))),
+                h('span', { class: 'cd-muted' }, STRINGS.productCount(items.length, more))
+              )
+            )
+          : null,
+        h('td', { 'data-label': STRINGS.total, class: 'cd-row__total' }, formatMoney(order.totalPrice)),
+        h('td', { 'data-label': STRINGS.payment_status }, statusBadge(FINANCIAL_STATUS, order.financialStatus)),
+        h('td', { 'data-label': STRINGS.fulfillment_status }, order.cancelledAt ? null : statusBadge(FULFILLMENT_STATUS, order.fulfillmentStatus)),
         h(
           'td',
           { class: 'cd-table__action' },
           h(
             'a',
-            { href: orderHref(order), class: 'cd-link' },
-            STRINGS.viewDetails,
-            h('span', { class: 'visually-hidden' }, ` ${STRINGS.orderNamed(order.name)}`),
+            { href: orderHref(order), class: 'cd-row__chevron', tabindex: '-1', 'aria-hidden': 'true' },
             icon('chevron-right', 'cd-icon cd-icon--sm')
           )
         )
-      )
-    );
+      );
+    });
     return h('div', { class: 'cd-table-wrap' }, h('table', { class: 'cd-table' }, head, h('tbody', null, rows)));
+  }
+
+  function copyButton(text) {
+    if (!navigator.clipboard) return null;
+    const el = h('button', { type: 'button', class: 'cd-copy', 'aria-label': STRINGS.copyTracking(text) }, STRINGS.copy);
+    el.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(text);
+        toast(STRINGS.copied);
+      } catch {
+        // Clipboard permission denied; the number stays selectable.
+      }
+    });
+    return el;
+  }
+
+  // ---- Cart (Shopify's storefront Ajax cart API, same origin) ----
+  async function refreshCartBubble() {
+    try {
+      const response = await nativeFetch(`${config.shopRoot}?sections=cart-icon-bubble`, { credentials: 'same-origin' });
+      const sections = await response.json();
+      const fresh = new DOMParser().parseFromString(sections['cart-icon-bubble'], 'text/html').querySelector('.shopify-section');
+      const target = document.getElementById('cart-icon-bubble');
+      if (fresh && target) target.innerHTML = fresh.innerHTML;
+    } catch {
+      // The header count refreshes on the next page load.
+    }
+  }
+
+  // Adds an order's items back to the cart. Each line is added on its own so
+  // one sold-out or deleted product doesn't block the rest.
+  async function buyAgain(lineItems) {
+    let added = 0;
+    const unavailable = [];
+    for (const item of lineItems) {
+      const variantId = numericId(item.variantId);
+      if (!variantId || item.giftCard) {
+        unavailable.push(item.title);
+        continue;
+      }
+      try {
+        const response = await nativeFetch(`${config.shopRoot}cart/add.js`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+          credentials: 'same-origin',
+          body: JSON.stringify({ items: [{ id: Number(variantId), quantity: item.quantity }] }),
+        });
+        if (response.ok) added += item.quantity;
+        else unavailable.push(item.title);
+      } catch {
+        unavailable.push(item.title);
+      }
+    }
+    if (added) await refreshCartBubble();
+    return { added, unavailable };
   }
 
   // Shipment stage, derived only from Shopify's latestShipmentStatus. No
@@ -804,7 +1335,6 @@
     }
 
     return active.map((fulfillment) => {
-      const tracking = (fulfillment.trackingInformation || []).filter((t) => t && (t.number || t.url || t.company));
       const items = showItems && fulfillment.fulfillmentLineItems ? fulfillment.fulfillmentLineItems.nodes || [] : [];
       const moreItems = showItems && fulfillment.fulfillmentLineItems && fulfillment.fulfillmentLineItems.pageInfo && fulfillment.fulfillmentLineItems.pageInfo.hasNextPage;
 
@@ -821,22 +1351,7 @@
         fulfillment.estimatedDeliveryAt && fulfillment.latestShipmentStatus !== 'DELIVERED'
           ? h('p', { class: 'cd-muted' }, STRINGS.estimatedDelivery(formatDate(fulfillment.estimatedDeliveryAt)))
           : null,
-        tracking.length
-          ? tracking.map((info) => {
-              const url = safeUrl(info.url);
-              return h(
-                'div',
-                { class: 'cd-tracking' },
-                h(
-                  'dl',
-                  { class: 'cd-tracking__details' },
-                  info.company ? h('div', null, h('dt', null, STRINGS.carrier), h('dd', null, info.company)) : null,
-                  info.number ? h('div', null, h('dt', null, STRINGS.trackingNumber), h('dd', { class: 'cd-mono' }, info.number)) : null
-                ),
-                url ? externalLink(url, STRINGS.trackShipment, 'button button--secondary cd-button cd-button--small') : null
-              );
-            })
-          : h('p', { class: 'cd-shipment-note' }, icon('clock', 'cd-icon cd-icon--sm'), STRINGS.trackingUnavailable),
+        trackingBlock(fulfillment),
         items.length
           ? h(
               'div',
@@ -1009,6 +1524,54 @@
 
     const since = customer.creationDate ? formatMonthYear(customer.creationDate) : '';
 
+    // Optional extras load after the main view; a failure just hides them.
+    const creditSlot = h('div', { class: 'cd-credit', hidden: true });
+    cached('storeCredit', () => api.call('StoreCredit'), 5 * 60000)
+      .then((credit) => {
+        const balances = credit.customer.storeCreditAccounts.nodes.map((n) => n.balance).filter(isPositive);
+        if (!balances.length) return;
+        creditSlot.replaceChildren(
+          h('span', { class: 'cd-credit__label' }, STRINGS.storeCredit),
+          h('span', { class: 'cd-credit__value' }, balances.map(formatMoney).join(' · ')),
+          h('span', { class: 'cd-credit__hint' }, STRINGS.storeCreditHint)
+        );
+        creditSlot.hidden = false;
+      })
+      .catch(() => {});
+
+    const shipmentSlot = h('section', { class: 'cd-spotlight', hidden: true, 'aria-label': STRINGS.latestShipment });
+    if (orders.length) {
+      cached('tracking:first', () => api.call('Tracking', {}), 60000)
+        .then((tracking) => {
+          const active = tracking.customer.orders.nodes.find(
+            (order) =>
+              !order.cancelledAt &&
+              order.fulfillments.nodes.some(
+                (f) => f.status !== 'CANCELLED' && f.requiresShipping !== false && !['DELIVERED', 'PICKED_UP'].includes(f.latestShipmentStatus)
+              )
+          );
+          if (!active) return;
+          const fulfillments = active.fulfillments.nodes.filter((f) => f.status !== 'CANCELLED' && !['DELIVERED', 'PICKED_UP'].includes(f.latestShipmentStatus));
+          shipmentSlot.replaceChildren(
+            h(
+              'div',
+              { class: 'cd-section-head' },
+              h('h2', { class: 'cd-section-title' }, STRINGS.latestShipment),
+              h('a', { href: '#tracking', class: 'cd-link' }, STRINGS.viewTracking, icon('chevron-right', 'cd-icon cd-icon--sm'))
+            ),
+            h(
+              'p',
+              { class: 'cd-spotlight__order' },
+              h('a', { href: orderHref(active), class: 'cd-link-plain' }, STRINGS.orderNamed(active.name)),
+              h('span', { class: 'cd-muted' }, ` · ${STRINGS.placedOn(formatDate(active.processedAt))}`)
+            ),
+            ...shipments(active, fulfillments.slice(0, 1))
+          );
+          shipmentSlot.hidden = false;
+        })
+        .catch(() => {});
+    }
+
     const recentHeadingId = nextId('recent');
     const quickHeadingId = nextId('quick');
     const quickAction = (href, iconName, label, hint) =>
@@ -1028,9 +1591,11 @@
         { class: 'cd-hero' },
         since ? h('p', { class: 'cd-eyebrow' }, STRINGS.customerSince(since)) : null,
         h('h1', { class: 'cd-title cd-title--display', tabindex: '-1' }, STRINGS.welcome(customer.firstName)),
-        h('p', { class: 'cd-subtitle' }, STRINGS.overviewIntro)
+        h('p', { class: 'cd-subtitle' }, STRINGS.overviewIntro),
+        creditSlot
       ),
       stats.el,
+      shipmentSlot,
       h(
         'section',
         { class: 'cd-card cd-card--flush', 'aria-labelledby': recentHeadingId },
@@ -1039,7 +1604,7 @@
           { class: 'cd-card__header' },
           h('h2', { class: 'cd-card__title', id: recentHeadingId }, STRINGS.recentOrders)
         ),
-        orders.length ? recentOrdersTable(orders) : ordersEmptyState(),
+        orders.length ? ordersTable(orders) : ordersEmptyState(),
         orders.length ? h('div', { class: 'cd-card__footer' }, button(STRINGS.viewAllOrders, { variant: 'secondary', href: '#orders' })) : null
       ),
       h(
@@ -1058,66 +1623,142 @@
     );
   }
 
-  function orderCard(order) {
-    const items = order.lineItems ? order.lineItems.nodes : [];
-    const hasMore = order.lineItems && order.lineItems.pageInfo && order.lineItems.pageInfo.hasNextPage;
-    const names = items.map((item) => (item.quantity > 1 ? `${item.title} × ${item.quantity}` : item.title)).join(', ');
-    const headingId = nextId('order');
-    return h(
-      'article',
-      { class: 'cd-card cd-order', 'aria-labelledby': headingId },
-      h(
-        'div',
-        { class: 'cd-order__header' },
-        h('div', null, h('h2', { class: 'cd-order__name', id: headingId }, STRINGS.orderNamed(order.name)), h('p', { class: 'cd-muted' }, STRINGS.placedOn(formatDate(order.processedAt)))),
-        h('div', { class: 'cd-order__total' }, h('span', { class: 'visually-hidden' }, `${STRINGS.total}: `), moneyWithCode(order.totalPrice))
-      ),
-      items.length
-        ? h(
-            'div',
-            { class: 'cd-order__items' },
-            h('div', { class: 'cd-order__thumbs' }, items.map((item) => thumbnail(item.image, 56)), hasMore ? h('span', { class: 'cd-thumb cd-thumb--more' }, '+') : null),
-            h('p', { class: 'cd-order__names' }, names, hasMore ? `, ${STRINGS.andMore}` : '')
-          )
-        : null,
-      h(
-        'div',
-        { class: 'cd-order__footer' },
-        h(
-          'div',
-          { class: 'cd-badges' },
-          order.cancelledAt ? badge(orderStatus(order)) : null,
-          statusBadge(FINANCIAL_STATUS, order.financialStatus),
-          statusBadge(FULFILLMENT_STATUS, order.fulfillmentStatus)
-        ),
-        h(
-          'a',
-          { href: orderHref(order), class: 'button button--secondary cd-button cd-button--small' },
-          STRINGS.viewOrder,
-          h('span', { class: 'visually-hidden' }, ` ${order.name}`)
-        )
-      )
-    );
+  // Search uses the Customer Account API `order_number` filter.
+  function orderSearchQuery(term) {
+    const digits = term.replace(/^#/, '').trim();
+    return /^\d{1,12}$/.test(digits) ? `order_number:${digits}` : null;
   }
 
   async function ordersView() {
     const list = h('div', { class: 'cd-list', 'aria-live': 'polite' });
     const header = pageHeader(STRINGS.myOrders, STRINGS.myOrdersIntro);
+    let query = null;
+    let term = '';
+
     const show = paginatedList({
       container: list,
       focusTarget: header.querySelector('h1'),
-      load: (cursor) => api.call('Orders', cursor || {}),
+      load: (cursor) => api.call('Orders', { ...(cursor || {}), query }),
       renderPage: (data, onPage) => {
         const connection = data.customer.orders;
-        if (!connection.nodes.length && !cursorUsed(connection.pageInfo)) return ordersEmptyState();
-        return h('div', { class: 'cd-stack cd-stack--tight' }, connection.nodes.map(orderCard), pager(connection.pageInfo, onPage));
+        if (!connection.nodes.length && !cursorUsed(connection.pageInfo)) {
+          return query
+            ? emptyState({ iconName: 'package', title: STRINGS.noResultsTitle, text: STRINGS.noResultsText })
+            : ordersEmptyState();
+        }
+        return h(
+          'div',
+          { class: 'cd-orders' },
+          query ? h('p', { class: 'cd-results' }, STRINGS.resultsFor(term)) : null,
+          h('div', { class: 'cd-card cd-card--flush' }, ordersTable(connection.nodes, { showItems: true })),
+          pager(connection.pageInfo, onPage)
+        );
       },
     });
+
+    const inputId = nextId('order-search');
+    const input = h('input', {
+      id: inputId,
+      type: 'search',
+      class: 'cd-input cd-search__input',
+      placeholder: STRINGS.searchPlaceholder,
+      inputmode: 'numeric',
+      autocomplete: 'off',
+      maxlength: 13,
+    });
+    const clear = h('button', { type: 'button', class: 'cd-text-button', hidden: true }, STRINGS.clearSearch);
+    const form = h(
+      'form',
+      { class: 'cd-search', role: 'search' },
+      h('label', { for: inputId, class: 'visually-hidden' }, STRINGS.searchOrders),
+      input,
+      button(STRINGS.search, { type: 'submit', variant: 'secondary', className: 'cd-button--small' }),
+      clear
+    );
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      term = input.value.trim();
+      query = term ? orderSearchQuery(term) : null;
+      if (term && !query) {
+        input.setAttribute('aria-invalid', 'true');
+        toast(STRINGS.noResultsText, 'error');
+        return;
+      }
+      input.removeAttribute('aria-invalid');
+      clear.hidden = !query;
+      show(null);
+    });
+    clear.addEventListener('click', () => {
+      input.value = '';
+      term = '';
+      query = null;
+      clear.hidden = true;
+      show(null);
+      input.focus();
+    });
+
     await show(null);
-    return h('div', { class: 'cd-stack' }, header, list);
+    return h('div', { class: 'cd-stack' }, h('div', { class: 'cd-page-header' }, header.firstChild, form), list);
   }
 
   const cursorUsed = (pageInfo) => pageInfo && (pageInfo.hasPreviousPage || pageInfo.hasNextPage);
+
+  // Shopify admin-style section: icon + title above a card.
+  function statusSection({ iconName, title, meta, aside }, ...content) {
+    const id = nextId('section');
+    return h(
+      'section',
+      { class: 'cd-sc', 'aria-labelledby': id },
+      h(
+        'div',
+        { class: 'cd-sc__head' },
+        h('span', { class: 'cd-sc__icon' }, icon(iconName, 'cd-icon cd-icon--sm')),
+        h('h2', { class: 'cd-sc__title', id }, title, meta ? h('span', { class: 'cd-sc__meta' }, meta) : null),
+        aside ? h('div', { class: 'cd-sc__aside' }, aside) : null
+      ),
+      h('div', { class: 'cd-card cd-sc__body' }, content)
+    );
+  }
+
+  function variantLabel(item) {
+    return item.variantTitle || (item.variantOptions || []).map((option) => `${option.name}: ${option.value}`).join(' / ');
+  }
+
+  // One item line: thumbnail, title, variant chip, "price × qty", line total.
+  function itemRow(item, quantity) {
+    const variant = variantLabel(item);
+    const lineTotal =
+      item.price && quantity !== item.quantity
+        ? { amount: (Number(item.price.amount) * quantity).toFixed(2), currencyCode: item.price.currencyCode }
+        : item.totalPrice;
+    return h(
+      'li',
+      { class: 'cd-item' },
+      thumbnail(item.image, 48),
+      h('div', { class: 'cd-item__info' }, h('p', { class: 'cd-item__title' }, item.title), variant ? h('span', { class: 'cd-chip' }, variant) : null),
+      h('p', { class: 'cd-item__qty' }, item.price ? formatMoney(item.price) : '', h('span', { class: 'cd-item__x' }, ' × '), h('span', { class: 'cd-qty' }, String(quantity))),
+      h('p', { class: 'cd-item__total' }, formatMoney(lineTotal))
+    );
+  }
+
+  function trackingBlock(fulfillment) {
+    const tracking = (fulfillment.trackingInformation || []).filter((t) => t && (t.number || t.url || t.company));
+    if (!tracking.length) return h('p', { class: 'cd-shipment-note' }, icon('clock', 'cd-icon cd-icon--sm'), STRINGS.trackingUnavailable);
+    return tracking.map((info) => {
+      const url = safeUrl(info.url);
+      return h(
+        'div',
+        { class: 'cd-tracking' },
+        h(
+          'dl',
+          { class: 'cd-tracking__details' },
+          info.company ? h('div', null, h('dt', null, STRINGS.carrier), h('dd', null, info.company)) : null,
+          info.number ? h('div', null, h('dt', null, STRINGS.trackingNumber), h('dd', { class: 'cd-mono cd-copyable' }, info.number, copyButton(info.number))) : null
+        ),
+        url ? externalLink(url, STRINGS.trackShipment, 'button button--secondary cd-button cd-button--small') : null
+      );
+    });
+  }
 
   async function orderDetailView(route) {
     const data = await api.call('Order', { id: `gid://shopify/Order/${route.id}` });
@@ -1128,103 +1769,188 @@
     }
 
     const lineItems = order.lineItems.nodes;
+    const truncated = order.lineItems.pageInfo.hasNextPage;
+    const byId = new Map(lineItems.map((item) => [item.id, item]));
     const currency = order.currencyCode || (order.totalPrice && order.totalPrice.currencyCode);
-    const discount = sumMoney(
-      [...lineItems.flatMap((item) => item.discountAllocations || []), ...(order.shippingDiscountAllocations || [])],
-      currency
-    );
+    const discount = sumMoney([...lineItems.flatMap((item) => item.discountAllocations || []), ...(order.shippingDiscountAllocations || [])], currency);
     const statusUrl = safeUrl(order.statusPageUrl);
+    const fulfillments = order.fulfillments.nodes.filter((f) => f.status !== 'CANCELLED');
 
-    const itemRows = lineItems.map((item) => {
-      const variant = item.variantTitle || (item.variantOptions || []).map((option) => `${option.name}: ${option.value}`).join(' / ');
-      return h(
-        'li',
-        { class: 'cd-line' },
-        thumbnail(item.image, 64),
+    // Shipments, as Shopify groups them.
+    const shipmentSections = fulfillments.map((fulfillment, index) => {
+      const items = (fulfillment.fulfillmentLineItems ? fulfillment.fulfillmentLineItems.nodes : [])
+        .map((fli) => {
+          const item = fli.lineItem && byId.get(fli.lineItem.id);
+          return item ? itemRow(item, fli.quantity || item.quantity) : null;
+        })
+        .filter(Boolean);
+      return statusSection(
+        {
+          iconName: 'truck',
+          title: STRINGS.fulfilledTitle,
+          meta: fulfillments.length > 1 ? STRINGS.shipmentCount(index + 1, fulfillments.length) : null,
+          aside: statusBadge(SHIPMENT_STATUS, fulfillment.latestShipmentStatus),
+        },
         h(
           'div',
-          { class: 'cd-line__info' },
-          h('p', { class: 'cd-line__title' }, item.title),
-          variant ? h('p', { class: 'cd-muted' }, variant) : null,
-          h('p', { class: 'cd-muted' }, `${STRINGS.quantity}: ${item.quantity}`, item.price ? ` · ${formatMoney(item.price)} ${STRINGS.each}` : '')
+          { class: 'cd-sc__rows' },
+          h('p', { class: 'cd-sc__line' }, icon('check-circle', 'cd-icon cd-icon--sm'), STRINGS.shippedOn(formatDate(fulfillment.createdAt))),
+          fulfillment.estimatedDeliveryAt && fulfillment.latestShipmentStatus !== 'DELIVERED'
+            ? h('p', { class: 'cd-sc__line' }, icon('clock', 'cd-icon cd-icon--sm'), STRINGS.estimatedDelivery(formatDate(fulfillment.estimatedDeliveryAt)))
+            : null
         ),
-        h('p', { class: 'cd-line__total' }, formatMoney(item.totalPrice))
+        fulfillment.requiresShipping === false ? null : shipmentSteps(fulfillment.latestShipmentStatus),
+        trackingBlock(fulfillment),
+        items.length ? h('ul', { class: 'cd-items', role: 'list' }, items) : null
       );
     });
 
-    const summaryRow = (label, money, { strong = false, note, negative = false } = {}) =>
+    // Items not yet in a shipment (only while the order isn't fully fulfilled).
+    const shippedQuantities = new Map();
+    for (const fulfillment of fulfillments) {
+      for (const fli of fulfillment.fulfillmentLineItems ? fulfillment.fulfillmentLineItems.nodes : []) {
+        const id = fli.lineItem && fli.lineItem.id;
+        if (id) shippedQuantities.set(id, (shippedQuantities.get(id) || 0) + (fli.quantity || 0));
+      }
+    }
+    const remaining =
+      order.cancelledAt || order.fulfillmentStatus === 'FULFILLED'
+        ? []
+        : lineItems.map((item) => ({ item, quantity: item.quantity - (shippedQuantities.get(item.id) || 0) })).filter((entry) => entry.quantity > 0);
+    const unfulfilledSection = remaining.length
+      ? statusSection(
+          { iconName: 'clock', title: STRINGS.unfulfilledTitle, aside: statusBadge(FULFILLMENT_STATUS, order.fulfillmentStatus) },
+          order.requiresShipping !== false ? shipmentSteps(null, { preparing: true }) : null,
+          h('p', { class: 'cd-shipment-note' }, order.requiresShipping === false ? STRINGS.noShippingRequired : STRINGS.preparing),
+          h('ul', { class: 'cd-items', role: 'list' }, remaining.map(({ item, quantity }) => itemRow(item, quantity)))
+        )
+      : null;
+
+    // Cancelled orders: show all items in one section.
+    const cancelledSection = order.cancelledAt
+      ? statusSection({ iconName: 'package', title: STRINGS.items }, h('ul', { class: 'cd-items', role: 'list' }, lineItems.map((item) => itemRow(item, item.quantity))))
+      : null;
+
+    const itemCount = lineItems.reduce((sum, item) => sum + item.quantity, 0);
+    const paymentRow = (label, detail, money, { strong = false, negative = false } = {}) =>
       h(
         'div',
-        { class: `cd-summary__row${strong ? ' cd-summary__row--total' : ''}` },
-        h('dt', null, label, note ? h('span', { class: 'cd-muted cd-summary__note' }, note) : null),
-        h('dd', null, negative ? `−${formatMoney(money)}` : strong ? moneyWithCode(money) : formatMoney(money))
+        { class: `cd-pay__row${strong ? ' cd-pay__row--strong' : ''}` },
+        h('dt', null, label),
+        h('dd', { class: 'cd-pay__detail' }, detail || ''),
+        h('dd', { class: 'cd-pay__amount' }, money ? `${negative ? '−' : ''}${formatMoney(money)}` : '—')
       );
+    const paid = ['PAID', 'PARTIALLY_REFUNDED', 'REFUNDED'].includes(order.financialStatus);
+    const paymentSection = statusSection(
+      { iconName: 'receipt', title: (FINANCIAL_STATUS[order.financialStatus] || [STRINGS.payment])[0] },
+      h(
+        'dl',
+        { class: 'cd-pay' },
+        order.subtotal ? paymentRow(STRINGS.subtotal, truncated ? '' : STRINGS.itemCount(itemCount), order.subtotal) : null,
+        isPositive(discount) && !truncated ? paymentRow(STRINGS.discounts, STRINGS.discountsIncluded, discount, { negative: true }) : null,
+        paymentRow(STRINGS.shipping, order.shippingLine && order.shippingLine.title, order.totalShipping),
+        isPositive(order.totalTax) ? paymentRow(STRINGS.taxes, '', order.totalTax) : null,
+        isPositive(order.totalDuties) ? paymentRow(STRINGS.duties, '', order.totalDuties) : null,
+        paymentRow(STRINGS.total, '', order.totalPrice, { strong: true })
+      ),
+      paid || isPositive(order.totalRefunded)
+        ? h(
+            'dl',
+            { class: 'cd-pay cd-pay--settled' },
+            paid ? paymentRow(STRINGS.paidByCustomer, '', order.totalPrice) : null,
+            isPositive(order.totalRefunded) ? paymentRow(STRINGS.refunded, '', order.totalRefunded, { negative: true }) : null
+          )
+        : null,
+      truncated ? h('p', { class: 'cd-footnote' }, STRINGS.itemsTruncated) : null
+    );
 
-    const addressLines = order.shippingAddress ? order.shippingAddress.formatted || [] : [];
+    // Side panel
+    const shippingLines = order.shippingAddress ? order.shippingAddress.formatted || [] : [];
+    const billingLines = order.billingAddress ? order.billingAddress.formatted || [] : [];
+    const sameBilling = billingLines.length && billingLines.join('|') === shippingLines.join('|');
+    const mapUrl = shippingLines.length ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(shippingLines.slice(1).join(', '))}` : null;
+    const asideBlock = (title, ...content) => h('div', { class: 'cd-aside__block' }, h('h2', { class: 'cd-aside__title' }, title), content);
+    const helpUrl = safeUrl(config.helpUrl);
+
+    const aside = h(
+      'aside',
+      { class: 'cd-card cd-aside' },
+      order.email ? asideBlock(STRINGS.contact, h('p', { class: 'cd-aside__text' }, order.email)) : null,
+      asideBlock(
+        STRINGS.shippingAddress,
+        shippingLines.length
+          ? [h('address', { class: 'cd-address' }, shippingLines.map((line) => h('span', null, line))), externalLink(mapUrl, STRINGS.viewMap, 'cd-link cd-link--accent')]
+          : h('p', { class: 'cd-aside__text cd-muted' }, STRINGS.noShippingAddress)
+      ),
+      billingLines.length
+        ? asideBlock(
+            STRINGS.billingAddress,
+            sameBilling ? h('p', { class: 'cd-aside__text cd-muted' }, STRINGS.sameAsShipping) : h('address', { class: 'cd-address' }, billingLines.map((line) => h('span', null, line)))
+          )
+        : null,
+      order.shippingLine && order.shippingLine.title ? asideBlock(STRINGS.shippingMethod, h('p', { class: 'cd-aside__text' }, order.shippingLine.title)) : null,
+      helpUrl
+        ? asideBlock(STRINGS.needHelp, h('a', { href: helpUrl, class: 'cd-link cd-link--accent' }, STRINGS.contactUs))
+        : null
+    );
 
     return h(
       'div',
-      { class: 'cd-stack' },
+      { class: 'cd-stack cd-stack--order' },
       back,
-      pageHeader(
-        STRINGS.orderNamed(order.name),
-        null,
-        statusUrl ? externalLink(statusUrl, STRINGS.orderStatusPage, 'button button--secondary cd-button cd-button--small') : null
-      ),
       h(
-        'div',
-        { class: 'cd-meta' },
-        h('span', null, STRINGS.placedOn(formatDate(order.processedAt))),
-        order.cancelledAt ? h('span', null, STRINGS.cancelledOn(formatDate(order.cancelledAt))) : null,
-        h(
-          'span',
-          { class: 'cd-badges' },
-          badge(orderStatus(order)),
-          statusBadge(FINANCIAL_STATUS, order.financialStatus),
-          statusBadge(FULFILLMENT_STATUS, order.fulfillmentStatus)
-        )
-      ),
-      h(
-        'div',
-        { class: 'cd-grid cd-grid--detail' },
+        'header',
+        { class: 'cd-page-header cd-order-head' },
         h(
           'div',
-          { class: 'cd-stack' },
-          card(
-            STRINGS.items,
-            h('ul', { class: 'cd-lines', role: 'list' }, itemRows),
-            order.lineItems.pageInfo.hasNextPage ? h('p', { class: 'cd-footnote' }, STRINGS.itemsTruncated) : null
+          { class: 'cd-page-header__text' },
+          h(
+            'div',
+            { class: 'cd-order-head__title' },
+            h('h1', { class: 'cd-title', tabindex: '-1' }, order.name),
+            h(
+              'span',
+              { class: 'cd-badges' },
+              statusBadge(FINANCIAL_STATUS, order.financialStatus),
+              order.cancelledAt ? badge(orderStatus(order)) : statusBadge(FULFILLMENT_STATUS, order.fulfillmentStatus)
+            )
           ),
-          card(STRINGS.shipments, h('div', { class: 'cd-stack cd-stack--tight' }, shipments(order, order.fulfillments.nodes, { showItems: true })))
+          h('p', { class: 'cd-order-head__meta' }, formatDateTime(order.processedAt))
         ),
         h(
           'div',
-          { class: 'cd-stack' },
-          card(
-            STRINGS.summary,
-            h(
-              'dl',
-              { class: 'cd-summary' },
-              order.subtotal ? summaryRow(STRINGS.subtotal, order.subtotal) : null,
-              summaryRow(STRINGS.shipping, order.totalShipping, { note: order.shippingLine && order.shippingLine.title }),
-              order.totalTax ? summaryRow(STRINGS.tax, order.totalTax) : null,
-              isPositive(order.totalDuties) ? summaryRow(STRINGS.duties, order.totalDuties) : null,
-              summaryRow(STRINGS.total, order.totalPrice, { strong: true }),
-              isPositive(order.totalRefunded) ? summaryRow(STRINGS.refunded, order.totalRefunded, { negative: true }) : null,
-              isPositive(discount) && !order.lineItems.pageInfo.hasNextPage
-                ? summaryRow(STRINGS.discounts, discount, { negative: true, note: STRINGS.discountsIncluded })
-                : null
-            )
-          ),
-          card(
-            STRINGS.shippingAddress,
-            addressLines.length
-              ? h('address', { class: 'cd-address' }, addressLines.map((line) => h('span', null, line)))
-              : h('p', { class: 'cd-muted' }, STRINGS.noShippingAddress)
-          )
+          { class: 'cd-page-header__actions' },
+          h('button', { type: 'button', class: 'cd-text-button', onClick: () => window.print() }, STRINGS.printOrder),
+          statusUrl ? externalLink(statusUrl, STRINGS.orderStatusPage, 'cd-text-button') : null,
+          buyAgainButton(lineItems)
         )
-      )
+      ),
+      order.cancelledAt
+        ? h('div', { class: 'cd-banner', role: 'status' }, icon('alert', 'cd-icon cd-icon--sm'), h('p', null, STRINGS.cancelledBanner(formatDate(order.cancelledAt))))
+        : null,
+      h('div', { class: 'cd-order-layout' }, h('div', { class: 'cd-order-main' }, shipmentSections, unfulfilledSection, cancelledSection, paymentSection), aside)
     );
+  }
+
+  function buyAgainButton(lineItems) {
+    const eligible = lineItems.filter((item) => item.variantId && !item.giftCard);
+    if (!eligible.length) return null;
+    const el = button(STRINGS.buyAgain, { className: 'cd-button--small' });
+    el.addEventListener('click', async () => {
+      setBusy(el, true, STRINGS.adding);
+      try {
+        const { added, unavailable } = await buyAgain(lineItems);
+        if (!added) {
+          toast(STRINGS.nothingAdded, 'error');
+        } else {
+          const message = unavailable.length ? `${STRINGS.addedToCart(added)} ${STRINGS.someUnavailable(unavailable.join(', '))}` : STRINGS.addedToCart(added);
+          toast(message, 'success', { href: config.cartUrl, label: STRINGS.viewCart });
+        }
+      } finally {
+        setBusy(el, false);
+      }
+    });
+    return el;
   }
 
   async function trackingView() {
@@ -1473,8 +2199,53 @@
         ),
         h('p', { class: 'cd-footnote' }, STRINGS.contactNote),
         profileLink ? externalLink(profileLink, STRINGS.manageContact, 'cd-link') : null
-      )
+      ),
+      customer.emailAddress ? marketingCard(customer.emailAddress.marketingState) : null
     );
+  }
+
+  // Email marketing consent via customerEmailMarketingSubscribe / Unsubscribe.
+  function marketingCard(initialState) {
+    let state = initialState;
+    const locked = state === 'REDACTED' || state === 'INVALID';
+    const id = nextId('marketing');
+    const status = h('p', { class: 'cd-field__hint', id: `${id}-status` });
+    const toggle = h('input', {
+      type: 'checkbox',
+      id,
+      role: 'switch',
+      class: 'cd-switch',
+      'aria-describedby': `${id}-status`,
+      disabled: locked,
+    });
+    const sync = () => {
+      toggle.checked = state === 'SUBSCRIBED' || state === 'PENDING';
+      status.textContent = locked ? STRINGS.marketingUnavailable : state === 'PENDING' ? STRINGS.marketingPending : STRINGS.marketingHint;
+    };
+    sync();
+
+    toggle.addEventListener('change', async () => {
+      const subscribe = toggle.checked;
+      toggle.disabled = true;
+      try {
+        const data = await api.call(subscribe ? 'EmailSubscribe' : 'EmailUnsubscribe');
+        const payload = subscribe ? data.customerEmailMarketingSubscribe : data.customerEmailMarketingUnsubscribe;
+        if (payload.userErrors && payload.userErrors.length) {
+          toast(payload.userErrors.map((e) => e.message).join(' '), 'error');
+        } else {
+          state = (payload.emailAddress && payload.emailAddress.marketingState) || (subscribe ? 'SUBSCRIBED' : 'UNSUBSCRIBED');
+          cache.delete('profile');
+          toast(STRINGS.marketingSaved);
+        }
+      } catch (error) {
+        if (error.kind !== 'auth') toast(`${STRINGS.saveFailed} ${errorMessage(error)}`, 'error');
+      } finally {
+        toggle.disabled = locked;
+        sync();
+      }
+    });
+
+    return card(STRINGS.preferences, h('div', { class: 'cd-preference' }, h('label', { for: id, class: 'cd-preference__label' }, STRINGS.marketingLabel), toggle), status);
   }
 
   // ---- Addresses ------------------------------------------------------------
@@ -1984,14 +2755,10 @@
       });
     }
 
-    if (logoutForm) {
-      logoutForm.addEventListener('submit', (event) => {
-        clearProtectedContent();
-        auth.resetAttempts();
-        if (!config.authUrl) {
-          event.preventDefault();
-          if (config.logoutUrl) window.location.assign(config.logoutUrl);
-        }
+    if (logoutLink) {
+      logoutLink.addEventListener('click', (event) => {
+        event.preventDefault();
+        auth.logout();
       });
     }
 
@@ -1999,6 +2766,7 @@
     // after logging out and pressing Back): reload so the session is re-checked.
     window.addEventListener('pageshow', (event) => {
       if (event.persisted) {
+        tokens = null;
         clearProtectedContent();
         window.location.reload();
       }
@@ -2008,25 +2776,25 @@
   async function boot() {
     bindChrome();
     if (config.designMode) return renderDesignMode();
-    if (!config.authUrl) return renderUnavailable();
+    if (!config.clientId || !config.redirectUri) return renderUnavailable();
 
-    const url = new URL(window.location.href);
-    const authError = url.searchParams.get('cd_auth_error');
-    if (authError) {
-      url.searchParams.delete('cd_auth_error');
-      window.history.replaceState(window.history.state, '', url.toString());
-      return renderAuthProblem(authError);
-    }
-
-    let authenticated;
+    let result;
     try {
-      authenticated = await api.session();
+      result = await auth.handleCallback();
     } catch (error) {
-      view.setAttribute('aria-busy', 'false');
-      view.replaceChildren(errorState(error, () => window.location.reload()));
+      tokens = null;
+      if (error.kind === 'network') {
+        view.setAttribute('aria-busy', 'false');
+        view.replaceChildren(errorState(error, () => window.location.reload()));
+      } else {
+        renderAuthProblem('failed');
+      }
       return;
     }
-    if (!authenticated) {
+    if (result === 'stopped') return;
+    // Tokens are only kept in memory, so a fresh page load always starts a
+    // (normally silent) authorization round trip.
+    if (result !== 'authenticated') {
       auth.signIn();
       return;
     }

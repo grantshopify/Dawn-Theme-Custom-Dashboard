@@ -3,7 +3,7 @@
     "main": {
       "type": "customer-dashboard",
       "settings": {
-        "auth_service_url": "",
+        "customer_account_client_id": "e394fd4f-2668-4623-a054-0d08b5cc9e5b",
         "continue_shopping_url": "",
         "color_scheme": "scheme-1",
         "padding_top": 36,

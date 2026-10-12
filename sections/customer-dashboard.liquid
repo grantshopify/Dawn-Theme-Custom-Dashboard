@@ -3,19 +3,22 @@
 
   This section renders only the dashboard shell. It deliberately contains no
   customer data: everything is loaded at runtime from the Customer Account API
-  through the auth service (see auth-service/README.md), so the page HTML is
-  identical for every visitor and nothing private is cached in it.
+  by assets/customer-dashboard.js (a public OAuth client with PKCE; tokens are
+  kept in memory only), so the page HTML is identical for every visitor and
+  nothing private is cached in it. Setup: docs/customer-dashboard.md
 {%- endcomment -%}
 
 {{ 'customer-dashboard.css' | asset_url | stylesheet_tag }}
 <script src="{{ 'customer-dashboard.js' | asset_url }}" defer="defer"></script>
 
 {%- liquid
-  assign auth_url = section.settings.auth_service_url | strip
-  assign auth_url_last = auth_url | slice: -1
-  if auth_url_last == '/'
-    assign auth_url = auth_url | remove_last: '/'
-  endif
+  assign client_id = section.settings.customer_account_client_id | strip
+
+  comment
+    OAuth callback: this page's URL without locale prefix or query string.
+    Register exactly this value as a Callback URI in the Headless channel.
+  endcomment
+  assign redirect_uri = request.origin | append: page.url
 
   assign continue_url = section.settings.continue_shopping_url | default: routes.root_url
 
@@ -44,17 +47,21 @@
   }
 {% endstyle %}
 
-<div class="color-{{ section.settings.color_scheme }} gradient">
+<div class="cd-page color-{{ section.settings.color_scheme }} gradient">
   <div
     class="cd page-width section-{{ section.id }}-padding"
     data-cd-root
-    data-auth-url="{{ auth_url | escape }}"
+    data-client-id="{{ client_id | escape }}"
+    data-redirect-uri="{{ redirect_uri | escape }}"
+    data-shop-origin="{{ request.origin | escape }}"
     data-signed-in="{% if customer %}true{% else %}false{% endif %}"
     data-storefront-login-url="{{ routes.storefront_login_url | escape }}"
     data-profile-url="{{ profile_url | escape }}"
     data-account-url="{{ routes.account_url | escape }}"
     data-logout-url="{{ routes.account_logout_url | escape }}"
     data-shop-url="{{ continue_url | escape }}"
+    data-help-url="{{ section.settings.help_url | escape }}"
+    data-cart-url="{{ routes.cart_url }}"
     data-countries-url="{{ 'customer-dashboard-countries.json' | asset_url }}"
     data-locale="{{ request.locale.iso_code }}"
     data-country="{{ localization.country.iso_code }}"
@@ -113,12 +120,10 @@
               </a>
             </li>
             <li>
-              <form method="post" action="{{ auth_url | escape }}/auth/logout" data-cd-logout>
-                <button type="submit" class="cd__nav-link cd__nav-link--button">
-                  <svg class="cd-icon" aria-hidden="true" focusable="false"><use href="#cd-i-logout"/></svg>
-                  <span>{{ 'customer_dashboard.nav.log_out' | t }}</span>
-                </button>
-              </form>
+              <a href="{{ routes.account_logout_url }}" class="cd__nav-link" data-cd-logout>
+                <svg class="cd-icon" aria-hidden="true" focusable="false"><use href="#cd-i-logout"/></svg>
+                <span>{{ 'customer_dashboard.nav.log_out' | t }}</span>
+              </a>
             </li>
           </ul>
         </nav>
@@ -159,15 +164,21 @@
   "settings": [
     {
       "type": "text",
-      "id": "auth_service_url",
-      "label": "Auth service URL",
-      "info": "Base URL of the dashboard auth service, e.g. https://auth.yourstore.com. Required. Customer data never loads in the theme editor."
+      "id": "customer_account_client_id",
+      "label": "Customer Account API client ID",
+      "info": "From Headless channel > Customer Account API (public client). Not a secret. Required. Customer data never loads in the theme editor."
     },
     {
       "type": "url",
       "id": "continue_shopping_url",
       "label": "Continue shopping link",
       "info": "Defaults to the home page."
+    },
+    {
+      "type": "url",
+      "id": "help_url",
+      "label": "Order help link",
+      "info": "Shown on order details as \"Need help with this order?\", e.g. your contact page. Leave empty to hide."
     },
     {
       "type": "color_scheme",
