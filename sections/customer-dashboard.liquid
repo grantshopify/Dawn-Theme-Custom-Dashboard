@@ -1,0 +1,204 @@
+{%- comment -%}
+  Custom customer dashboard.
+
+  This section renders only the dashboard shell. It deliberately contains no
+  customer data: everything is loaded at runtime from the Customer Account API
+  through the auth service (see auth-service/README.md), so the page HTML is
+  identical for every visitor and nothing private is cached in it.
+{%- endcomment -%}
+
+{{ 'customer-dashboard.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'customer-dashboard.js' | asset_url }}" defer="defer"></script>
+
+{%- liquid
+  assign auth_url = section.settings.auth_service_url | strip
+  assign auth_url_last = auth_url | slice: -1
+  if auth_url_last == '/'
+    assign auth_url = auth_url | remove_last: '/'
+  endif
+
+  assign continue_url = section.settings.continue_shopping_url | default: routes.root_url
+
+  comment
+    Shopify-hosted profile page, for changes the Customer Account API does not
+    allow (email address, phone number). Pattern from
+    https://shopify.dev/docs/storefronts/themes/sign-in
+  endcomment
+  assign account_url_parts = routes.account_url | split: '?'
+  assign profile_url = account_url_parts[0] | append: '/profile'
+  if account_url_parts[1] != blank
+    assign profile_url = profile_url | append: '?' | append: account_url_parts[1]
+  endif
+-%}
+
+{% style %}
+  .section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+  }
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+{% endstyle %}
+
+<div class="color-{{ section.settings.color_scheme }} gradient">
+  <div
+    class="cd page-width section-{{ section.id }}-padding"
+    data-cd-root
+    data-auth-url="{{ auth_url | escape }}"
+    data-signed-in="{% if customer %}true{% else %}false{% endif %}"
+    data-storefront-login-url="{{ routes.storefront_login_url | escape }}"
+    data-profile-url="{{ profile_url | escape }}"
+    data-account-url="{{ routes.account_url | escape }}"
+    data-logout-url="{{ routes.account_logout_url | escape }}"
+    data-shop-url="{{ continue_url | escape }}"
+    data-countries-url="{{ 'customer-dashboard-countries.json' | asset_url }}"
+    data-locale="{{ request.locale.iso_code }}"
+    data-country="{{ localization.country.iso_code }}"
+    data-design-mode="{{ request.design_mode }}"
+  >
+    {%- render 'customer-dashboard-icons' -%}
+
+    <div class="cd__layout">
+      <aside class="cd__sidebar" aria-label="{{ 'customer_dashboard.nav.label' | t }}">
+        <div class="cd__identity" data-cd-identity>
+          <span class="cd__avatar" aria-hidden="true" data-cd-avatar></span>
+          <div class="cd__identity-text">
+            <p class="cd__identity-eyebrow">{{ 'customer_dashboard.nav.eyebrow' | t }}</p>
+            <p class="cd__identity-name" data-cd-name>
+              <span class="cd-skeleton cd-skeleton--text" aria-hidden="true"></span>
+            </p>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          class="cd__menu-toggle"
+          aria-expanded="false"
+          aria-controls="CustomerDashboardNav-{{ section.id }}"
+          data-cd-menu-toggle
+        >
+          <span class="cd__menu-toggle-label">
+            <svg class="cd-icon" aria-hidden="true" focusable="false"><use href="#cd-i-menu"/></svg>
+            <span data-cd-menu-current>{{ 'customer_dashboard.nav.overview' | t }}</span>
+          </span>
+          <svg class="cd-icon cd__menu-toggle-chevron" aria-hidden="true" focusable="false"><use href="#cd-i-chevron-down"/></svg>
+        </button>
+
+        <nav class="cd__nav" id="CustomerDashboardNav-{{ section.id }}" data-cd-nav>
+          <ul class="cd__nav-list" role="list">
+            {%- liquid
+              assign nav_items = 'overview:grid,orders:package,tracking:truck,profile:user,addresses:pin' | split: ','
+            -%}
+            {%- for item in nav_items -%}
+              {%- assign parts = item | split: ':' -%}
+              {%- assign nav_key = 'customer_dashboard.nav.' | append: parts[0] -%}
+              <li>
+                <a href="#{{ parts[0] }}" class="cd__nav-link" data-cd-route="{{ parts[0] }}">
+                  <svg class="cd-icon" aria-hidden="true" focusable="false"><use href="#cd-i-{{ parts[1] }}"/></svg>
+                  <span>{{ nav_key | t }}</span>
+                </a>
+              </li>
+            {%- endfor -%}
+          </ul>
+
+          <ul class="cd__nav-list cd__nav-list--secondary" role="list">
+            <li>
+              <a href="{{ continue_url }}" class="cd__nav-link">
+                <svg class="cd-icon" aria-hidden="true" focusable="false"><use href="#cd-i-bag"/></svg>
+                <span>{{ 'customer_dashboard.nav.continue_shopping' | t }}</span>
+              </a>
+            </li>
+            <li>
+              <form method="post" action="{{ auth_url | escape }}/auth/logout" data-cd-logout>
+                <button type="submit" class="cd__nav-link cd__nav-link--button">
+                  <svg class="cd-icon" aria-hidden="true" focusable="false"><use href="#cd-i-logout"/></svg>
+                  <span>{{ 'customer_dashboard.nav.log_out' | t }}</span>
+                </button>
+              </form>
+            </li>
+          </ul>
+        </nav>
+      </aside>
+
+      <div class="cd__main">
+        <div class="cd__view" data-cd-view tabindex="-1" aria-busy="true">
+          <div class="cd-loading" aria-hidden="true">
+            <span class="cd-skeleton cd-skeleton--title"></span>
+            <span class="cd-skeleton cd-skeleton--text"></span>
+            <div class="cd-grid cd-grid--stats">
+              <span class="cd-skeleton cd-skeleton--card"></span>
+              <span class="cd-skeleton cd-skeleton--card"></span>
+              <span class="cd-skeleton cd-skeleton--card"></span>
+            </div>
+          </div>
+          <p class="visually-hidden">{{ 'customer_dashboard.loading' | t }}</p>
+          <noscript>
+            <p class="cd-notice">{{ 'customer_dashboard.noscript' | t }}</p>
+          </noscript>
+        </div>
+      </div>
+    </div>
+
+    <div class="cd-toast" role="status" aria-live="polite" data-cd-toast></div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Customer dashboard",
+  "tag": "section",
+  "class": "section",
+  "limit": 1,
+  "enabled_on": {
+    "templates": ["page"]
+  },
+  "settings": [
+    {
+      "type": "text",
+      "id": "auth_service_url",
+      "label": "Auth service URL",
+      "info": "Base URL of the dashboard auth service, e.g. https://auth.yourstore.com. Required. Customer data never loads in the theme editor."
+    },
+    {
+      "type": "url",
+      "id": "continue_shopping_url",
+      "label": "Continue shopping link",
+      "info": "Defaults to the home page."
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:sections.all.colors.label",
+      "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "t:sections.all.padding.section_padding_heading"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_top",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_bottom",
+      "default": 56
+    }
+  ]
+}
+{% endschema %}

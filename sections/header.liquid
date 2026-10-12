@@ -254,7 +254,7 @@
 
         {%- if shop.customer_accounts_enabled -%}
           <a
-            href="{%- if customer -%}{{ routes.account_url }}{%- else -%}{{ routes.account_login_url }}{%- endif -%}"
+            href="{% render 'customer-account-url' %}"
             class="header__icon header__icon--account link focus-inset{% if section.settings.menu != blank %} small-hide{% endif %}"
             rel="nofollow"
           >
@@ -629,6 +629,12 @@
       "default": true,
       "label": "t:sections.header.settings.enable_customer_avatar.label",
       "info": "t:sections.header.settings.enable_customer_avatar.info"
+    },
+    {
+      "type": "page",
+      "id": "customer_dashboard_page",
+      "label": "Customer dashboard page",
+      "info": "The account icon opens this page (using the Dashboard template) instead of Shopify's default account pages. Leave empty to keep the default behavior."
     },
     {
       "type": "header",

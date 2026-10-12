@@ -1,0 +1,11 @@
+# ignore all directories with the name test
+node_modules/
+.shopify
+
+# Vendored offline SCSS compiler for the handbook playground (~5 MB).
+# Not committed — rebuilt from node_modules via `npm run guide:vendor`
+# (also runs automatically on `npm install` via the postinstall hook).
+docs/vendor/sass.js
+
+# macOS Finder metadata
+.DS_Store

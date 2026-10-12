@@ -1,0 +1,17 @@
+{
+  "sections": {
+    "main": {
+      "type": "customer-dashboard",
+      "settings": {
+        "auth_service_url": "",
+        "continue_shopping_url": "",
+        "color_scheme": "scheme-1",
+        "padding_top": 36,
+        "padding_bottom": 56
+      }
+    }
+  },
+  "order": [
+    "main"
+  ]
+}

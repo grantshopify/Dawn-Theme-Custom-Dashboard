@@ -1,0 +1,14 @@
+{
+  "name": "customer-dashboard-auth",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Minimal Customer Account API OAuth backend (Netlify Functions) for the Dawn customer dashboard. No database.",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "node --test test/",
+    "secret": "node -e \"console.log(require('crypto').randomBytes(32).toString('base64url'))\""
+  }
+}

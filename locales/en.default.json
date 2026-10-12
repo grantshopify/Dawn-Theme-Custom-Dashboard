@@ -527,5 +527,20 @@
       "send_on": "YYYY-MM-DD",
       "send_on_label": "Send on (optional)"
     }
+  },
+  "customer_dashboard": {
+    "nav": {
+      "label": "Account navigation",
+      "eyebrow": "My account",
+      "overview": "Overview",
+      "orders": "My Orders",
+      "tracking": "Order Tracking",
+      "profile": "My Profile",
+      "addresses": "Saved Addresses",
+      "continue_shopping": "Continue Shopping",
+      "log_out": "Log Out"
+    },
+    "loading": "Loading your account",
+    "noscript": "Please enable JavaScript to view your account dashboard."
   }
 }

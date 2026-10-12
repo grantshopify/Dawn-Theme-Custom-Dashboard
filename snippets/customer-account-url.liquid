@@ -1,0 +1,29 @@
+{%- comment -%}
+  Outputs the href for the header account links (desktop icon and drawer).
+
+  When a customer dashboard page is chosen in the header settings:
+  - signed-in customers go straight to the dashboard, which obtains its own
+    Customer Account API session through the auth service (silently, by
+    reusing the Shopify login);
+  - signed-out customers sign in with Shopify first and are returned to the
+    dashboard via `return_to` (relative URLs only).
+  With no page chosen, Dawn's default account links are kept.
+
+  Usage:
+  href="{% render 'customer-account-url' %}"
+{%- endcomment -%}
+{%- liquid
+  assign dashboard_page = section.settings.customer_dashboard_page
+  if dashboard_page != blank
+    if customer
+      echo dashboard_page.url
+    else
+      assign return_to = dashboard_page.url | url_encode
+      echo '/customer_authentication/login?return_to=' | append: return_to
+    endif
+  elsif customer
+    echo routes.account_url
+  else
+    echo routes.account_login_url
+  endif
+-%}
