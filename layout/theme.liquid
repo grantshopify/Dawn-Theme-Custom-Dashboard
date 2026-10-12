@@ -263,6 +263,9 @@
 
     {{ 'base.css' | asset_url | stylesheet_tag }}
     {{ 'main.min.css' | asset_url | stylesheet_tag }}
+    {%- if settings.wishlist_enabled -%}
+      {{ 'wishlist.css' | asset_url | stylesheet_tag }}
+    {%- endif -%}
     <link rel="stylesheet" href="{{ 'component-cart-items.css' | asset_url }}" media="print" onload="this.media='all'">
 
     {%- if settings.cart_type == 'drawer' -%}
@@ -379,6 +382,10 @@
     {%- if settings.cart_type == 'drawer' -%}
       <script src="{{ 'cart-drawer.js' | asset_url }}" defer="defer"></script>
     {%- endif -%}
+    {%- if settings.wishlist_enabled -%}
+      {%- render 'wishlist-setup' -%}
+    {%- endif -%}
+
     {% comment %} Below this line is where we put custom JS CDN or File location but for the script itself will be located at main.js file {% endcomment %}
 
     <script src="{{ 'main.min.js' | asset_url }}" defer="defer"></script>

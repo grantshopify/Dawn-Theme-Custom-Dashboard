@@ -214,6 +214,16 @@
       "sort_by_label": "Sort by:",
       "to": "To",
       "clear_filter": "Remove filter"
+    },
+    "wishlist": {
+      "add": "Save to wishlist",
+      "saved": "Saved to wishlist",
+      "added": "Saved to your wishlist.",
+      "removed": "Removed from your wishlist.",
+      "view": "View wishlist",
+      "full": "Your wishlist is full. Remove something to save more.",
+      "guest_hint": "Sign in to keep it on every device.",
+      "header": "Wishlist"
     }
   },
   "templates": {
@@ -274,7 +284,6 @@
       "announcement": "Announcement",
       "announcement_bar": "Announcement bar"
     },
-
     "header": {
       "announcement": "Announcement",
       "menu": "Menu",
@@ -537,6 +546,7 @@
       "tracking": "Order Tracking",
       "profile": "My Profile",
       "addresses": "Saved Addresses",
+      "wishlist": "Wishlist",
       "continue_shopping": "Continue Shopping",
       "log_out": "Log Out"
     },

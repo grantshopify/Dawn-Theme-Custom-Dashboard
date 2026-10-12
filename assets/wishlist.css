@@ -1,0 +1,139 @@
+/* Wishlist buttons, header icon and toast (storefront). See assets/wishlist.js. */
+
+.wishlist-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: rgb(var(--color-foreground));
+  font: inherit;
+  cursor: pointer;
+}
+
+.wishlist-toggle__icon {
+  width: 2rem;
+  height: 2rem;
+  flex: none;
+  fill: transparent;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linejoin: round;
+  transition: fill 0.2s ease, transform 0.2s ease;
+}
+
+.wishlist-toggle.is-saved .wishlist-toggle__icon {
+  fill: currentColor;
+}
+
+.wishlist-toggle:hover .wishlist-toggle__icon {
+  transform: scale(1.1);
+}
+
+.wishlist-toggle.is-popping .wishlist-toggle__icon {
+  animation: wishlist-pop 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@keyframes wishlist-pop {
+  40% {
+    transform: scale(1.35);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Product page and Featured product: a text button under the buy buttons. */
+.wishlist-toggle--full {
+  min-height: 4.4rem;
+  margin-top: 0.4rem;
+  font-size: 1.5rem;
+  letter-spacing: 0.04rem;
+}
+
+.wishlist-toggle--full .wishlist-toggle__label {
+  text-decoration: underline;
+  text-underline-offset: 0.3rem;
+  text-decoration-color: rgba(var(--color-foreground), 0.3);
+}
+
+.wishlist-toggle--full:hover .wishlist-toggle__label {
+  text-decoration-color: currentColor;
+}
+
+/* Product cards: a round icon button over the image. */
+.wishlist-toggle--icon {
+  position: absolute;
+  z-index: 3;
+  top: 1rem;
+  right: 1rem;
+  justify-content: center;
+  width: 3.6rem;
+  height: 3.6rem;
+  border-radius: 50%;
+  background: rgba(var(--color-background), 0.92);
+  box-shadow: 0 0.2rem 0.8rem rgba(var(--color-shadow), 0.12);
+}
+
+.wishlist-toggle--icon .wishlist-toggle__icon {
+  width: 1.8rem;
+  height: 1.8rem;
+}
+
+/* Header icon */
+.header__icon--wishlist {
+  position: relative;
+}
+
+.header__icon--wishlist .wishlist-toggle__icon {
+  width: 2.2rem;
+  height: 2.2rem;
+  fill: transparent;
+}
+
+.header__icon--wishlist .cart-count-bubble[hidden] {
+  display: none;
+}
+
+/* Toast */
+.wishlist-toast {
+  position: fixed;
+  z-index: 1000;
+  left: 50%;
+  bottom: 2.4rem;
+  max-width: min(48rem, calc(100vw - 3.2rem));
+  padding: 1.2rem 1.8rem;
+  border-radius: 1rem;
+  background: rgb(var(--color-foreground));
+  color: rgb(var(--color-background));
+  font-size: 1.4rem;
+  line-height: 1.4;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, 1rem);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.wishlist-toast.is-visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translate(-50%, 0);
+}
+
+.wishlist-toast__link {
+  color: inherit;
+  font-weight: 600;
+  text-underline-offset: 0.3rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wishlist-toggle__icon,
+  .wishlist-toast {
+    transition: none;
+  }
+
+  .wishlist-toggle.is-popping .wishlist-toggle__icon {
+    animation: none;
+  }
+}

@@ -114,6 +114,8 @@
     </div>
   {%- endif -%}
 
+  {%- render 'wishlist-button', product: product -%}
+
   {%- if show_pickup_availability -%}
     {{ 'component-pickup-availability.css' | asset_url | stylesheet_tag }}
 

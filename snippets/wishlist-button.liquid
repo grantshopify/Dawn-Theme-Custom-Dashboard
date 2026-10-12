@@ -1,0 +1,34 @@
+{%- comment -%}
+  Save-to-wishlist toggle. Renders nothing unless Theme settings → Wishlist is
+  enabled. State and clicks are handled by assets/wishlist.js.
+
+  Accepts:
+  - product: {Object} product object.
+  - style: {String} 'full' (heart and text, default) or 'icon' (round heart button).
+
+  Usage:
+  {% render 'wishlist-button', product: product %}
+  {% render 'wishlist-button', product: card_product, style: 'icon' %}
+{%- endcomment -%}
+{%- if settings.wishlist_enabled and product != blank -%}
+  {%- assign wishlist_style = style | default: 'full' -%}
+  <button
+    type="button"
+    class="wishlist-toggle wishlist-toggle--{{ wishlist_style }}"
+    data-wishlist-toggle
+    data-product-id="{{ product.id }}"
+    data-product-handle="{{ product.handle | escape }}"
+    data-product-title="{{ product.title | escape }}"
+    {%- if wishlist_style == 'icon' %}
+      aria-pressed="false"
+      aria-label="{{ 'products.wishlist.add' | t }}: {{ product.title | escape }}"
+    {%- endif %}
+  >
+    <svg class="wishlist-toggle__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path d="M12 20.3s-7.4-4.5-9.2-9.1C1.5 7.9 3.5 4.6 7 4.6c2 0 3.5 1.1 5 2.9 1.5-1.8 3-2.9 5-2.9 3.5 0 5.5 3.3 4.2 6.6-1.8 4.6-9.2 9.1-9.2 9.1z"/>
+    </svg>
+    {%- unless wishlist_style == 'icon' -%}
+      <span class="wishlist-toggle__label" data-wishlist-label>{{ 'products.wishlist.add' | t }}</span>
+    {%- endunless -%}
+  </button>
+{%- endif -%}

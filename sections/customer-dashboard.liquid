@@ -77,6 +77,12 @@
     assign cover_addresses = section.settings.cover_addresses | image_url: width: 2400
     assign focus_addresses = section.settings.cover_addresses.presentation.focal_point | default: '50% 45%'
   endif
+  assign cover_wishlist = cover_default
+  assign focus_wishlist = focus_default
+  if section.settings.cover_wishlist != blank
+    assign cover_wishlist = section.settings.cover_wishlist | image_url: width: 2400
+    assign focus_wishlist = section.settings.cover_wishlist.presentation.focal_point | default: '50% 45%'
+  endif
 -%}
 
 {% style %}
@@ -118,11 +124,14 @@
     data-logout-url="{{ routes.account_logout_url | escape }}"
     data-shop-url="{{ continue_url | escape }}"
     data-help-url="{{ section.settings.help_url | escape }}"
+    data-address-map="{{ section.settings.show_address_map }}"
     data-cart-url="{{ routes.cart_url }}"
     data-countries-url="{{ 'customer-dashboard-countries.json' | asset_url }}"
     data-locale="{{ request.locale.iso_code }}"
     data-country="{{ localization.country.iso_code }}"
     data-design-mode="{{ request.design_mode }}"
+    data-wishlist="{{ settings.wishlist_enabled }}"
+    data-currency="{{ cart.currency.iso_code }}"
   >
     {%- render 'customer-dashboard-icons' -%}
 
@@ -140,11 +149,13 @@
       data-cover-tracking="{{ cover_tracking | escape }}"
       data-cover-profile="{{ cover_profile | escape }}"
       data-cover-addresses="{{ cover_addresses | escape }}"
+      data-cover-wishlist="{{ cover_wishlist | escape }}"
       data-focus-overview="{{ focus_default | escape }}"
       data-focus-orders="{{ focus_orders | escape }}"
       data-focus-tracking="{{ focus_tracking | escape }}"
       data-focus-profile="{{ focus_profile | escape }}"
       data-focus-addresses="{{ focus_addresses | escape }}"
+      data-focus-wishlist="{{ focus_wishlist | escape }}"
     >
       <div class="cd-cover__media" aria-hidden="true">
         {%- comment -%}
@@ -179,7 +190,13 @@
 
         <nav class="cd__nav" id="CustomerDashboardNav-{{ section.id }}" aria-label="{{ 'customer_dashboard.nav.label' | t }}" data-cd-nav>
           <ul class="cd__nav-list" role="list">
-            {%- assign nav_items = 'overview,orders,tracking,profile,addresses' | split: ',' -%}
+            {%- liquid
+              assign nav_items = 'overview,orders,tracking,profile,addresses'
+              if settings.wishlist_enabled
+                assign nav_items = nav_items | append: ',wishlist'
+              endif
+              assign nav_items = nav_items | split: ','
+            -%}
             {%- for item in nav_items -%}
               {%- assign nav_key = 'customer_dashboard.nav.' | append: item -%}
               <li><a href="#{{ item }}" class="cd__nav-link" data-cd-route="{{ item }}">{{ nav_key | t }}</a></li>
@@ -252,6 +269,13 @@
       "info": "Shown on order details as \"Need help with this order?\", e.g. your contact page. Leave empty to hide."
     },
     {
+      "type": "checkbox",
+      "id": "show_address_map",
+      "label": "Show a map of the default address",
+      "info": "Overview shows an embedded Google Map. Only the city, region and country are sent to Google; the full address is used only if the customer opens Google Maps.",
+      "default": true
+    },
+    {
       "type": "color_scheme",
       "id": "color_scheme",
       "label": "t:sections.all.colors.label",
@@ -287,6 +311,12 @@
       "type": "image_picker",
       "id": "cover_addresses",
       "label": "Saved Addresses cover photo"
+    },
+    {
+      "type": "image_picker",
+      "id": "cover_wishlist",
+      "label": "Wishlist cover photo",
+      "info": "Wishlist is turned on in Theme settings → Wishlist."
     },
     {
       "type": "select",

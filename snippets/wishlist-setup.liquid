@@ -1,0 +1,39 @@
+{%- comment -%}
+  Loads the wishlist script (its styles load in the head), and passes it the signed-in customer's
+  saved products (customer metafield custom.wishlist, JSON). Rendered from
+  layout/theme.liquid only when Theme settings → Wishlist is enabled.
+
+  The saved list holds product IDs and handles only. It is output only for the
+  signed-in customer's own page views.
+{%- endcomment -%}
+{%- liquid
+  if settings.wishlist_dashboard_page != blank
+    assign wishlist_dashboard_url = settings.wishlist_dashboard_page.url
+  elsif routes.root_url == '/'
+    assign wishlist_dashboard_url = '/pages/dashboard'
+  else
+    assign wishlist_dashboard_url = routes.root_url | append: '/pages/dashboard'
+  endif
+  assign wishlist_list_url = wishlist_dashboard_url | append: '#wishlist'
+  unless customer
+    assign wishlist_return_to = wishlist_list_url | url_encode
+    assign wishlist_list_url = '/customer_authentication/login?return_to=' | append: wishlist_return_to
+  endunless
+-%}
+<script type="application/json" id="cd-wishlist-config">
+  {
+    "customerId": {% if customer %}{{ customer.id | json }}{% else %}null{% endif %},
+    "account": {% if customer and customer.metafields.custom.wishlist.value != blank %}{{ customer.metafields.custom.wishlist.value | json }}{% else %}null{% endif %},
+    "listUrl": {{ wishlist_list_url | json }},
+    "strings": {
+      "add": {{ 'products.wishlist.add' | t | json }},
+      "saved": {{ 'products.wishlist.saved' | t | json }},
+      "added": {{ 'products.wishlist.added' | t | json }},
+      "removed": {{ 'products.wishlist.removed' | t | json }},
+      "view": {{ 'products.wishlist.view' | t | json }},
+      "full": {{ 'products.wishlist.full' | t | json }},
+      "guestHint": {{ 'products.wishlist.guest_hint' | t | json }}
+    }
+  }
+</script>
+<script src="{{ 'wishlist.js' | asset_url }}" defer="defer"></script>

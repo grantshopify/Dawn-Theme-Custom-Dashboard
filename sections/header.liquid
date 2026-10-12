@@ -281,6 +281,33 @@
           </a>
         {%- endif -%}
 
+        {%- if settings.wishlist_enabled and settings.wishlist_header_icon -%}
+          {%- liquid
+            if section.settings.customer_dashboard_page != blank
+              assign wishlist_url = section.settings.customer_dashboard_page.url | append: '#wishlist'
+            elsif settings.wishlist_dashboard_page != blank
+              assign wishlist_url = settings.wishlist_dashboard_page.url | append: '#wishlist'
+            else
+              assign wishlist_url = routes.root_url | append: '/pages/dashboard#wishlist' | replace: '//', '/'
+            endif
+            unless customer
+              assign wishlist_return_to = wishlist_url | url_encode
+              assign wishlist_url = '/customer_authentication/login?return_to=' | append: wishlist_return_to
+            endunless
+          -%}
+          <a href="{{ wishlist_url }}" class="header__icon header__icon--wishlist link focus-inset" rel="nofollow">
+            <span class="svg-wrapper">
+              <svg class="wishlist-toggle__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="M12 20.3s-7.4-4.5-9.2-9.1C1.5 7.9 3.5 4.6 7 4.6c2 0 3.5 1.1 5 2.9 1.5-1.8 3-2.9 5-2.9 3.5 0 5.5 3.3 4.2 6.6-1.8 4.6-9.2 9.1-9.2 9.1z"/>
+              </svg>
+            </span>
+            <span class="visually-hidden">{{ 'products.wishlist.header' | t }}</span>
+            <div class="cart-count-bubble" data-wishlist-bubble hidden>
+              <span data-wishlist-count></span>
+            </div>
+          </a>
+        {%- endif -%}
+
         {%- for block in section.blocks -%}
           {%- case block.type -%}
             {%- when '@app' -%}

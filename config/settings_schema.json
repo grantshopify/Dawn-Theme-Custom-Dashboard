@@ -1451,5 +1451,40 @@
         "default": "scheme-1"
       }
     ]
+  },
+  {
+    "name": "Wishlist",
+    "settings": [
+      {
+        "type": "paragraph",
+        "content": "Lets customers save products. Saved products follow a signed-in customer across devices once they open their account dashboard. Needs the customer metafield custom.wishlist (type JSON, Customer accounts access: Read and write). See docs/customer-dashboard.md."
+      },
+      {
+        "type": "checkbox",
+        "id": "wishlist_enabled",
+        "label": "Enable wishlist",
+        "info": "Shows a save button on product pages and the Featured product section, a wishlist icon in the header, and a Wishlist page in the customer dashboard.",
+        "default": false
+      },
+      {
+        "type": "checkbox",
+        "id": "wishlist_on_cards",
+        "label": "Show a save button on product cards",
+        "info": "Collections, search and product grids.",
+        "default": false
+      },
+      {
+        "type": "checkbox",
+        "id": "wishlist_header_icon",
+        "label": "Show wishlist icon in the header",
+        "default": true
+      },
+      {
+        "type": "page",
+        "id": "wishlist_dashboard_page",
+        "label": "Account dashboard page",
+        "info": "The page that uses the dashboard template. Leave empty to use /pages/dashboard."
+      }
+    ]
   }
 ]

@@ -93,6 +93,9 @@ applied to both `customer-dashboard.js` and `customer-dashboard-classic.js`.
 | `assets/customer-dashboard-countries.json` | Country address formats, labels, postal-code patterns and exact `zoneCode` values, generated from Shopify's MIT-licensed [worldwide](https://github.com/Shopify/worldwide) data |
 | `scripts/build-address-data.rb` | Regenerates the countries JSON |
 | `auth-service/` | Optional server-backed version for custom domains. Not used. |
+| `assets/wishlist.js`, `assets/wishlist.css` | Wishlist on the storefront: save buttons, header count, toast, pending changes. Loaded only when the wishlist is enabled. |
+| `snippets/wishlist-button.liquid` | The save button (text style or round icon) |
+| `snippets/wishlist-setup.liquid` | Loads `wishlist.js` and passes it the signed-in customer's saved list |
 
 ### Modified (minimal)
 
@@ -101,7 +104,12 @@ applied to both `customer-dashboard.js` and `customer-dashboard-classic.js`.
 | `sections/header.liquid` | The account `href` now uses `customer-account-url`. Adds a **Customer dashboard page** setting. |
 | `snippets/header-drawer.liquid` | The mobile drawer's account `href` uses the same snippet |
 | `layout/theme.liquid` | Adds `noindex, nofollow` on the dashboard template only |
-| `locales/en.default.json` | Adds a `customer_dashboard` block (navigation labels) |
+| `locales/en.default.json` | Adds a `customer_dashboard` block (navigation labels) and `products.wishlist` strings |
+| `config/settings_schema.json` | Adds the **Wishlist** settings group (off by default) |
+| `layout/theme.liquid` | Loads the wishlist styles and script, only when the wishlist is enabled |
+| `snippets/buy-buttons.liquid` | Renders the save button under the buy buttons (product page, Featured product, quick add) |
+| `snippets/card-product.liquid` | Renders the round save button on product cards, when that option is on |
+| `sections/header.liquid` | Adds the wishlist header icon with a count, when enabled |
 
 **The header change is off until you choose a dashboard page.** With the new
 setting empty, the account links behave exactly as stock Dawn. Checkout, the
@@ -136,6 +144,43 @@ cart and Shop Pay are untouched.
 If the store later gets a custom domain, update the three URLs in step 2 to
 that domain. The callback URI is always `<primary domain>/pages/dashboard`.
 
+## Wishlist
+
+**Off by default.** Turn it on in the theme editor: **Theme settings → Wishlist → Enable wishlist**. With it off, nothing loads and nothing shows.
+
+When it's on:
+- A **Save to wishlist** button appears under the buy buttons on the product page, in the Featured product section and in quick add.
+- **Show a save button on product cards** (off by default) adds a round heart to cards in collections, search and product grids.
+- **Show wishlist icon in the header** (on by default) adds a heart with the number of saved products.
+- The dashboard gets a **Wishlist** page (`#wishlist`), with its own cover photo setting, and an Overview quick link.
+
+### One-time setup in Shopify admin
+
+The list is stored in the customer's Shopify account as a customer metafield. Create its definition once:
+
+1. **Settings → Custom data → Customers → Add definition.**
+2. Name: `Wishlist`. Namespace and key: `custom.wishlist`.
+3. Type: **JSON**.
+4. Under access, set **Customer accounts** to **Read and write**. Shopify only lets the admin set this for store-owned metafields. I couldn't confirm the exact label in the current admin, so check it during setup.
+5. Save.
+
+Without this step the wishlist still works, but only in each browser. The Wishlist page then shows a short note.
+
+### How saving works (no extra database)
+
+- **On product pages** there's no Customer Account API session, so a save is recorded as a pending change in the browser's `localStorage` (product ID and handle only). The heart, the header count and the toast update straight away.
+- **On the dashboard**, which has a session, pending changes are applied to the account metafield with `metafieldsSet`, then cleared. This happens in the background on any dashboard page, and when the Wishlist page opens. The write uses `compareDigest`, so a change saved from another device isn't overwritten; on a conflict it re-reads and tries once more.
+- **Signed-in pages** read the saved list from the metafield in Liquid, so the hearts are right on every device.
+- **Guests** can save too. Their saves join their account the first time they open the dashboard after signing in. The toast suggests signing in.
+- **Signing out** from the dashboard clears the browser's pending changes. Pending changes left by a different customer, or by someone who has signed out, are discarded.
+- **The Wishlist page** loads live product data from the storefront (`/products/<handle>.js`): photo, price, sale price, stock. "Add to cart" adds single-variant products; products with options link to the product page. There's sorting, "Hide sold out", and remove with Undo. A product that has been deleted, or whose handle changed, shows as "No longer available".
+
+### Limits
+
+- Saves made on product pages reach the account the next time the customer opens the dashboard. Until then they live in that browser.
+- Up to 100 products.
+- The saved list (product IDs and handles) is in the page HTML only for the signed-in customer's own page views.
+
 ## Local checks
 
 - Run `shopify theme dev` to see the layout. In the theme editor the dashboard
@@ -148,14 +193,25 @@ that domain. The callback URI is always `<primary domain>/pages/dashboard`.
 
 ## Feature notes and limitations
 
-- **Look.** Styled after Shopify admin's layout, colours and status badges (light grey page, white cards, compact type), with square corners and light borders. Colours are set as `--cd-*` variables at the top of `customer-dashboard.css`.
-- **Order details.** Laid out like Shopify's order page: shipment cards and an "Unfulfilled" card listing items as "price × qty", a payment summary card, and a side panel with contact, shipping address (with a map link), billing address, shipping method and the optional help link (section setting **Order help link**).
+- **Maps.** Only city, region and country ever go into an embedded map, so the dashboard doesn't send a street address to Google; the full address (without phone) is used only if the customer clicks "Open in Google Maps". All maps are turned off by the section setting **Show a map of the default address**. They use Google's public embed URL (no API key), which Google could change.
+  - Overview: a black-and-white map of the default address, with buttons to switch between up to four saved addresses.
+  - Saved Addresses: a small map on each address card (lazy-loaded).
+  - Order details: a "Show on map" tile that opens the map in a pop-up; nothing loads from Google until it's opened.
+- **Cover notification (Overview).** The floating card on the cover shows one box per stage of the customer's open orders (being prepared, shipped, in transit, ready for pickup, out for delivery, delayed). Each box has a product photo, the stage, the order number or the number of orders, and the most useful date (placed, shipped or estimated arrival). Every 4.5 seconds the next box slides up from the bottom. Thin bars on the right show which box is showing and the time until the next. Hovering or focusing the card pauses it. A single-order box links to that order; otherwise the card links to Order Tracking. Each order counts once, by its first shipment that hasn't arrived, out of the 10 most recent orders. With no open orders, the card shows the latest order instead.
+
+- **Look.** The Wordmark design: a cover photo with the page name as a large wordmark, a left gutter label, large display type, thin rules instead of boxes, and a dark band on the Overview. Colours are set as `--cd-*` variables at the top of `customer-dashboard.css`. The Shopify-admin style is archived as the Classic design (see above).
+- **My Orders.** Rows grouped by month: product photos, order number, date and items, fulfilment status (plus the payment status when it needs attention), total and item count.
+- **Order details.** A facts row (total, items, placed, status), then shipment sections with the status as a large headline, an "Unfulfilled" section, and the payment summary. Product photos open larger on click, and the order number has a Copy button. The side panel has a timeline, contact, shipping address (map pop-up and Copy), billing address, shipping method and the optional help link (section setting **Order help link**).
+- **Order timeline.** Built only from dated fields Shopify returns: order placed (`processedAt`), payment received and refunds (successful `SALE`/`CAPTURE`/`REFUND` entries in `Order.transactions`), each shipment (`createdAt`, with its latest status), the estimated delivery date, and cancellation. If the API refuses `transactions`, the order loads again without it and the timeline skips payment events.
+- **Order Tracking.** One row per order: order number, date, status and link on the left; shipments on the right with a large status headline and the shipped and estimated delivery dates.
+- **My Profile.** An identity header (initials, name, email, customer since, order count), then settings rows: personal information, sign-in and contact, and email preferences.
+- **Saved Addresses.** Cards with a city-level map, a Default chip, Edit, Set as default, Copy and Delete, and a dashed "Add another address" tile.
 - **Buy again.** Adds an order's items back to the cart through Shopify's storefront cart API (`/cart/add.js`), one line at a time, so sold-out or deleted products are reported instead of blocking the rest. The header cart count refreshes afterwards.
 - **Order search.** Searches by order number using the API's `order_number:` filter.
 - **Store credit.** Shown on the overview when the customer has a positive balance (`storeCreditAccounts`).
 - **Latest shipment.** The overview highlights the most recent shipment that hasn't been delivered.
 - **Email preference.** A switch on My Profile uses `customerEmailMarketingSubscribe` and `customerEmailMarketingUnsubscribe`. If the store uses double opt-in, the state shows as pending until the customer confirms.
-- **Copy tracking number and Print.** The order page can be printed; the print layout hides navigation and buttons.
+- **Copy tracking number.** Next to each tracking number. There is no Print button; browser printing still uses a print layout that hides navigation and buttons.
 
 - **Summary counts.** The Customer Account API has no order-count field, so the
   dashboard pages through the customer's orders (100 at a time, up to 3,000)
@@ -165,6 +221,9 @@ that domain. The callback URI is always `<primary domain>/pages/dashboard`.
   - Cancelled orders count toward the total only.
 - **Shipment progress stepper.** It's derived only from Shopify's
   `latestShipmentStatus`. No carrier events are invented.
+  - When it scrolls into view, the line fills to the current step and the dots light up in turn. The current step pulses while the shipment is moving.
+  - Hovering, focusing or tapping a step shows a short explanation. Only "Ordered" and "Shipped" show dates, because the API has no timestamps for the other stages.
+  - Reduced-motion settings turn the animation off.
 - **Profile.** `customerUpdate` only allows first and last name. Email and phone
   are read-only, with a link to Shopify's hosted profile page, where changes are
   verified.
@@ -176,9 +235,7 @@ that domain. The callback URI is always `<primary domain>/pages/dashboard`.
   - Show up to 50 line items. Beyond that, use the order status page link.
   - "Discounts" is the sum of Shopify's discount allocations. It's already
     reflected in the other amounts.
-- **Wishlist.** Deliberately not in this release; the navigation item is hidden.
-  - A Shopify-native option exists for later: a customer metafield with
-    customer-account read/write access, written with `metafieldsSet`.
+- **Wishlist.** See the Wishlist section above.
 - **Strings.** The navigation labels are in `locales/en.default.json`. The
   dashboard's other text is in the `STRINGS` object at the top of
   `customer-dashboard.js`.
@@ -242,3 +299,9 @@ the live store.
 | 10 | Expired access token refreshed without re-login | ✅ | ⬜ |
 | 11 | Dashboard → storefront → dashboard with no prompt (reload re-auths silently) | ✅ | ⬜ |
 | 12 | Checkout and Shop Pay unchanged | n/a | ⬜ |
+| 13 | Wishlist off (default): no buttons, no header icon, no Wishlist page | code review | ⬜ |
+| 14 | Guest saves on product page and cards; after sign-in they appear in the account | ✅ | ⬜ |
+| 15 | Signed-in saves on product pages sync into `custom.wishlist` on the next dashboard visit | ✅ | ⬜ |
+| 16 | Wishlist page: prices, sold out, options link, add to cart, sort, hide sold out, remove + Undo | ✅ | ⬜ |
+| 17 | No metafield access: wishlist keeps working in the browser and shows the note | ✅ | ⬜ |
+| 18 | Logout from the dashboard clears this browser's pending wishlist changes | ✅ | ⬜ |

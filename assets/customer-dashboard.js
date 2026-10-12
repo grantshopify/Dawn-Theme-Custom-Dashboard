@@ -34,8 +34,9 @@
     coverTracking: 'Where your orders are right now.',
     coverProfile: 'Your details, kept up to date.',
     coverAddresses: 'Where we deliver to you.',
+    coverWishlist: 'Things you’d like to come back to.',
     coverOrder: (name, status) => `Order ${name} is ${status.toLowerCase()}.`,
-    sectionLabels: { overview: 'Account', orders: 'Orders', tracking: 'Tracking', profile: 'Profile', addresses: 'Addresses' },
+    sectionLabels: { overview: 'Account', orders: 'Orders', tracking: 'Tracking', profile: 'Profile', addresses: 'Addresses', wishlist: 'Wishlist' },
     aboutTitle: 'Everything you’ve ordered, brought together.',
     ordersPlaced: 'Orders you’ve placed',
     shipsTo: (place) => `Ships to ${place}`,
@@ -43,6 +44,11 @@
     addressLead: 'Your default address fills in at checkout, so ordering takes a moment.',
     addressNote: 'Change it, or add another for gifts and trips, in Saved Addresses.',
     addressCta: 'Manage addresses',
+    defaultBadge: 'Default',
+    openInMaps: 'Open in Google Maps',
+    mapTitle: (place) => `Map of ${place}`,
+    showAddress: (name) => `Show ${name} on the map`,
+    addAddressCta: 'Add an address',
     placedShort: (date) => `Placed ${date}`,
     storeCredit: 'Store credit',
     storeCreditHint: 'Applied automatically at checkout',
@@ -61,7 +67,6 @@
     someUnavailable: (names) => `Not available anymore: ${names}.`,
     nothingAdded: "These items aren't available anymore.",
     viewCart: 'View cart',
-    printOrder: 'Print',
     fulfilledTitle: 'Fulfilled',
     shipmentCount: (index, total) => `${index} of ${total}`,
     unfulfilledTitle: 'Unfulfilled',
@@ -97,6 +102,16 @@
     stepReadyForPickup: 'Ready for pickup',
     stepDelivered: 'Delivered',
     stepPickedUp: 'Picked up',
+    stepOrderedHint: 'We received your order.',
+    stepShippedHint: 'Your order left us and was handed to the carrier.',
+    stepInTransitHint: 'Moving through the carrier network.',
+    stepOutForDeliveryHint: 'With the driver for delivery.',
+    stepReadyForPickupHint: 'Waiting for you at the pickup point.',
+    stepDeliveredHint: 'Delivered to the shipping address.',
+    stepPickedUpHint: 'Collected from the pickup point.',
+    stepDone: 'Done',
+    stepNow: 'Current step',
+    stepNext: 'Coming up',
     stepProgress: (current, total, label) => `Shipment progress: step ${current} of ${total}, ${label}`,
     statsUnavailable: 'Unavailable',
     statsCapped: 'Too many orders to count exactly here.',
@@ -232,6 +247,71 @@
     designModeTitle: 'Customer dashboard',
     designModeText: 'Customer data is not loaded in the theme editor. Preview this page on your storefront while signed in to see the live dashboard.',
     opensInNewWindow: '(opens in a new window)',
+    timeline: 'Timeline',
+    tlPlaced: 'Order placed',
+    tlPaid: 'Payment received',
+    tlRefunded: 'Refund issued',
+    tlShipped: (index, total) => (total > 1 ? `Shipment ${index} of ${total} sent` : 'Shipment sent'),
+    tlLatest: (status) => `Latest update: ${status}`,
+    tlExpected: 'Expected delivery',
+    tlCancelled: 'Order cancelled',
+    factTotal: 'Total',
+    factItems: 'Items',
+    factPlaced: 'Placed',
+    factStatus: 'Status',
+    ordersCount: (count) => (count === 1 ? '1 order' : `${count} orders`),
+    personalInfoHint: 'Your name as it appears on orders, receipts and emails.',
+    contactInfoHint: 'Used to sign in and to send order updates.',
+    preferencesHint: 'Choose what we send to your inbox.',
+    copyAddress: 'Copy',
+    copyAddressLabel: (name) => `Copy address for ${name}`,
+    addressCopied: 'Address copied.',
+    addressCount: (count) => (count === 1 ? '1 saved address' : `${count} saved addresses`),
+    addAnother: 'Add another address',
+    addAnotherHint: 'For gifts, work or trips.',
+    viewOrderArrow: 'View order',
+    wishlistTitle: 'Wishlist',
+    wishlistIntro: 'Products you’ve saved. Your list follows you on every device where you’re signed in.',
+    wishlistEmptyTitle: 'Nothing saved yet.',
+    wishlistEmptyText: 'Tap the heart on any product to save it here.',
+    wishlistCount: (count) => (count === 1 ? '1 saved product' : `${count} saved products`),
+    wishlistDeviceOnly: 'Your wishlist is saved in this browser for now. It will sync to your account once the store finishes setting it up.',
+    wishlistGone: 'No longer available',
+    wishlistSoldOut: 'Sold out',
+    wishlistInStock: 'In stock',
+    wishlistChoose: 'Choose options',
+    wishlistRemove: (title) => `Remove ${title} from your wishlist`,
+    wishlistRemoved: 'Removed from your wishlist.',
+    wishlistUndo: 'Undo',
+    wishlistRestored: 'Back in your wishlist.',
+    wishlistSavedOn: (date) => `Saved ${date}`,
+    wishlistSort: 'Sort',
+    wishlistSortOptions: { recent: 'Recently saved', priceLow: 'Price, low to high', priceHigh: 'Price, high to low', name: 'Name, A–Z' },
+    wishlistHideSoldOut: 'Hide sold out',
+    wishlistAddAll: (count) => `Add ${count} to cart`,
+    wishlistAdded: (title) => `${title} added to your cart.`,
+    manageWishlist: 'Wishlist',
+    addToCartShort: 'Add to cart',
+    sale: 'Sale',
+    manageWishlistHint: (count) => (count ? `${count} saved ${count === 1 ? 'product' : 'products'}` : 'Products you’ve saved'),
+    noticeOrders: (count) => `${count} orders`,
+    noticeArriving: (date) => `Arriving ${date}`,
+    noticeCheck: 'Check tracking for the latest update',
+    noticeTitle: (count) => (count === 1 ? '1 order on its way' : `${count} orders on their way`),
+    noticeLine: (count, label) => `${count} ${label.toLowerCase()}`,
+    noticeStages: {
+      preparing: 'Being prepared',
+      shipped: 'Shipped',
+      transit: 'In transit',
+      pickup: 'Ready for pickup',
+      out: 'Out for delivery',
+      attention: 'Delayed',
+    },
+    viewImage: (title) => `View larger image of ${title}`,
+    copyOrderNumber: (name) => `Copy order number ${name}`,
+    orderNumberCopied: 'Order number copied.',
+    showOnMap: 'Show on map',
+    mapPrivacy: 'The map shows the city only. Open Google Maps for the exact address.',
   };
 
   // Tones follow Shopify admin conventions: completed states are neutral,
@@ -288,6 +368,9 @@
     logoutUrl: root.dataset.logoutUrl,
     shopUrl: root.dataset.shopUrl || '/',
     helpUrl: root.dataset.helpUrl || '',
+    addressMap: root.dataset.addressMap !== 'false',
+    wishlist: root.dataset.wishlist === 'true',
+    currency: root.dataset.currency || '',
     cartUrl: root.dataset.cartUrl || '/cart',
     shopRoot: (window.Shopify && window.Shopify.routes && window.Shopify.routes.root) || '/',
     countriesUrl: root.dataset.countriesUrl,
@@ -477,10 +560,12 @@
     fitWordmark();
     coverClaim.textContent = claim;
     if (!float) {
+      stopCoverNotice();
       coverFloat.hidden = true;
       return;
     }
     const src = float.image && imageUrl(float.image.url, 240);
+    stopCoverNotice();
     coverFloat.href = float.href;
     coverFloat.replaceChildren(
       src ? h('img', { class: 'cd-float__img', src, alt: float.image.altText || '', width: 96, height: 96 }) : h('span', { class: 'cd-float__img cd-float__img--empty' }, icon('package')),
@@ -507,6 +592,141 @@
     };
   }
 
+  // ---- Cover notification: one box per stage of the customer's open orders ----
+  // Each open order counts once, by its first shipment that hasn't arrived yet.
+  // Uses the most recent page of orders (open orders are recent ones).
+  const NOTICE_STAGES = [
+    { key: 'attention', test: (s) => ['DELAYED', 'FAILURE', 'ATTEMPTED_DELIVERY'].includes(s) },
+    { key: 'out', test: (s) => s === 'OUT_FOR_DELIVERY' },
+    { key: 'pickup', test: (s) => s === 'READY_FOR_PICKUP' },
+    { key: 'transit', test: (s) => s === 'IN_TRANSIT' || s === 'CARRIER_PICKED_UP' },
+    { key: 'shipped', test: () => true },
+  ];
+  // Boxes appear in the order a parcel moves through them.
+  const NOTICE_ORDER = [
+    ['preparing', 'attention'],
+    ['shipped', 'info'],
+    ['transit', 'info'],
+    ['pickup', 'info'],
+    ['out', 'success'],
+    ['attention', 'warning'],
+  ];
+  const NOTICE_INTERVAL = 4500;
+
+  function activeOrderSummary(orders) {
+    const groups = {};
+    for (const order of orders) {
+      if (order.cancelledAt || order.requiresShipping === false) continue;
+      const open = order.fulfillments.nodes.filter((f) => f.status !== 'CANCELLED' && !['DELIVERED', 'PICKED_UP'].includes(f.latestShipmentStatus));
+      let key;
+      if (open.length) key = NOTICE_STAGES.find((stage) => stage.test(open[0].latestShipmentStatus)).key;
+      else if (order.fulfillmentStatus !== 'FULFILLED') key = 'preparing';
+      else continue;
+      (groups[key] = groups[key] || []).push({ order, fulfillment: open[0] || null });
+    }
+    return NOTICE_ORDER.filter(([key]) => groups[key]).map(([key, tone]) => ({ key, tone, entries: groups[key] }));
+  }
+
+  // The second line of a box: the most useful date Shopify gives for that stage.
+  function noticeSub(group) {
+    const { order, fulfillment } = group.entries[0];
+    if (group.key === 'preparing') return STRINGS.placedOn(formatDate(order.processedAt));
+    if (group.key === 'attention') return STRINGS.noticeCheck;
+    if (fulfillment && fulfillment.estimatedDeliveryAt) return STRINGS.noticeArriving(formatDate(fulfillment.estimatedDeliveryAt));
+    return fulfillment ? STRINGS.shippedOn(formatDate(fulfillment.createdAt)) : '';
+  }
+
+  let noticeCleanup = null;
+  function stopCoverNotice() {
+    if (noticeCleanup) noticeCleanup();
+    noticeCleanup = null;
+    if (coverFloat) coverFloat.classList.remove('cd-float--ticker');
+  }
+
+  function showCoverNotice(groups, recentOrders) {
+    if (!cover || currentSection !== 'overview' || !groups.length) return;
+    stopCoverNotice();
+    const imageFor = (order) => {
+      const recent = recentOrders.find((o) => o.id === order.id);
+      const image = recent && recent.lineItems && recent.lineItems.nodes[0] && recent.lineItems.nodes[0].image;
+      return image && imageUrl(image.url, 240) ? image : null;
+    };
+    const total = groups.reduce((sum, group) => sum + group.entries.length, 0);
+    const hrefFor = (group) => (group.entries.length === 1 ? orderHref(group.entries[0].order) : '#tracking');
+
+    const slides = groups.map((group, index) => {
+      const count = group.entries.length;
+      const image = imageFor(group.entries[0].order);
+      return h(
+        'span',
+        { class: `cd-ticker__slide${index === 0 ? ' is-active' : ''}`, 'aria-hidden': 'true' },
+        image
+          ? h('img', { class: 'cd-float__img', src: imageUrl(image.url, 240), alt: '', width: 96, height: 96 })
+          : h('span', { class: 'cd-float__img cd-float__img--empty' }, icon(group.key === 'preparing' ? 'package' : 'truck')),
+        h(
+          'span',
+          { class: 'cd-float__body' },
+          h('span', { class: `cd-ticker__stage cd-ticker__stage--${group.tone}` }, STRINGS.noticeStages[group.key], count > 1 ? h('span', { class: 'cd-ticker__count' }, String(count)) : null),
+          h('b', null, count === 1 ? STRINGS.orderNamed(group.entries[0].order.name) : STRINGS.noticeOrders(count)),
+          h('span', { class: 'cd-float__sub' }, noticeSub(group))
+        )
+      );
+    });
+    const bars = groups.map((_, index) => h('i', { class: index === 0 ? 'is-active' : '' }, h('b')));
+
+    coverFloat.classList.add('cd-float--ticker');
+    coverFloat.href = hrefFor(groups[0]);
+    coverFloat.replaceChildren(
+      h('span', { class: 'cd-ticker' }, slides),
+      h(
+        'span',
+        { class: 'cd-ticker__side', 'aria-hidden': 'true' },
+        h('span', { class: 'cd-float__go' }, icon('arrow-left', 'cd-icon cd-icon--sm cd-flip')),
+        groups.length > 1 ? h('span', { class: 'cd-ticker__bars' }, bars) : null
+      )
+    );
+    const lines = groups.map((group) => STRINGS.noticeLine(group.entries.length, STRINGS.noticeStages[group.key]));
+    coverFloat.setAttribute('aria-label', `${STRINGS.noticeTitle(total)}: ${lines.join(', ')}. ${STRINGS.viewTracking}`);
+    coverFloat.hidden = false;
+    if (groups.length < 2) return;
+
+    // Every few seconds the next box slides up from the bottom and the current
+    // one leaves through the top. The active bar's fill animation is the timer,
+    // so hovering or focusing the card (which pauses it in CSS) pauses the cycle.
+    let current = 0;
+    let resetTimer;
+    const advance = () => {
+      const previous = current;
+      current = (current + 1) % slides.length;
+      slides[previous].classList.remove('is-active');
+      slides[previous].classList.add('is-leaving');
+      slides[current].classList.add('is-active');
+      bars[previous].classList.remove('is-active');
+      bars[current].classList.add('is-active');
+      coverFloat.href = hrefFor(groups[current]);
+      clearTimeout(resetTimer);
+      // Once it has left, park the old box below again without animating.
+      resetTimer = setTimeout(() => {
+        for (const slide of slides) {
+          if (!slide.classList.contains('is-leaving')) continue;
+          slide.style.transition = 'none';
+          slide.classList.remove('is-leaving');
+          void slide.offsetHeight;
+          slide.style.transition = '';
+        }
+      }, 700);
+    };
+    const onEnd = (event) => {
+      if (event.animationName === 'cd-ticker-fill') advance();
+    };
+    coverFloat.addEventListener('animationend', onEnd);
+    coverFloat.style.setProperty('--cd-ticker-time', `${NOTICE_INTERVAL}ms`);
+    noticeCleanup = () => {
+      coverFloat.removeEventListener('animationend', onEnd);
+      clearTimeout(resetTimer);
+    };
+  }
+
   // Dark band listing orders as rows (thumbnail, number, items, status, total).
   function orderRows(orders) {
     return h(
@@ -528,16 +748,6 @@
           h('span', { class: 'cd-orow__total' }, formatMoney(order.totalPrice))
         );
       })
-    );
-  }
-
-  function card(title, ...content) {
-    const headingId = title ? nextId('card') : null;
-    return h(
-      'section',
-      { class: 'cd-card', 'aria-labelledby': headingId },
-      title ? h('h2', { class: 'cd-card__title', id: headingId }, title) : null,
-      content
     );
   }
 
@@ -589,7 +799,11 @@
         { class: `cd-toast__message cd-toast__message--${tone}` },
         icon(tone === 'success' ? 'check-circle' : 'alert'),
         h('span', null, message),
-        action ? h('a', { href: action.href, class: 'cd-toast__action' }, action.label) : null
+        action
+          ? action.onClick
+            ? h('button', { type: 'button', class: 'cd-toast__action', onClick: action.onClick }, action.label)
+            : h('a', { href: action.href, class: 'cd-toast__action' }, action.label)
+          : null
       )
     );
     toastRegion.classList.add('is-visible');
@@ -951,6 +1165,9 @@
   const ADDRESS = 'id firstName lastName company address1 address2 city province zoneCode zip country countryCode phoneNumber formatted(withName: true)';
   const TRACKING_FULFILLMENT = 'id createdAt status latestShipmentStatus estimatedDeliveryAt requiresShipping trackingInformation { company number url }';
   const USER_ERRORS = 'userErrors { field message code }';
+  // Customer metafield that holds the wishlist (see docs/customer-dashboard.md).
+  const WISHLIST_NAMESPACE = 'custom';
+  const WISHLIST_KEY = 'wishlist';
   const ORDERS_PAGE_SIZE = 10;
   const STATS_PAGE_SIZE = 100;
   const ADDRESSES_PAGE_SIZE = 50;
@@ -960,12 +1177,48 @@
   const pageVariables = (cursor = {}) =>
     cursor.before ? { last: ORDERS_PAGE_SIZE, before: cursor.before } : { first: ORDERS_PAGE_SIZE, after: cursor.after || null };
 
+  function orderQuery(name, extra) {
+    return `query ${name}($id: ID!) {
+        order(id: $id) {
+          ${ORDER_SUMMARY}
+          cancelReason currencyCode statusPageUrl requiresShipping
+          subtotal { ${MONEY} }
+          totalShipping { ${MONEY} }
+          totalTax { ${MONEY} }
+          totalDuties { ${MONEY} }
+          totalRefunded { ${MONEY} }
+          shippingDiscountAllocations { allocatedAmount { ${MONEY} } }
+          email ${extra}
+          shippingAddress { formatted(withName: true) city province country }
+          billingAddress { formatted(withName: true) }
+          shippingLine { title }
+          lineItems(first: ${ORDER_LINE_ITEMS}) {
+            nodes {
+              id title variantTitle quantity sku variantId giftCard
+              variantOptions { name value }
+              price { ${MONEY} }
+              totalPrice { ${MONEY} }
+              discountAllocations { allocatedAmount { ${MONEY} } }
+              image { url altText }
+            }
+            pageInfo { hasNextPage }
+          }
+          fulfillments(first: 5) {
+            nodes {
+              ${TRACKING_FULFILLMENT}
+              fulfillmentLineItems(first: 25) { nodes { quantity lineItem { id title } } pageInfo { hasNextPage } }
+            }
+          }
+        }
+      }`;
+  }
+
   const OPERATIONS = {
     Overview: {
       query: `query Overview {
         customer {
           id firstName lastName displayName creationDate
-          defaultAddress { city province country }
+          defaultAddress { id city province country formatted(withName: true) }
           orders(first: 5, sortKey: PROCESSED_AT, reverse: true) {
             nodes { ${ORDER_SUMMARY} lineItems(first: 3) { nodes { title image { url altText } } } }
           }
@@ -998,39 +1251,12 @@
       variables: (v) => ({ ...pageVariables(v), query: v.query || null }),
     },
     Order: {
-      query: `query Order($id: ID!) {
-        order(id: $id) {
-          ${ORDER_SUMMARY}
-          cancelReason currencyCode statusPageUrl requiresShipping
-          subtotal { ${MONEY} }
-          totalShipping { ${MONEY} }
-          totalTax { ${MONEY} }
-          totalDuties { ${MONEY} }
-          totalRefunded { ${MONEY} }
-          shippingDiscountAllocations { allocatedAmount { ${MONEY} } }
-          email
-          shippingAddress { formatted(withName: true) }
-          billingAddress { formatted(withName: true) }
-          shippingLine { title }
-          lineItems(first: ${ORDER_LINE_ITEMS}) {
-            nodes {
-              id title variantTitle quantity sku variantId giftCard
-              variantOptions { name value }
-              price { ${MONEY} }
-              totalPrice { ${MONEY} }
-              discountAllocations { allocatedAmount { ${MONEY} } }
-              image { url altText }
-            }
-            pageInfo { hasNextPage }
-          }
-          fulfillments(first: 5) {
-            nodes {
-              ${TRACKING_FULFILLMENT}
-              fulfillmentLineItems(first: 25) { nodes { quantity lineItem { id title } } pageInfo { hasNextPage } }
-            }
-          }
-        }
-      }`,
+      query: orderQuery('Order', 'transactions { kind status processedAt createdAt }'),
+      variables: (v) => ({ id: v.id }),
+    },
+    // Same order without payment events, used if the transactions field is refused.
+    OrderWithoutTransactions: {
+      query: orderQuery('OrderWithoutTransactions', ''),
       variables: (v) => ({ id: v.id }),
     },
     Tracking: {
@@ -1064,7 +1290,7 @@
     },
     Profile: {
       query: `query Profile {
-        customer { id firstName lastName emailAddress { emailAddress marketingState } phoneNumber { phoneNumber } }
+        customer { id firstName lastName creationDate emailAddress { emailAddress marketingState } phoneNumber { phoneNumber } }
       }`,
     },
     ProfileUpdate: {
@@ -1097,6 +1323,27 @@
         if (v.address) out.address = v.address;
         if (v.defaultAddress) out.defaultAddress = true;
         return out;
+      },
+    },
+    WishlistGet: {
+      query: `query WishlistGet {
+        customer { id metafield(namespace: "${WISHLIST_NAMESPACE}", key: "${WISHLIST_KEY}") { value compareDigest } }
+      }`,
+    },
+    // Same read without compareDigest, in case the field is unavailable.
+    WishlistGetBasic: {
+      query: `query WishlistGetBasic {
+        customer { id metafield(namespace: "${WISHLIST_NAMESPACE}", key: "${WISHLIST_KEY}") { value } }
+      }`,
+    },
+    WishlistSet: {
+      query: `mutation WishlistSet($metafields: [MetafieldsSetInput!]!) {
+        metafieldsSet(metafields: $metafields) { metafields { key namespace value } ${USER_ERRORS} }
+      }`,
+      variables: (v) => {
+        const input = { ownerId: v.ownerId, namespace: WISHLIST_NAMESPACE, key: WISHLIST_KEY, type: 'json', value: v.value };
+        if (v.compareDigest !== undefined) input.compareDigest = v.compareDigest;
+        return { metafields: [input] };
       },
     },
     AddressDelete: {
@@ -1190,6 +1437,7 @@
       const idToken = tokens && tokens.idToken;
       tokens = null;
       clearProtectedContent();
+      if (window.CDWishlist) window.CDWishlist.clear();
       auth.resetAttempts();
       const storefrontLogout = new URL(config.logoutUrl || '/account/logout', window.location.origin).toString();
       if (idToken) {
@@ -1300,54 +1548,74 @@
     });
   }
 
-  // Order index table, styled after Shopify admin's order list.
-  function ordersTable(orders, { showItems = false } = {}) {
-    const columns = [STRINGS.order, STRINGS.date, showItems ? STRINGS.items : null, STRINGS.total, STRINGS.payment_status, STRINGS.fulfillment_status].filter(Boolean);
-    const head = h(
-      'thead',
-      null,
-      h('tr', null, columns.map((label) => h('th', { scope: 'col' }, label)), h('th', { scope: 'col' }, h('span', { class: 'visually-hidden' }, STRINGS.viewDetails)))
+  // Order history as editorial rows, grouped under month headings.
+  function orderList(orders) {
+    const groups = [];
+    for (const order of orders) {
+      const label = formatMonthYear(order.processedAt);
+      let group = groups[groups.length - 1];
+      if (!group || group.label !== label) groups.push((group = { label, orders: [] }));
+      group.orders.push(order);
+    }
+    return h(
+      'div',
+      { class: 'cd-olist' },
+      groups.map((group) => {
+        const headingId = nextId('month');
+        return h(
+          'section',
+          { class: 'cd-olist__group', 'aria-labelledby': headingId },
+          h('h2', { class: 'cd-olist__month', id: headingId }, group.label),
+          h('ul', { class: 'cd-olist__rows', role: 'list' }, group.orders.map(orderLine))
+        );
+      })
     );
-    const rows = orders.map((order) => {
-      const items = showItems && order.lineItems ? order.lineItems.nodes : [];
-      const more = showItems && order.lineItems && order.lineItems.pageInfo && order.lineItems.pageInfo.hasNextPage;
-      return h(
-        'tr',
-        { class: 'cd-row' },
+  }
+
+  function orderLine(order) {
+    const items = order.lineItems ? order.lineItems.nodes : [];
+    const more = Boolean(order.lineItems && order.lineItems.pageInfo && order.lineItems.pageInfo.hasNextPage);
+    const count = items.reduce((sum, item) => sum + (item.quantity || 1), 0);
+    const [label, tone] = order.cancelledAt ? orderStatus(order) : FULFILLMENT_STATUS[order.fulfillmentStatus] || orderStatus(order);
+    const payment = FINANCIAL_STATUS[order.financialStatus];
+    const paymentNote = payment && payment[1] !== 'neutral' ? payment[0] : null;
+    const titles = items.map((item) => item.title).join(', ');
+    return h(
+      'li',
+      null,
+      h(
+        'a',
+        { href: orderHref(order), class: 'cd-oline' },
         h(
-          'th',
-          { scope: 'row', 'data-label': STRINGS.order },
-          h('a', { href: orderHref(order), class: 'cd-row__link' }, order.name),
-          order.cancelledAt ? h('span', { class: 'cd-row__flag' }, badge(orderStatus(order))) : null
+          'span',
+          { class: 'cd-oline__thumbs' },
+          // At most three tiles: up to three photos, or two and a "+n" tile.
+          (items.length > 3 || more ? items.slice(0, 2) : items).map((item) => thumbnail(item.image, 56)),
+          items.length > 3 || more
+            ? h('span', { class: 'cd-thumb cd-thumb--more', 'aria-hidden': 'true' }, STRINGS.moreItems(items.length - 2) + (more ? '+' : ''))
+            : null
         ),
-        h('td', { 'data-label': STRINGS.date }, formatDate(order.processedAt)),
-        showItems
-          ? h(
-              'td',
-              { 'data-label': STRINGS.items },
-              h(
-                'span',
-                { class: 'cd-row__items' },
-                h('span', { class: 'cd-row__thumbs' }, items.slice(0, 3).map((item) => thumbnail(item.image, 32))),
-                h('span', { class: 'cd-muted' }, STRINGS.productCount(items.length, more))
-              )
-            )
-          : null,
-        h('td', { 'data-label': STRINGS.total, class: 'cd-row__total' }, formatMoney(order.totalPrice)),
-        h('td', { 'data-label': STRINGS.payment_status }, statusBadge(FINANCIAL_STATUS, order.financialStatus)),
-        h('td', { 'data-label': STRINGS.fulfillment_status }, order.cancelledAt ? null : statusBadge(FULFILLMENT_STATUS, order.fulfillmentStatus)),
         h(
-          'td',
-          { class: 'cd-table__action' },
-          h(
-            'a',
-            { href: orderHref(order), class: 'cd-row__chevron', tabindex: '-1', 'aria-hidden': 'true' },
-            icon('chevron-right', 'cd-icon cd-icon--sm')
-          )
-        )
-      );
-    });
-    return h('div', { class: 'cd-table-wrap' }, h('table', { class: 'cd-table' }, head, h('tbody', null, rows)));
+          'span',
+          { class: 'cd-oline__main' },
+          h('b', { class: 'cd-oline__name' }, order.name),
+          h('span', { class: 'cd-oline__sub' }, [formatDate(order.processedAt), titles + (more ? '…' : '')].filter(Boolean).join(' · '))
+        ),
+        h(
+          'span',
+          { class: 'cd-oline__status' },
+          h('span', { class: `cd-badge cd-badge--${tone}` }, label),
+          paymentNote ? h('span', { class: 'cd-oline__note' }, paymentNote) : null
+        ),
+        h(
+          'span',
+          { class: 'cd-oline__total' },
+          formatMoney(order.totalPrice),
+          h('span', { class: 'cd-oline__count' }, STRINGS.itemCount(count) + (more ? '+' : ''))
+        ),
+        h('span', { class: 'cd-oline__go', 'aria-hidden': 'true' }, '↗')
+      )
+    );
   }
 
   function copyButton(text) {
@@ -1423,35 +1691,113 @@
   };
   const STEP_WARNING = new Set(['DELAYED', 'FAILURE', 'ATTEMPTED_DELIVERY']);
 
-  function shipmentSteps(status, { preparing = false } = {}) {
+  // Steps animate when they scroll into view (line fills, dots light up in turn).
+  let stepsObserver;
+  function animateWhenVisible(el) {
+    if (!('IntersectionObserver' in window)) {
+      requestAnimationFrame(() => el.classList.add('is-ready'));
+      return;
+    }
+    if (!stepsObserver) {
+      stepsObserver = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            if (!entry.isIntersecting) continue;
+            entry.target.classList.add('is-ready');
+            stepsObserver.unobserve(entry.target);
+          }
+        },
+        { threshold: 0.4 }
+      );
+    }
+    stepsObserver.observe(el);
+  }
+
+  // `dates` holds the dates Shopify gives for a step (ordered, shipped); the
+  // other steps have no timestamp in the API, so none is shown for them.
+  function shipmentSteps(status, { preparing = false, dates = {} } = {}) {
     const pickup = status === 'READY_FOR_PICKUP' || status === 'PICKED_UP';
-    const labels = [
-      STRINGS.stepOrdered,
-      STRINGS.stepShipped,
-      STRINGS.stepInTransit,
-      pickup ? STRINGS.stepReadyForPickup : STRINGS.stepOutForDelivery,
-      pickup ? STRINGS.stepPickedUp : STRINGS.stepDelivered,
+    const steps = [
+      [STRINGS.stepOrdered, STRINGS.stepOrderedHint, dates.ordered],
+      [STRINGS.stepShipped, STRINGS.stepShippedHint, dates.shipped],
+      [STRINGS.stepInTransit, STRINGS.stepInTransitHint],
+      pickup ? [STRINGS.stepReadyForPickup, STRINGS.stepReadyForPickupHint] : [STRINGS.stepOutForDelivery, STRINGS.stepOutForDeliveryHint],
+      pickup ? [STRINGS.stepPickedUp, STRINGS.stepPickedUpHint] : [STRINGS.stepDelivered, STRINGS.stepDeliveredHint],
     ];
+    const labels = steps.map(([label]) => label);
     const current = preparing ? 0 : STEP_INDEX[status] ?? 1;
     const complete = current === labels.length - 1;
-    return h(
+    const list = h(
       'ol',
       {
         class: `cd-steps${STEP_WARNING.has(status) ? ' cd-steps--warning' : ''}${complete ? ' cd-steps--complete' : ''}`,
         role: 'list',
+        style: `--cd-progress: ${current / (labels.length - 1)}; --cd-current: ${current}`,
         'aria-label': STRINGS.stepProgress(current + 1, labels.length, labels[current]),
       },
-      labels.map((label, index) =>
-        h(
+      steps.map(([label, hint, date], index) => {
+        const tipId = nextId('step');
+        const state = index < current || (complete && index === current) ? STRINGS.stepDone : index === current ? STRINGS.stepNow : STRINGS.stepNext;
+        return h(
           'li',
           {
             class: `cd-step${index < current ? ' is-done' : ''}${index === current ? ' is-current' : ''}`,
+            style: `--i: ${index}`,
             'aria-current': index === current ? 'step' : null,
           },
-          h('span', { class: 'cd-step__dot', 'aria-hidden': 'true' }, index < current || (complete && index === current) ? icon('check', 'cd-icon cd-step__check') : null),
-          h('span', { class: 'cd-step__label' }, label)
-        )
-      )
+          h(
+            'button',
+            { type: 'button', class: 'cd-step__hit', 'aria-describedby': tipId, 'aria-expanded': 'false' },
+            h('span', { class: 'cd-step__dot', 'aria-hidden': 'true' }),
+            h('span', { class: 'cd-step__label' }, label)
+          ),
+          h(
+            'span',
+            { class: 'cd-step__tip', role: 'tooltip', id: tipId },
+            h('b', null, state),
+            h('span', null, hint),
+            date && index <= current ? h('time', { datetime: date }, formatDate(date)) : null
+          )
+        );
+      })
+    );
+    // Tap or click pins a step's details open (hover and focus also show them).
+    const closeAll = () => {
+      for (const step of list.querySelectorAll('.cd-step.is-open')) {
+        step.classList.remove('is-open');
+        step.firstChild.setAttribute('aria-expanded', 'false');
+      }
+    };
+    list.addEventListener('click', (event) => {
+      const hit = event.target.closest('.cd-step__hit');
+      if (!hit) return;
+      const step = hit.parentElement;
+      const open = !step.classList.contains('is-open');
+      closeAll();
+      step.classList.toggle('is-open', open);
+      hit.setAttribute('aria-expanded', String(open));
+    });
+    list.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') closeAll();
+    });
+    list.addEventListener('focusout', (event) => {
+      if (!list.contains(event.relatedTarget)) closeAll();
+    });
+    animateWhenVisible(list);
+    return list;
+  }
+
+  // Large status line for one shipment ("In transit"), with the shipped and
+  // estimated delivery dates Shopify reports underneath.
+  function shipmentHeadline(fulfillment) {
+    const status = fulfillment.latestShipmentStatus;
+    const [label, tone] = SHIPMENT_STATUS[status] || [STRINGS.stepShipped, 'info'];
+    const eta = fulfillment.estimatedDeliveryAt && !['DELIVERED', 'PICKED_UP'].includes(status) ? STRINGS.estimatedDelivery(formatDate(fulfillment.estimatedDeliveryAt)) : null;
+    return h(
+      'div',
+      { class: 'cd-shipment__header' },
+      h('p', { class: `cd-shipment__status cd-shipment__status--${tone}` }, label),
+      h('p', { class: 'cd-shipment__date' }, [STRINGS.shippedOn(formatDate(fulfillment.createdAt)), eta].filter(Boolean).join(' · '))
     );
   }
 
@@ -1467,7 +1813,7 @@
         h(
           'div',
           { class: 'cd-shipment cd-shipment--pending' },
-          shipmentSteps(null, { preparing: true }),
+          shipmentSteps(null, { preparing: true, dates: { ordered: order.processedAt } }),
           h('p', { class: 'cd-shipment-note' }, icon('clock', 'cd-icon cd-icon--sm'), STRINGS.preparing)
         ),
       ];
@@ -1480,16 +1826,8 @@
       return h(
         'div',
         { class: 'cd-shipment' },
-        h(
-          'div',
-          { class: 'cd-shipment__header' },
-          h('span', { class: 'cd-shipment__date' }, icon('truck', 'cd-icon cd-icon--sm'), STRINGS.shippedOn(formatDate(fulfillment.createdAt))),
-          statusBadge(SHIPMENT_STATUS, fulfillment.latestShipmentStatus)
-        ),
-        fulfillment.requiresShipping === false ? null : shipmentSteps(fulfillment.latestShipmentStatus),
-        fulfillment.estimatedDeliveryAt && fulfillment.latestShipmentStatus !== 'DELIVERED'
-          ? h('p', { class: 'cd-muted' }, STRINGS.estimatedDelivery(formatDate(fulfillment.estimatedDeliveryAt)))
-          : null,
+        shipmentHeadline(fulfillment),
+        fulfillment.requiresShipping === false ? null : shipmentSteps(fulfillment.latestShipmentStatus, { dates: { ordered: order.processedAt, shipped: fulfillment.createdAt } }),
         trackingBlock(fulfillment),
         items.length
           ? h(
@@ -1644,6 +1982,68 @@
     };
   }
 
+  // ---- Address map card ----
+  // The embedded map only receives city, region and country, so opening the
+  // dashboard doesn't send a customer's street address to Google. The full
+  // address is used only if the customer chooses "Open in Google Maps".
+  function placeOf(address) {
+    return [address.city, address.province || address.zoneCode, address.country || address.countryCode].filter(Boolean).join(', ');
+  }
+
+  function addressMapCard(defaultAddress) {
+    const iframe = h('iframe', {
+      class: 'cd-mapcard__map',
+      loading: 'lazy',
+      referrerpolicy: 'no-referrer-when-downgrade',
+      tabindex: '-1',
+    });
+    const title = h('b', { class: 'cd-mapcard__place' });
+    const open = h('a', { class: 'cd-link cd-link--accent', target: '_blank', rel: 'noopener noreferrer' }, STRINGS.openInMaps, icon('external', 'cd-icon cd-icon--sm'));
+    const switcher = h('div', { class: 'cd-mapcard__switch', role: 'group', 'aria-label': STRINGS.addressesTitle, hidden: true });
+
+    // Shopify's formatted address can include the phone number; keep it off the map card.
+    const addressLines = (address) => (address.formatted || []).filter((line) => !/^\+?[\d\s().-]{7,}$/.test(line.trim()));
+
+    const show = (address, isDefault) => {
+      const place = placeOf(address);
+      iframe.src = `https://maps.google.com/maps?q=${encodeURIComponent(place)}&z=11&output=embed`;
+      iframe.title = STRINGS.mapTitle(place);
+      title.replaceChildren(document.createTextNode(STRINGS.shipsTo(place)));
+      if (isDefault) title.append(h('span', { class: 'cd-chip' }, STRINGS.defaultBadge));
+      const full = addressLines(address).slice(1).join(', ') || place;
+      open.href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(full)}`;
+    };
+    show(defaultAddress, true);
+
+    // Other saved addresses become buttons that move the map.
+    cached('addresses:list', () => api.call('Addresses'), 60000)
+      .then((data) => {
+        const list = data.customer.addresses.nodes;
+        if (list.length < 2) return;
+        const sorted = [...list].sort((a, b) => (a.id === defaultAddress.id ? -1 : b.id === defaultAddress.id ? 1 : 0)).slice(0, 4);
+        switcher.replaceChildren(
+          ...sorted.map((address, i) => {
+            const label = address.city || placeOf(address);
+            const b = h('button', { type: 'button', class: 'cd-mapcard__pill', 'aria-pressed': String(i === 0), 'aria-label': STRINGS.showAddress(label) }, label);
+            b.addEventListener('click', () => {
+              switcher.querySelectorAll('button').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+              show(address, address.id === defaultAddress.id);
+            });
+            return b;
+          })
+        );
+        switcher.hidden = false;
+      })
+      .catch(() => {});
+
+    return h(
+      'div',
+      { class: 'cd-mapcard' },
+      h('div', { class: 'cd-mapcard__frame' }, iframe),
+      h('div', { class: 'cd-mapcard__body' }, title, switcher, h('div', { class: 'cd-mapcard__actions' }, open, h('a', { href: '#addresses', class: 'cd-link' }, STRINGS.addressCta, ' ↗')))
+    );
+  }
+
   async function overviewView() {
     const data = await api.call('Overview');
     const customer = data.customer;
@@ -1682,6 +2082,7 @@
     if (orders.length) {
       cached('tracking:first', () => api.call('Tracking', {}), 60000)
         .then((tracking) => {
+          showCoverNotice(activeOrderSummary(tracking.customer.orders.nodes), orders);
           const active = tracking.customer.orders.nodes.find(
             (order) =>
               !order.cancelledAt &&
@@ -1738,7 +2139,9 @@
         h(
           'div',
           { class: 'cd-about__aside' },
-          h('a', { href: '#addresses', class: 'cd-place' }, h('span', { class: 'cd-place__pin', 'aria-hidden': 'true' }, icon('pin', 'cd-icon cd-icon--sm')), h('span', null, place ? STRINGS.shipsTo(place) : STRINGS.noDefaultAddress)),
+          config.addressMap && address
+            ? addressMapCard(address)
+            : h('a', { href: '#addresses', class: 'cd-place' }, h('span', { class: 'cd-place__pin', 'aria-hidden': 'true' }, icon('pin', 'cd-icon cd-icon--sm')), h('span', null, place ? STRINGS.shipsTo(place) : STRINGS.noDefaultAddress)),
           h('p', { class: 'cd-about__lead' }, STRINGS.addressLead),
           h('p', { class: 'cd-about__note' }, STRINGS.addressNote)
         )
@@ -1760,6 +2163,7 @@
           quickAction('#tracking', STRINGS.trackOrders, STRINGS.trackOrdersHint),
           quickAction('#profile', STRINGS.manageProfile, STRINGS.manageProfileHint),
           quickAction('#addresses', STRINGS.viewAddresses, STRINGS.viewAddressesHint),
+          config.wishlist && window.CDWishlist ? quickAction('#wishlist', STRINGS.manageWishlist, STRINGS.manageWishlistHint(window.CDWishlist.items().length)) : null,
           quickAction(config.shopUrl, STRINGS.continueShopping, STRINGS.continueShoppingHint)
         )
       )
@@ -1773,7 +2177,7 @@
   }
 
   async function ordersView() {
-    const list = h('div', { class: 'cd-list', 'aria-live': 'polite' });
+    const list = h('div', { class: 'cd-list cd-indent', 'aria-live': 'polite' });
     const header = pageHeader(STRINGS.myOrders, STRINGS.myOrdersIntro);
     let query = null;
     let term = '';
@@ -1793,7 +2197,7 @@
           'div',
           { class: 'cd-orders' },
           query ? h('p', { class: 'cd-results' }, STRINGS.resultsFor(term)) : null,
-          h('div', { class: 'cd-card cd-card--flush' }, ordersTable(connection.nodes, { showItems: true })),
+          orderList(connection.nodes),
           pager(connection.pageInfo, onPage)
         );
       },
@@ -1847,7 +2251,7 @@
 
   const cursorUsed = (pageInfo) => pageInfo && (pageInfo.hasPreviousPage || pageInfo.hasNextPage);
 
-  // Shopify admin-style section: icon + title above a card.
+  // Order section: a ruled heading with the content underneath (no box).
   function statusSection({ iconName, title, meta, aside }, ...content) {
     const id = nextId('section');
     return h(
@@ -1860,7 +2264,7 @@
         h('h2', { class: 'cd-sc__title', id }, title, meta ? h('span', { class: 'cd-sc__meta' }, meta) : null),
         aside ? h('div', { class: 'cd-sc__aside' }, aside) : null
       ),
-      h('div', { class: 'cd-card cd-sc__body' }, content)
+      h('div', { class: 'cd-sc__body' }, content)
     );
   }
 
@@ -1878,8 +2282,13 @@
     return h(
       'li',
       { class: 'cd-item' },
-      thumbnail(item.image, 48),
-      h('div', { class: 'cd-item__info' }, h('p', { class: 'cd-item__title' }, item.title), variant ? h('span', { class: 'cd-chip' }, variant) : null),
+      zoomableThumb(item.image, 72, item.title),
+      h(
+        'div',
+        { class: 'cd-item__info' },
+        h('p', { class: 'cd-item__title' }, item.title),
+        variant ? h('span', { class: 'cd-chip' }, variant) : null
+      ),
       h('p', { class: 'cd-item__qty' }, item.price ? formatMoney(item.price) : '', h('span', { class: 'cd-item__x' }, ' × '), h('span', { class: 'cd-qty' }, String(quantity))),
       h('p', { class: 'cd-item__total' }, formatMoney(lineTotal))
     );
@@ -1905,7 +2314,9 @@
   }
 
   async function orderDetailView(route) {
-    const data = await api.call('Order', { id: `gid://shopify/Order/${route.id}` });
+    const id = `gid://shopify/Order/${route.id}`;
+    let data = await api.call('Order', { id });
+    if (!data.order) data = await api.call('OrderWithoutTransactions', { id });
     const order = data.order;
     const back = h('a', { href: '#orders', class: 'cd-back' }, icon('arrow-left', 'cd-icon cd-icon--sm'), STRINGS.allOrders);
     if (!order) {
@@ -1944,18 +2355,14 @@
           iconName: 'truck',
           title: STRINGS.fulfilledTitle,
           meta: fulfillments.length > 1 ? STRINGS.shipmentCount(index + 1, fulfillments.length) : null,
-          aside: statusBadge(SHIPMENT_STATUS, fulfillment.latestShipmentStatus),
         },
         h(
           'div',
-          { class: 'cd-sc__rows' },
-          h('p', { class: 'cd-sc__line' }, icon('check-circle', 'cd-icon cd-icon--sm'), STRINGS.shippedOn(formatDate(fulfillment.createdAt))),
-          fulfillment.estimatedDeliveryAt && fulfillment.latestShipmentStatus !== 'DELIVERED'
-            ? h('p', { class: 'cd-sc__line' }, icon('clock', 'cd-icon cd-icon--sm'), STRINGS.estimatedDelivery(formatDate(fulfillment.estimatedDeliveryAt)))
-            : null
+          { class: 'cd-shipment' },
+          shipmentHeadline(fulfillment),
+          fulfillment.requiresShipping === false ? null : shipmentSteps(fulfillment.latestShipmentStatus, { dates: { ordered: order.processedAt, shipped: fulfillment.createdAt } }),
+          trackingBlock(fulfillment)
         ),
-        fulfillment.requiresShipping === false ? null : shipmentSteps(fulfillment.latestShipmentStatus),
-        trackingBlock(fulfillment),
         items.length ? h('ul', { class: 'cd-items', role: 'list' }, items) : null
       );
     });
@@ -1975,7 +2382,7 @@
     const unfulfilledSection = remaining.length
       ? statusSection(
           { iconName: 'clock', title: STRINGS.unfulfilledTitle, aside: statusBadge(FULFILLMENT_STATUS, order.fulfillmentStatus) },
-          order.requiresShipping !== false ? shipmentSteps(null, { preparing: true }) : null,
+          order.requiresShipping !== false ? shipmentSteps(null, { preparing: true, dates: { ordered: order.processedAt } }) : null,
           h('p', { class: 'cd-shipment-note' }, order.requiresShipping === false ? STRINGS.noShippingRequired : STRINGS.preparing),
           h('ul', { class: 'cd-items', role: 'list' }, remaining.map(({ item, quantity }) => itemRow(item, quantity)))
         )
@@ -1987,6 +2394,7 @@
       : null;
 
     const itemCount = lineItems.reduce((sum, item) => sum + item.quantity, 0);
+    const fact = (label, value) => h('div', { class: 'cd-facts__item' }, h('dt', null, label), h('dd', null, value));
     const paymentRow = (label, detail, money, { strong = false, negative = false } = {}) =>
       h(
         'div',
@@ -2021,6 +2429,8 @@
 
     // Side panel
     const shippingLines = order.shippingAddress ? order.shippingAddress.formatted || [] : [];
+    // City-level map only (no street address is sent to the map embed).
+    const shipPlace = order.shippingAddress ? placeOf(order.shippingAddress) : '';
     const billingLines = order.billingAddress ? order.billingAddress.formatted || [] : [];
     const sameBilling = billingLines.length && billingLines.join('|') === shippingLines.join('|');
     const mapUrl = shippingLines.length ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(shippingLines.slice(1).join(', '))}` : null;
@@ -2029,12 +2439,22 @@
 
     const aside = h(
       'aside',
-      { class: 'cd-card cd-aside' },
+      { class: 'cd-aside' },
+      asideBlock(STRINGS.timeline, orderTimeline(order, fulfillments)),
       order.email ? asideBlock(STRINGS.contact, h('p', { class: 'cd-aside__text' }, order.email)) : null,
       asideBlock(
         STRINGS.shippingAddress,
         shippingLines.length
-          ? [h('address', { class: 'cd-address' }, shippingLines.map((line) => h('span', null, line))), externalLink(mapUrl, STRINGS.viewMap, 'cd-link cd-link--accent')]
+          ? [
+              h('address', { class: 'cd-address' }, shippingLines.map((line) => h('span', null, line))),
+              shipPlace && config.addressMap ? mapPopupButton(shipPlace, mapUrl) : null,
+              h(
+                'div',
+                { class: 'cd-aside__actions' },
+                shipPlace && config.addressMap ? null : externalLink(mapUrl, STRINGS.viewMap, 'cd-link cd-link--accent'),
+                copyAction(shippingLines.join('\n'), STRINGS.copyAddress, STRINGS.addressCopied, STRINGS.copyAddressLabel(STRINGS.shippingAddress.toLowerCase()))
+              ),
+            ]
           : h('p', { class: 'cd-aside__text cd-muted' }, STRINGS.noShippingAddress)
       ),
       billingLines.length
@@ -2064,6 +2484,7 @@
             'div',
             { class: 'cd-order-head__title' },
             h('h1', { class: 'cd-title', tabindex: '-1' }, order.name),
+            copyAction(order.name, STRINGS.copy, STRINGS.orderNumberCopied, STRINGS.copyOrderNumber(order.name)),
             h(
               'span',
               { class: 'cd-badges' },
@@ -2076,15 +2497,141 @@
         h(
           'div',
           { class: 'cd-page-header__actions' },
-          h('button', { type: 'button', class: 'cd-text-button', onClick: () => window.print() }, STRINGS.printOrder),
           statusUrl ? externalLink(statusUrl, STRINGS.orderStatusPage, 'cd-text-button') : null,
           buyAgainButton(lineItems)
         )
       ),
+      h(
+        'dl',
+        { class: 'cd-facts cd-indent' },
+        fact(STRINGS.factTotal, formatMoney(order.totalPrice)),
+        fact(STRINGS.factItems, String(itemCount)),
+        fact(STRINGS.factPlaced, formatDate(order.processedAt)),
+        fact(STRINGS.factStatus, order.cancelledAt ? orderStatus(order)[0] : orderChip(order) || (FINANCIAL_STATUS[order.financialStatus] || [''])[0])
+      ),
       order.cancelledAt
-        ? h('div', { class: 'cd-banner', role: 'status' }, icon('alert', 'cd-icon cd-icon--sm'), h('p', null, STRINGS.cancelledBanner(formatDate(order.cancelledAt))))
+        ? h('div', { class: 'cd-banner cd-indent', role: 'status' }, icon('alert', 'cd-icon cd-icon--sm'), h('p', null, STRINGS.cancelledBanner(formatDate(order.cancelledAt))))
         : null,
-      h('div', { class: 'cd-order-layout' }, h('div', { class: 'cd-order-main' }, shipmentSections, unfulfilledSection, cancelledSection, paymentSection), aside)
+      h('div', { class: 'cd-order-layout cd-indent' }, h('div', { class: 'cd-order-main' }, shipmentSections, unfulfilledSection, cancelledSection, paymentSection), aside)
+    );
+  }
+
+  // Product photo that opens a larger view in a dialog.
+  function zoomableThumb(image, size, title) {
+    const thumb = thumbnail(image, size);
+    const large = image && imageUrl(image.url, 1200);
+    if (!large) return thumb;
+    const trigger = h('button', { type: 'button', class: 'cd-zoom', 'aria-label': STRINGS.viewImage(title) }, thumb);
+    trigger.addEventListener('click', () => {
+      const id = nextId('image');
+      let dialog;
+      const close = h('button', { type: 'button', class: 'cd-icon-button cd-lightbox__close', 'aria-label': STRINGS.close, onClick: () => dialog.close() }, icon('close'));
+      dialog = openDialog(
+        h('figure', { class: 'cd-lightbox' }, close, h('img', { src: large, alt: image.altText || title }), h('figcaption', { id }, title)),
+        { labelledBy: id, onClose: () => trigger.isConnected && trigger.focus() }
+      );
+      dialog.classList.add('cd-dialog--image');
+      close.focus();
+    });
+    return trigger;
+  }
+
+  // "Show on map" tile that opens a city-level map in a dialog. Nothing is
+  // loaded from Google until the customer opens it.
+  function mapPopupButton(place, fullMapUrl) {
+    const trigger = h(
+      'button',
+      { type: 'button', class: 'cd-maptile', 'aria-haspopup': 'dialog' },
+      h('span', { class: 'cd-maptile__icon', 'aria-hidden': 'true' }, icon('pin')),
+      h('span', { class: 'cd-maptile__text' }, h('b', null, STRINGS.showOnMap), h('span', null, place)),
+      h('span', { class: 'cd-maptile__go', 'aria-hidden': 'true' }, '↗')
+    );
+    trigger.addEventListener('click', () => {
+      const id = nextId('map');
+      let dialog;
+      const close = h('button', { type: 'button', class: 'cd-icon-button', 'aria-label': STRINGS.close, onClick: () => dialog.close() }, icon('close'));
+      dialog = openDialog(
+        h(
+          'div',
+          { class: 'cd-mapdialog' },
+          h('div', { class: 'cd-dialog__header' }, h('h2', { class: 'cd-dialog__title', id }, place), close),
+          h(
+            'div',
+            { class: 'cd-mapdialog__frame' },
+            h('iframe', {
+              class: 'cd-mapcard__map',
+              src: `https://maps.google.com/maps?q=${encodeURIComponent(place)}&z=11&output=embed`,
+              title: STRINGS.mapTitle(place),
+              referrerpolicy: 'no-referrer-when-downgrade',
+            })
+          ),
+          h(
+            'div',
+            { class: 'cd-mapdialog__footer' },
+            h('p', { class: 'cd-footnote' }, STRINGS.mapPrivacy),
+            fullMapUrl ? externalLink(fullMapUrl, STRINGS.openInMaps, 'cd-link cd-link--accent') : null
+          )
+        ),
+        { labelledBy: id, onClose: () => trigger.isConnected && trigger.focus() }
+      );
+      dialog.classList.add('cd-dialog--map');
+      close.focus();
+    });
+    return trigger;
+  }
+
+  // Small copy-to-clipboard text button.
+  function copyAction(text, label, message, ariaLabel) {
+    if (!navigator.clipboard || !text) return null;
+    const el = h('button', { type: 'button', class: 'cd-copy', 'aria-label': ariaLabel || label }, label);
+    el.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(text);
+        toast(message);
+      } catch {
+        // Clipboard permission denied; the text stays selectable.
+      }
+    });
+    return el;
+  }
+
+  // Dated events for one order, from fields Shopify returns (no invented steps).
+  function orderTimeline(order, fulfillments) {
+    const events = [{ at: order.processedAt, label: STRINGS.tlPlaced }];
+    fulfillments.forEach((fulfillment, index) => {
+      const status = SHIPMENT_STATUS[fulfillment.latestShipmentStatus];
+      events.push({
+        at: fulfillment.createdAt,
+        label: STRINGS.tlShipped(index + 1, fulfillments.length),
+        note: status ? STRINGS.tlLatest(status[0].toLowerCase()) : null,
+      });
+      if (fulfillment.estimatedDeliveryAt && !['DELIVERED', 'PICKED_UP'].includes(fulfillment.latestShipmentStatus)) {
+        events.push({ at: fulfillment.estimatedDeliveryAt, label: STRINGS.tlExpected, upcoming: true });
+      }
+    });
+    for (const transaction of order.transactions || []) {
+      if (transaction.status !== 'SUCCESS') continue;
+      const at = transaction.processedAt || transaction.createdAt;
+      if (transaction.kind === 'SALE' || transaction.kind === 'CAPTURE') events.push({ at, label: STRINGS.tlPaid });
+      else if (transaction.kind === 'REFUND') events.push({ at, label: STRINGS.tlRefunded });
+    }
+    if (order.cancelledAt) events.push({ at: order.cancelledAt, label: STRINGS.tlCancelled, critical: true });
+    events.sort((a, b) => new Date(a.at) - new Date(b.at));
+    return h(
+      'ol',
+      { class: 'cd-timeline', role: 'list' },
+      events
+        .filter((event) => event.at)
+        .reverse()
+        .map((event) =>
+          h(
+            'li',
+            { class: `cd-timeline__event${event.upcoming ? ' is-upcoming' : ''}${event.critical ? ' is-critical' : ''}` },
+            h('span', { class: 'cd-timeline__label' }, event.label),
+            h('time', { class: 'cd-timeline__time', datetime: event.at }, event.upcoming ? formatDate(event.at) : formatDateTime(event.at)),
+            event.note ? h('span', { class: 'cd-timeline__note' }, event.note) : null
+          )
+        )
     );
   }
 
@@ -2110,7 +2657,7 @@
   }
 
   async function trackingView() {
-    const list = h('div', { class: 'cd-list', 'aria-live': 'polite' });
+    const list = h('div', { class: 'cd-list cd-indent', 'aria-live': 'polite' });
     const header = pageHeader(STRINGS.trackingTitle, STRINGS.trackingIntro);
     const show = paginatedList({
       container: list,
@@ -2121,24 +2668,21 @@
         if (!connection.nodes.length && !cursorUsed(connection.pageInfo)) return ordersEmptyState();
         return h(
           'div',
-          { class: 'cd-stack cd-stack--tight' },
+          { class: 'cd-tlist' },
           connection.nodes.map((order) => {
             const headingId = nextId('track');
             return h(
               'article',
-              { class: 'cd-card cd-track', 'aria-labelledby': headingId },
+              { class: 'cd-trow', 'aria-labelledby': headingId },
               h(
                 'div',
-                { class: 'cd-order__header' },
-                h(
-                  'div',
-                  null,
-                  h('h2', { class: 'cd-order__name', id: headingId }, h('a', { href: orderHref(order), class: 'cd-link-plain' }, STRINGS.orderNamed(order.name))),
-                  h('p', { class: 'cd-muted' }, STRINGS.placedOn(formatDate(order.processedAt)))
-                ),
-                h('div', { class: 'cd-badges' }, order.cancelledAt ? badge(orderStatus(order)) : statusBadge(FULFILLMENT_STATUS, order.fulfillmentStatus))
+                { class: 'cd-trow__meta' },
+                h('h2', { class: 'cd-trow__name', id: headingId }, h('a', { href: orderHref(order), class: 'cd-link-plain' }, order.name)),
+                h('p', { class: 'cd-trow__date' }, STRINGS.placedOn(formatDate(order.processedAt))),
+                h('div', { class: 'cd-badges' }, order.cancelledAt ? badge(orderStatus(order)) : statusBadge(FULFILLMENT_STATUS, order.fulfillmentStatus)),
+                h('a', { href: orderHref(order), class: 'cd-link cd-link--accent cd-trow__link' }, STRINGS.viewOrderArrow, ' ↗')
               ),
-              h('div', { class: 'cd-stack cd-stack--tight' }, shipments(order, order.fulfillments.nodes))
+              h('div', { class: 'cd-trow__body' }, shipments(order, order.fulfillments.nodes))
             );
           }),
           pager(connection.pageInfo, onPage)
@@ -2340,13 +2884,49 @@
     const phone = customer.phoneNumber && customer.phoneNumber.phoneNumber;
     const profileLink = safeUrl(config.profileUrl);
 
+    // Identity strip: initials, name, email, customer since and order count.
+    const fullName = [customer.firstName, customer.lastName].filter(Boolean).join(' ');
+    const initials = [customer.firstName, customer.lastName]
+      .filter(Boolean)
+      .map((part) => part.trim().charAt(0).toUpperCase())
+      .join('');
+    const orderCount = h('span', { hidden: true });
+    cached('stats', computeStats, 5 * 60000)
+      .then((stats) => {
+        orderCount.textContent = stats.capped ? `${formatNumber(stats.total)}+ orders` : STRINGS.ordersCount(stats.total);
+        orderCount.hidden = false;
+      })
+      .catch(() => {});
+    const idCard = h(
+      'section',
+      { class: 'cd-idcard', 'aria-label': STRINGS.personalInfo },
+      h('span', { class: 'cd-idcard__avatar', 'aria-hidden': 'true' }, initials || icon('user')),
+      h(
+        'div',
+        { class: 'cd-idcard__text' },
+        h('p', { class: 'cd-idcard__name' }, fullName || email || STRINGS.profileTitle),
+        fullName && email ? h('p', { class: 'cd-idcard__email' }, email) : null,
+        h(
+          'p',
+          { class: 'cd-idcard__meta' },
+          customer.creationDate ? h('span', null, STRINGS.customerSince(formatMonthYear(customer.creationDate))) : null,
+          orderCount
+        )
+      )
+    );
+
     return h(
       'div',
       { class: 'cd-stack' },
       pageHeader(STRINGS.profileTitle, STRINGS.profileIntro),
-      card(STRINGS.personalInfo, form),
-      card(
+      h(
+        'div',
+        { class: 'cd-indent cd-settings' },
+        idCard,
+      settingsRow(STRINGS.personalInfo, STRINGS.personalInfoHint, form),
+      settingsRow(
         STRINGS.contactInfo,
+        STRINGS.contactInfoHint,
         h(
           'dl',
           { class: 'cd-details' },
@@ -2354,9 +2934,21 @@
           h('div', null, h('dt', null, STRINGS.phone), h('dd', null, phone || STRINGS.notProvided))
         ),
         h('p', { class: 'cd-footnote' }, STRINGS.contactNote),
-        profileLink ? externalLink(profileLink, STRINGS.manageContact, 'cd-link') : null
+        profileLink ? externalLink(profileLink, STRINGS.manageContact, 'cd-link cd-link--accent') : null
       ),
       customer.emailAddress ? marketingCard(customer.emailAddress.marketingState) : null
+      )
+    );
+  }
+
+  // Settings layout: title and hint on the left, the controls on the right.
+  function settingsRow(title, hint, ...content) {
+    const id = nextId('setting');
+    return h(
+      'section',
+      { class: 'cd-setting', 'aria-labelledby': id },
+      h('div', { class: 'cd-setting__intro' }, h('h2', { class: 'cd-setting__title', id }, title), hint ? h('p', { class: 'cd-setting__hint' }, hint) : null),
+      h('div', { class: 'cd-setting__body' }, content)
     );
   }
 
@@ -2401,7 +2993,7 @@
       }
     });
 
-    return card(STRINGS.preferences, h('div', { class: 'cd-preference' }, h('label', { for: id, class: 'cd-preference__label' }, STRINGS.marketingLabel), toggle), status);
+    return settingsRow(STRINGS.preferences, STRINGS.preferencesHint, h('div', { class: 'cd-preference' }, h('label', { for: id, class: 'cd-preference__label' }, STRINGS.marketingLabel), toggle), status);
   }
 
   // ---- Addresses ------------------------------------------------------------
@@ -2650,6 +3242,7 @@
           return;
         }
         dialog.close();
+        cache.delete('addresses:list');
         toast(STRINGS.addressSaved);
         onSaved();
       } catch (error) {
@@ -2699,7 +3292,7 @@
   }
 
   async function addressesView() {
-    const list = h('div', { class: 'cd-list', 'aria-live': 'polite' });
+    const list = h('div', { class: 'cd-list cd-indent', 'aria-live': 'polite' });
     let addresses = [];
     let defaultId = null;
     let pageInfo = null;
@@ -2788,17 +3381,57 @@
         });
       }
 
+      const label = name || lines[0] || STRINGS.address1;
+      const copyText = [name, ...lines].filter(Boolean).join('\n');
+      const copyEl = navigator.clipboard
+        ? h('button', { type: 'button', class: 'cd-text-button', 'aria-label': STRINGS.copyAddressLabel(label) }, h('span', null, STRINGS.copyAddress))
+        : null;
+      if (copyEl) {
+        copyEl.addEventListener('click', async () => {
+          try {
+            await navigator.clipboard.writeText(copyText);
+            toast(STRINGS.addressCopied);
+          } catch {
+            // Clipboard permission denied; the address text stays selectable.
+          }
+        });
+      }
+
+      // City-level map only, as on the overview (no street address is sent).
+      const place = placeOf(address);
+      const map =
+        config.addressMap && place
+          ? h(
+              'div',
+              { class: 'cd-acard__map' },
+              h('iframe', {
+                class: 'cd-mapcard__map',
+                src: `https://maps.google.com/maps?q=${encodeURIComponent(place)}&z=11&output=embed`,
+                title: STRINGS.mapTitle(place),
+                loading: 'lazy',
+                referrerpolicy: 'no-referrer-when-downgrade',
+                tabindex: '-1',
+              })
+            )
+          : null;
+
       return h(
         'article',
-        { class: `cd-card cd-address-card${isDefault ? ' cd-address-card--default' : ''}`, 'aria-labelledby': headingId },
+        { class: `cd-acard${isDefault ? ' cd-acard--default' : ''}`, 'aria-labelledby': headingId },
+        map,
         h(
           'div',
-          { class: 'cd-address-card__head' },
-          h('h2', { class: 'cd-address-card__name', id: headingId }, name || lines[0] || STRINGS.address1),
-          isDefault ? badge([STRINGS.defaultAddress, 'success']) : null
-        ),
-        h('address', { class: 'cd-address' }, (name ? lines : lines.slice(1)).map((line) => h('span', null, line))),
-        h('div', { class: 'cd-address-card__actions' }, editButton, defaultButton, deleteButton)
+          { class: 'cd-acard__body' },
+          h(
+            'div',
+            { class: 'cd-acard__head' },
+            h('h2', { class: 'cd-acard__name', id: headingId }, label),
+            isDefault ? h('span', { class: 'cd-chip cd-chip--dark' }, STRINGS.defaultAddress) : null
+          ),
+          place ? h('p', { class: 'cd-acard__place' }, place) : null,
+          h('address', { class: 'cd-address cd-acard__lines' }, (name ? lines : lines.slice(1)).map((line) => h('span', null, line))),
+          h('div', { class: 'cd-acard__actions' }, editButton, defaultButton, copyEl, deleteButton)
+        )
       );
     }
 
@@ -2823,7 +3456,18 @@
           }
         });
       }
-      list.replaceChildren(h('div', { class: 'cd-grid cd-grid--addresses' }, sorted.map(addressCard)));
+      const addTile = h(
+        'button',
+        { type: 'button', class: 'cd-acard cd-acard--add' },
+        h('span', { class: 'cd-acard__plus', 'aria-hidden': 'true' }, icon('plus')),
+        h('span', { class: 'cd-acard__name' }, STRINGS.addAnother),
+        h('span', { class: 'cd-acard__place' }, STRINGS.addAnotherHint)
+      );
+      addTile.addEventListener('click', () => openAddressForm({ onSaved: reload, trigger: addTile }));
+      list.replaceChildren(
+        h('p', { class: 'cd-results' }, STRINGS.addressCount(addresses.length) + (pageInfo && pageInfo.hasNextPage ? '+' : '')),
+        h('div', { class: 'cd-grid cd-grid--addresses' }, sorted.map(addressCard), addTile)
+      );
       if (more) list.append(h('div', { class: 'cd-center' }, more));
     }
 
@@ -2832,6 +3476,323 @@
     loadCountries().catch(() => {}); // warm the address form data
 
     return h('div', { class: 'cd-stack' }, pageHeader(STRINGS.addressesTitle, STRINGS.addressesIntro, addButton), list);
+  }
+
+  // ---- Wishlist ---------------------------------------------------------------
+  // The list lives in the customer metafield custom.wishlist (JSON). Product
+  // pages record changes in this browser (assets/wishlist.js); syncWishlist()
+  // applies them to the account using this page's Customer Account API session.
+  // If the metafield can't be read or written (definition missing, or no
+  // customer account write access), the list keeps working in this browser.
+  let wishlistMode = 'unknown';
+  let wishlistSyncing = null;
+
+  function syncWishlist() {
+    const store = window.CDWishlist;
+    if (!config.wishlist || !store) return Promise.resolve('off');
+    if (!wishlistSyncing) {
+      wishlistSyncing = runWishlistSync(store).finally(() => {
+        wishlistSyncing = null;
+      });
+    }
+    return wishlistSyncing;
+  }
+
+  async function readWishlistField() {
+    try {
+      const data = await api.call('WishlistGet');
+      return { customer: data.customer, field: data.customer && data.customer.metafield, digest: true };
+    } catch (error) {
+      if (error.kind === 'auth') throw error;
+      const data = await api.call('WishlistGetBasic');
+      return { customer: data.customer, field: data.customer && data.customer.metafield, digest: false };
+    }
+  }
+
+  async function runWishlistSync(store, attempt = 0) {
+    let read;
+    try {
+      read = await readWishlistField();
+    } catch (error) {
+      if (error.kind === 'auth') throw error;
+      wishlistMode = 'device';
+      return wishlistMode;
+    }
+    if (!read.customer) {
+      wishlistMode = 'device';
+      return wishlistMode;
+    }
+    let saved = [];
+    if (read.field && read.field.value) {
+      try {
+        saved = JSON.parse(read.field.value);
+      } catch {
+        saved = [];
+      }
+    }
+    const accountList = store.clean(saved);
+    const sent = store.pending();
+    if (!sent.length) {
+      store.markSynced([], accountList);
+      if (wishlistMode !== 'device') wishlistMode = 'account';
+      return wishlistMode;
+    }
+
+    const next = store.apply(accountList, sent);
+    const variables = { ownerId: read.customer.id, value: JSON.stringify(next) };
+    // Compare-and-set, so a change saved from another device isn't overwritten.
+    if (read.digest) variables.compareDigest = read.field ? read.field.compareDigest : null;
+    let payload;
+    try {
+      payload = (await api.call('WishlistSet', variables)).metafieldsSet;
+    } catch (error) {
+      if (error.kind === 'auth') throw error;
+      payload = null;
+    }
+    const errors = payload ? payload.userErrors || [] : [{ message: 'unavailable' }];
+    if (errors.length) {
+      // A digest mismatch means the list changed meanwhile: read it again once.
+      const stale = errors.some((e) => /digest|stale|changed/i.test(`${e.code} ${e.message}`));
+      if (stale && attempt < 1) return runWishlistSync(store, attempt + 1);
+      wishlistMode = 'device';
+      return wishlistMode;
+    }
+    store.markSynced(sent, next);
+    wishlistMode = 'account';
+    return wishlistMode;
+  }
+
+  // Live product data from the storefront (price, stock, images), same origin.
+  const productCache = new Map();
+  function loadProduct(handle) {
+    if (!productCache.has(handle)) {
+      productCache.set(
+        handle,
+        nativeFetch(`${config.shopRoot}products/${encodeURIComponent(handle)}.js`, { credentials: 'same-origin', headers: { Accept: 'application/json' } })
+          .then((response) => (response.ok ? response.json() : null))
+          .catch(() => {
+            productCache.delete(handle);
+            return null;
+          })
+      );
+    }
+    return productCache.get(handle);
+  }
+
+  async function loadProducts(entries) {
+    const results = new Map();
+    const queue = entries.slice();
+    const worker = async () => {
+      while (queue.length) {
+        const entry = queue.shift();
+        results.set(entry.id, await loadProduct(entry.handle));
+      }
+    };
+    await Promise.all(Array.from({ length: Math.min(6, queue.length) }, worker));
+    return results;
+  }
+
+  const centsToMoney = (cents) => (config.currency && Number.isFinite(cents) ? formatMoney({ amount: (cents / 100).toFixed(2), currencyCode: config.currency }) : '');
+
+  async function addVariantToCart(variantId) {
+    const response = await nativeFetch(`${config.shopRoot}cart/add.js`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      credentials: 'same-origin',
+      body: JSON.stringify({ items: [{ id: Number(variantId), quantity: 1 }] }),
+    });
+    if (!response.ok) return false;
+    await refreshCartBubble();
+    return true;
+  }
+
+  async function wishlistView() {
+    const store = window.CDWishlist;
+    const header = pageHeader(STRINGS.wishlistTitle, STRINGS.wishlistIntro);
+    if (!store) return h('div', { class: 'cd-stack' }, header, errorState(new ApiError('network'), () => window.location.reload()));
+
+    await syncWishlist().catch((error) => {
+      if (error.kind === 'auth') throw error;
+    });
+
+    let sort = 'recent';
+    let hideSoldOut = false;
+    let products = new Map();
+    const list = h('div', { class: 'cd-wlist', 'aria-live': 'polite' });
+    const count = h('p', { class: 'cd-results' });
+    const note = h('p', { class: 'cd-wlist__note', hidden: wishlistMode !== 'device' }, icon('alert', 'cd-icon cd-icon--sm'), STRINGS.wishlistDeviceOnly);
+
+    const sortId = nextId('wl-sort');
+    const sortSelect = h(
+      'select',
+      { id: sortId, class: 'cd-input cd-select cd-wlist__sort' },
+      Object.entries(STRINGS.wishlistSortOptions).map(([value, label]) => h('option', { value }, label))
+    );
+    sortSelect.addEventListener('change', () => {
+      sort = sortSelect.value;
+      draw();
+    });
+    const soldOutId = nextId('wl-soldout');
+    const soldOutToggle = h('input', { type: 'checkbox', id: soldOutId, class: 'cd-checkbox' });
+    soldOutToggle.addEventListener('change', () => {
+      hideSoldOut = soldOutToggle.checked;
+      draw();
+    });
+    const toolbar = h(
+      'div',
+      { class: 'cd-wlist__bar' },
+      count,
+      h(
+        'div',
+        { class: 'cd-wlist__controls' },
+        h('label', { class: 'cd-check cd-wlist__check' }, soldOutToggle, h('span', null, STRINGS.wishlistHideSoldOut)),
+        h('label', { for: sortId, class: 'visually-hidden' }, STRINGS.wishlistSort),
+        h('div', { class: 'cd-select-wrap' }, sortSelect, icon('chevron-down', 'cd-icon cd-select-wrap__icon'))
+      )
+    );
+
+    function remove(entry) {
+      store.toggle({ id: entry.id, handle: entry.handle });
+      syncWishlist().catch(() => {});
+      toast(STRINGS.wishlistRemoved, 'success', {
+        label: STRINGS.wishlistUndo,
+        onClick: () => {
+          store.toggle({ id: entry.id, handle: entry.handle });
+          syncWishlist().catch(() => {});
+          toast(STRINGS.wishlistRestored);
+        },
+      });
+    }
+
+    function card(entry) {
+      const product = products.get(entry.id);
+      const title = product ? product.title : entry.handle.replace(/-/g, ' ');
+      const url = product ? `${config.shopRoot}products/${product.handle}` : null;
+      const image = product && (product.featured_image || (product.images && product.images[0]));
+      // The Ajax API returns protocol-relative image URLs (//cdn.shopify.com/...).
+      const imageSrc = image ? imageUrl(image.startsWith('//') ? `${window.location.protocol}${image}` : image, 720) : null;
+      const variants = product ? product.variants || [] : [];
+      const available = variants.filter((variant) => variant.available);
+      const single = variants.length === 1;
+      const heart = h('button', { type: 'button', class: 'cd-wcard__heart', 'aria-label': STRINGS.wishlistRemove(title) }, heartIcon());
+      heart.addEventListener('click', () => remove(entry));
+
+      let action = null;
+      if (product && available.length && single) {
+        action = h('button', { type: 'button', class: 'cd-wcard__add' }, icon('bag', 'cd-icon cd-icon--sm'), h('span', null, STRINGS.addToCartShort));
+        action.addEventListener('click', async () => {
+          setBusy(action, true, STRINGS.adding);
+          try {
+            const ok = await addVariantToCart(available[0].id);
+            if (ok) toast(STRINGS.wishlistAdded(title), 'success', { href: config.cartUrl, label: STRINGS.viewCart });
+            else toast(STRINGS.nothingAdded, 'error');
+          } catch {
+            toast(STRINGS.nothingAdded, 'error');
+          } finally {
+            setBusy(action, false);
+          }
+        });
+      } else if (product && available.length) {
+        action = h('a', { href: url, class: 'cd-wcard__add cd-wcard__add--ghost' }, h('span', null, STRINGS.wishlistChoose), ' ↗');
+      }
+
+      const price = product ? centsToMoney(product.price) : '';
+      const compare = product && product.compare_at_price > product.price ? centsToMoney(product.compare_at_price) : '';
+      const stock = !product ? STRINGS.wishlistGone : available.length ? STRINGS.wishlistInStock : STRINGS.wishlistSoldOut;
+      const headingId = nextId('wl');
+
+      return h(
+        'article',
+        { class: `cd-wcard${!product ? ' is-gone' : !available.length ? ' is-soldout' : ''}`, 'aria-labelledby': headingId },
+        h(
+          'div',
+          { class: 'cd-wcard__media' },
+          url
+            ? h('a', { href: url, tabindex: '-1', 'aria-hidden': 'true' }, imageSrc ? h('img', { src: imageSrc, alt: '', loading: 'lazy', width: 360, height: 450 }) : h('span', { class: 'cd-wcard__ph' }, icon('package')))
+            : h('span', { class: 'cd-wcard__ph' }, icon('package')),
+          heart,
+          compare ? h('span', { class: 'cd-wcard__flag' }, STRINGS.sale) : null
+        ),
+        h(
+          'div',
+          { class: 'cd-wcard__body' },
+          product && product.vendor ? h('p', { class: 'cd-wcard__vendor' }, product.vendor) : null,
+          h('h2', { class: 'cd-wcard__title', id: headingId }, url ? h('a', { href: url, class: 'cd-link-plain' }, title) : title),
+          h('p', { class: 'cd-wcard__price' }, price, compare ? h('s', null, compare) : null),
+          h('p', { class: 'cd-wcard__meta' }, h('span', { class: `cd-wcard__stock${available.length ? ' is-in' : ''}` }, stock), entry.at ? ` · ${STRINGS.wishlistSavedOn(formatDate(entry.at))}` : ''),
+          action
+        )
+      );
+    }
+
+    function sorted(entries) {
+      const priceOf = (entry) => {
+        const product = products.get(entry.id);
+        return product ? product.price : Infinity;
+      };
+      const titleOf = (entry) => (products.get(entry.id) || { title: entry.handle }).title;
+      const copy = entries.slice();
+      if (sort === 'priceLow') copy.sort((a, b) => priceOf(a) - priceOf(b));
+      else if (sort === 'priceHigh') copy.sort((a, b) => (priceOf(b) === Infinity ? -1 : priceOf(b)) - (priceOf(a) === Infinity ? -1 : priceOf(a)));
+      else if (sort === 'name') copy.sort((a, b) => titleOf(a).localeCompare(titleOf(b)));
+      return copy;
+    }
+
+    function draw() {
+      const entries = store.items();
+      note.hidden = wishlistMode !== 'device';
+      count.textContent = STRINGS.wishlistCount(entries.length);
+      if (!entries.length) {
+        toolbar.hidden = true;
+        list.replaceChildren(emptyState({ iconName: 'star', title: STRINGS.wishlistEmptyTitle, text: STRINGS.wishlistEmptyText, action: button(STRINGS.startShopping, { href: config.shopUrl }) }));
+        return;
+      }
+      toolbar.hidden = false;
+      const visible = sorted(entries).filter((entry) => {
+        if (!hideSoldOut) return true;
+        const product = products.get(entry.id);
+        return product && product.variants.some((variant) => variant.available);
+      });
+      list.replaceChildren(h('div', { class: 'cd-wgrid' }, visible.map(card)));
+    }
+
+    async function refresh() {
+      const entries = store.items();
+      const missing = entries.filter((entry) => !products.has(entry.id));
+      if (missing.length) {
+        const loaded = await loadProducts(missing);
+        products = new Map([...products, ...loaded]);
+      }
+      draw();
+    }
+
+    // Redraw when the list changes (here, in another tab, or after a sync);
+    // stop listening once this page has been left.
+    let shown = false;
+    const unsubscribe = store.subscribe(() => {
+      if (list.isConnected) shown = true;
+      else if (shown) {
+        unsubscribe();
+        return;
+      }
+      refresh();
+    });
+
+    await refresh();
+    return h('div', { class: 'cd-stack' }, header, h('div', { class: 'cd-indent cd-wlist-wrap' }, note, toolbar, list));
+  }
+
+  function heartIcon() {
+    const ns = 'http://www.w3.org/2000/svg';
+    const svg = document.createElementNS(ns, 'svg');
+    svg.setAttribute('viewBox', '0 0 24 24');
+    svg.setAttribute('class', 'cd-heart');
+    svg.setAttribute('aria-hidden', 'true');
+    svg.setAttribute('focusable', 'false');
+    const path = document.createElementNS(ns, 'path');
+    path.setAttribute('d', 'M12 20.3s-7.4-4.5-9.2-9.1C1.5 7.9 3.5 4.6 7 4.6c2 0 3.5 1.1 5 2.9 1.5-1.8 3-2.9 5-2.9 3.5 0 5.5 3.3 4.2 6.6-1.8 4.6-9.2 9.1-9.2 9.1z');
+    svg.append(path);
+    return svg;
   }
 
   // ---------------------------------------------------------------------------
@@ -2844,11 +3805,13 @@
     tracking: { view: trackingView, skeleton: 'list' },
     profile: { view: profileView, skeleton: 'form' },
     addresses: { view: addressesView, skeleton: 'list' },
+    wishlist: { view: wishlistView, skeleton: 'list' },
   };
 
   function parseRoute() {
     const [name, param] = window.location.hash.replace(/^#/, '').split('/');
     if (name === 'order' && /^\d{1,20}$/.test(param || '')) return { name: 'order', id: param };
+    if (name === 'wishlist' && !config.wishlist) return { name: 'overview' };
     return ROUTES[name] && name !== 'order' ? { name } : { name: 'overview' };
   }
 
@@ -2875,7 +3838,7 @@
     const definition = ROUTES[route.name];
     const id = ++renderId;
     currentSection = definition.nav || route.name;
-    const claims = { orders: STRINGS.coverOrders, tracking: STRINGS.coverTracking, profile: STRINGS.coverProfile, addresses: STRINGS.coverAddresses };
+    const claims = { orders: STRINGS.coverOrders, tracking: STRINGS.coverTracking, profile: STRINGS.coverProfile, addresses: STRINGS.coverAddresses, wishlist: STRINGS.coverWishlist };
     setCover({ size: route.name === 'overview' ? 'tall' : 'compact', claim: claims[route.name] || '' });
     setActiveNav(definition.nav || route.name);
     setMenuOpen(false);
@@ -2960,6 +3923,8 @@
     auth.resetAttempts();
 
     window.addEventListener('hashchange', () => render({ focus: true }));
+    // Save wishlist changes made on product pages into the account.
+    syncWishlist().catch(() => {});
     await render();
     if (!identityName.textContent.trim()) {
       cached('profile', () => api.call('Profile'))
