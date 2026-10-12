@@ -1,0 +1,191 @@
+{% style %}
+    /* Desktop */
+    .custom-section__header--h2 {
+        font-size: {{ section.settings.header_desktop_size }}px;
+        font-weight: {{ section.settings.header_desktop_font_weight }};
+        line-height: {{ section.settings.header_desktop_line_height }}%;
+        color: {{ section.settings.header_desktop_color }};
+    }
+    /* Tablet */
+    @media screen and (max-width: 998px) {
+        .custom-section__header--h2 {
+            font-size: {{ section.settings.header_tablet_size }}px;
+            font-weight: {{ section.settings.header_tablet_font_weight }};
+            line-height: {{ section.settings.header_tablet_line_height }}%;
+            color: {{ section.settings.header_tablet_color }};
+        }
+    }
+    /* Mobile */
+    @media screen and (max-width: 749px) {
+        .custom-section__header--h2 {
+            font-size: {{ section.settings.header_mobile_size }}px;
+            font-weight: {{ section.settings.header_mobile_font_weight }};
+            line-height: {{ section.settings.header_mobile_line_height }}%;
+            color: {{ section.settings.header_mobile_color }};
+        }
+    }
+{% endstyle %}
+
+<section class="custom-section">
+    <div class="page-width">
+        <div class="custom-section__header--box">
+            <h2 class="custom-section__header--h2">
+                {{ section.settings.header }}
+            </h2>
+        </div>
+    </div>
+</section>
+
+{% schema %}
+{
+    "name": "Custom Section",
+    "settings": [
+        {
+            "type": "text",
+            "id": "header",
+            "label": "Header"
+        },
+        {
+            "type": "header",
+            "content": "Desktop: 'Header' Settings",
+            "visible_if": "{{ section.settings.header != blank }}"
+        },
+        {
+            "type": "range",
+            "id": "header_desktop_size",
+            "label": "Size",
+            "min": 12,
+            "max": 104,
+            "step": 1,
+            "default": 54,
+            "unit": "px",
+            "visible_if": "{{ section.settings.header != blank }}"
+        },
+        {
+            "type": "range",
+            "id": "header_desktop_font_weight",
+            "label": "Font Weight",
+            "min": 100,
+            "max": 1000,
+            "step": 100,
+            "default": 400,
+            "unit": "px",
+            "visible_if": "{{ section.settings.header != blank }}"
+        },
+        {
+            "type": "range",
+            "id": "header_desktop_line_height",
+            "label": "Line Height",
+            "min": 5,
+            "max": 200,
+            "step": 5,
+            "default": 90,
+            "unit": "%",
+            "visible_if": "{{ section.settings.header != blank }}"
+        },
+        {
+            "type": "color",
+            "id": "header_desktop_color",
+            "label": "Color",
+            "default": "#000000",
+            "visible_if": "{{ section.settings.header != blank }}"
+        },
+        {
+            "type": "header",
+            "content": "Tablet: 'Header' Settings",
+            "visible_if": "{{ section.settings.header != blank }}"
+        },
+        {
+            "type": "range",
+            "id": "header_tablet_size",
+            "label": "Size",
+            "min": 12,
+            "max": 104,
+            "step": 1,
+            "default": 48,
+            "unit": "px",
+            "visible_if": "{{ section.settings.header != blank }}"
+        },
+        {
+            "type": "range",
+            "id": "header_tablet_font_weight",
+            "label": "Font Weight",
+            "min": 100,
+            "max": 1000,
+            "step": 100,
+            "default": 400,
+            "unit": "px",
+            "visible_if": "{{ section.settings.header != blank }}"
+        },
+        {
+            "type": "range",
+            "id": "header_tablet_line_height",
+            "label": "Line Height",
+            "min": 5,
+            "max": 200,
+            "step": 5,
+            "default": 90,
+            "unit": "%",
+            "visible_if": "{{ section.settings.header != blank }}"
+        },
+        {
+            "type": "color",
+            "id": "header_tablet_color",
+            "label": "Color",
+            "default": "#000000",
+            "visible_if": "{{ section.settings.header != blank }}"
+        },
+        {
+            "type": "header",
+            "content": "Mobile: 'Header' Settings",
+            "visible_if": "{{ section.settings.header != blank }}"
+        },
+        {
+            "type": "range",
+            "id": "header_mobile_size",
+            "label": "Size",
+            "min": 12,
+            "max": 104,
+            "step": 1,
+            "default": 32,
+            "unit": "px",
+            "visible_if": "{{ section.settings.header != blank }}"
+        },
+        {
+            "type": "range",
+            "id": "header_mobile_font_weight",
+            "label": "Font Weight",
+            "min": 100,
+            "max": 1000,
+            "step": 100,
+            "default": 400,
+            "unit": "px",
+            "visible_if": "{{ section.settings.header != blank }}"
+        },
+        {
+            "type": "range",
+            "id": "header_mobile_line_height",
+            "label": "Line Height",
+            "min": 5,
+            "max": 200,
+            "step": 5,
+            "default": 90,
+            "unit": "%",
+            "visible_if": "{{ section.settings.header != blank }}"
+        },
+        {
+            "type": "color",
+            "id": "header_mobile_color",
+            "label": "Color",
+            "default": "#000000",
+            "visible_if": "{{ section.settings.header != blank }}"
+        }
+    ],
+    "presets": [
+        {
+            "name": "Custom Section",
+            "category": "Custom"
+        }
+    ]
+}
+{% endschema %}

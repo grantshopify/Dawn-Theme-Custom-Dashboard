@@ -1,0 +1,11 @@
+@use "../abstracts" as *;
+
+#featured-product-1,
+#featured-product-2 {
+  @include section-inline-padding(spacing(32));
+
+  @include down("xs") {
+    padding-left: initial;
+    padding-right: initial;
+  }
+}

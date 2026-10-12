@@ -1,0 +1,21 @@
+$transition-duration-fast: 0.2s !default;
+$transition-duration-base: 0.3s !default;
+$transition-duration-slow: 0.4s !default;
+$transition-ease-base: ease !default;
+$transition-ease-smooth: cubic-bezier(0, 0, 0.5, 1) !default;
+$transition-ease-emphasized: cubic-bezier(0.2, 0, 0, 1) !default;
+
+$focus-ring-width: 2px !default;
+$focus-ring-offset: 2px !default;
+$focus-ring-color: currentColor !default;
+
+$radius-sm: 4px !default;
+$radius-md: 8px !default;
+$radius-lg: 12px !default;
+$radius-control: 8px !default;
+$radius-pill: 80px !default;
+$radius-round: 9999px !default;
+
+$control-height-sm: 40px !default;
+$control-height-md: 48px !default;
+$control-height-product: 62px !default;

@@ -1,0 +1,23 @@
+@mixin mulish-body($color, $font-size: 16px, $font-weight: 400, $line-height: 150%) {
+  color: $color;
+  font-size: $font-size;
+  font-family: Mulish Variablefont Wght;
+  font-weight: $font-weight;
+  line-height: $line-height;
+}
+
+@mixin hubot-text($color, $font-size, $font-weight, $line-height) {
+  color: $color;
+  font-size: $font-size;
+  font-family: Hubotsans;
+  font-weight: $font-weight;
+  line-height: $line-height;
+}
+
+@mixin nunito-heading($color, $font-size, $font-weight, $line-height) {
+  color: $color;
+  font-size: $font-size;
+  font-family: Nunito Variablefont Wght;
+  font-weight: $font-weight;
+  line-height: $line-height;
+}

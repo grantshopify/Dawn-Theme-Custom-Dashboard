@@ -1,0 +1,31 @@
+@use "../abstracts" as *;
+@use "form-controls";
+@use "text-primitives";
+
+$product-form-color-text: #381d22;
+$product-form-color-accent-muted: #d1d4f7;
+$product-form-color-cta: #c0b7b8;
+$product-form-radius-control: $radius-control;
+$product-form-control-height: $control-height-product;
+$product-form-transition-base: $transition-duration-base;
+
+@mixin body-text {
+  @include text-primitives.mulish-body($product-form-color-text);
+}
+
+@mixin cart-button {
+  @include body-text;
+  @include form-controls.control-surface($product-form-color-cta, $product-form-color-cta);
+  @include form-controls.control-min-height($product-form-control-height);
+  border-radius: 12px $product-form-radius-control $product-form-radius-control 12px;
+  line-height: 150%;
+  text-transform: capitalize;
+  letter-spacing: initial;
+  @include form-controls.control-padding-x(spacing(10));
+  @include transition-config(background-color, $product-form-transition-base);
+
+  &:hover {
+    background-color: $product-form-color-accent-muted;
+    border: 1px solid $product-form-color-accent-muted;
+  }
+}

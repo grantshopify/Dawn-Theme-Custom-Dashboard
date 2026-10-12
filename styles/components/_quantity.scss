@@ -1,0 +1,29 @@
+@use "../abstracts" as *;
+@use "form-controls";
+
+@mixin control($border-color) {
+  border: 1px solid $border-color;
+  @include form-controls.control-frame(100%, 160px, 40px, initial);
+
+  &::before,
+  &::after {
+    content: none;
+  }
+}
+
+@mixin button($color, $background-color) {
+  color: $color;
+  @include form-controls.control-inline-size(100%, 40px);
+  background-color: $background-color;
+  @include margin-x(0);
+
+  &.disabled {
+    @include form-controls.control-opacity(0.75);
+  }
+}
+
+@mixin input($background-color) {
+  background-color: $background-color;
+  @include form-controls.control-inline-size(70px);
+  @include form-controls.control-focus-reset;
+}

@@ -1,0 +1,61 @@
+@use "../abstracts" as *;
+
+.container-sm {
+  @include container-inline(48rem, spacing(16));
+}
+
+.container-md {
+  @include container-inline(64rem, spacing(24));
+}
+
+.container-lg {
+  @include container-inline(80rem, spacing(32));
+}
+
+.section-x-16 {
+  @include section-inline-padding(spacing(16));
+}
+
+.section-x-24 {
+  @include section-inline-padding(spacing(24));
+}
+
+.section-x-32 {
+  @include section-inline-padding(spacing(32));
+}
+
+.section-y-32 {
+  @include section-space(spacing(32));
+}
+
+.section-y-48 {
+  @include section-space(spacing(48));
+}
+
+.section-y-64 {
+  @include section-space(spacing(64));
+}
+
+.absolute-fill {
+  @include absolute-fill;
+}
+
+.inline-center {
+  @include inline-center;
+}
+
+.flex-center {
+  @include flex-center;
+}
+
+.square-16 {
+  @include square(spacing(16));
+}
+
+.square-20 {
+  @include square(spacing(20));
+}
+
+.square-24 {
+  @include square(spacing(24));
+}

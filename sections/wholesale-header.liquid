@@ -1,0 +1,127 @@
+{%- style -%}
+  .section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+  }
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+{%- endstyle -%}
+
+<section class="wholesale_header_section section-{{ section.id }}-padding color-{{ section.settings.color_scheme }} gradient">
+  <div class="padding-global">
+    <div class="container-large">
+      <div class="wholesale_header_component">
+        <div class="component_heading_split">
+          {%- if section.settings.heading != blank -%}
+            <h1>{{ section.settings.heading }}</h1>
+          {%- endif -%}
+          {%- if section.settings.subheading != blank -%}
+            <div class="max-width-small">
+              <p>{{ section.settings.subheading }}</p>
+            </div>
+          {%- endif -%}
+        </div>
+
+        {%- if section.blocks.size > 0 -%}
+          <div class="spacer-xxlarge"></div>
+          <div class="wholesale_header_grid-list">
+            {%- for block in section.blocks -%}
+              {%- case block.type -%}
+                {%- when 'feature' -%}
+                  <div class="wholesale_header_card{% if block.settings.is_horizontal %} is-horizontal{% endif %}" {{ block.shopify_attributes }}>
+                    {%- if block.settings.image != blank -%}
+                      <div class="wholesale_header_img-wrap{% if block.settings.is_horizontal %} is-full-heght{% endif %}">
+                        {{
+                          block.settings.image
+                          | image_url: width: 800
+                          | image_tag: loading: 'lazy', widths: '300, 600, 800', alt: block.settings.image_alt | escape
+                        }}
+                      </div>
+                    {%- endif -%}
+                    <div class="wholesale_header_content">
+                      {%- if block.settings.title != blank -%}
+                        <div class="wholesale_header_title-wrap">
+                          <div class="button-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 13 13" fill="none" preserveAspectRatio="xMidYMid meet" aria-hidden="true" role="img">
+                              <circle cx="6.5" cy="6.5" r="6.5" fill="currentColor"></circle>
+                            </svg>
+                          </div>
+                          <h3 class="text-size-regular">{{ block.settings.title }}</h3>
+                        </div>
+                      {%- endif -%}
+                      {%- if block.settings.body != blank -%}
+                        <p>{{ block.settings.body }}</p>
+                      {%- endif -%}
+                    </div>
+                  </div>
+              {%- endcase -%}
+            {%- endfor -%}
+          </div>
+        {%- endif -%}
+
+        {%- if section.settings.cta_label != blank and section.settings.cta_link != blank -%}
+          <div class="component_button-wrap">
+            <a href="{{ section.settings.cta_link }}" class="button is-secondary is-icon is-alternate">
+              <div class="button-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 13 13" fill="none" preserveAspectRatio="xMidYMid meet" aria-hidden="true" role="img">
+                  <circle cx="6.5" cy="6.5" r="6.5" fill="currentColor"></circle>
+                </svg>
+              </div>
+              <div>{{ section.settings.cta_label }}</div>
+            </a>
+          </div>
+        {%- endif -%}
+      </div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "t:sections.wholesale-header.name",
+  "tag": "section",
+  "class": "section",
+  "disabled_on": { "groups": ["header", "footer"] },
+  "settings": [
+    { "type": "color_scheme", "id": "color_scheme", "default": "scheme-1", "label": "t:sections.all.colors.label" },
+    { "type": "inline_richtext", "id": "heading", "default": "The sporting edge for your business", "label": "t:sections.wholesale-header.settings.heading.label" },
+    { "type": "richtext", "id": "subheading", "default": "<p>Become a Sparms wholesaler and offer your customers the original defence layer trusted by athletes worldwide.</p>", "label": "t:sections.wholesale-header.settings.subheading.label" },
+
+    { "type": "header", "content": "t:sections.wholesale-header.settings.group_cta.content" },
+    { "type": "text", "id": "cta_label", "default": "Apply to be a Sparms wholesaler", "label": "t:sections.wholesale-header.settings.cta_label.label" },
+    { "type": "url", "id": "cta_link", "label": "t:sections.wholesale-header.settings.cta_link.label" },
+
+    { "type": "header", "content": "t:sections.all.padding.section_padding_heading" },
+    { "type": "range", "id": "padding_top",    "min": 0, "max": 100, "step": 4, "unit": "px", "default": 36, "label": "t:sections.all.padding.padding_top" },
+    { "type": "range", "id": "padding_bottom", "min": 0, "max": 100, "step": 4, "unit": "px", "default": 36, "label": "t:sections.all.padding.padding_bottom" }
+  ],
+  "blocks": [
+    {
+      "type": "feature",
+      "name": "t:sections.wholesale-header.blocks.feature.name",
+      "settings": [
+        { "type": "image_picker", "id": "image", "label": "t:sections.wholesale-header.blocks.feature.settings.image.label" },
+        { "type": "text", "id": "image_alt", "label": "t:sections.wholesale-header.blocks.feature.settings.image_alt.label" },
+        { "type": "text", "id": "title", "default": "Feature", "label": "t:sections.wholesale-header.blocks.feature.settings.title.label" },
+        { "type": "text", "id": "body", "default": "Describe the benefit in one short sentence.", "label": "t:sections.wholesale-header.blocks.feature.settings.body.label" },
+        { "type": "checkbox", "id": "is_horizontal", "default": false, "label": "t:sections.wholesale-header.blocks.feature.settings.is_horizontal.label" }
+      ]
+    }
+  ],
+  "max_blocks": 6,
+  "presets": [
+    {
+      "name": "t:sections.wholesale-header.presets.name",
+      "blocks": [
+        { "type": "feature", "settings": { "title": "MOQ", "body": "Low MOQs and a seamless online wholesale platform make ordering, replenishing and growing straightforward." } },
+        { "type": "feature", "settings": { "title": "Support", "body": "Dedicated wholesale support from a team that ships and replenishes with you." } },
+        { "type": "feature", "settings": { "title": "Branding", "body": "Trusted by elite athletes and recognised globally — instant credibility for your brand.", "is_horizontal": true } }
+      ]
+    }
+  ]
+}
+{% endschema %}

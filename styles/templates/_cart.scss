@@ -1,0 +1,7 @@
+@use "../abstracts" as *;
+
+.custom-cart {
+  height: 70vh;
+  @include flex-center(true);
+  padding-bottom: 0 !important;
+}

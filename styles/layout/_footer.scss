@@ -1,0 +1,22 @@
+@use "../abstracts" as *;
+
+.cfooter {
+    &__middle--box, &__disclaimer--box {
+        @include padding-top(80);
+    }
+    &__wrapper {
+        grid-row-gap: initial;
+    }
+    &__disclaimer--box {
+        font-size: font-size(14);
+        @include padding-bottom(10);
+    }
+    @include down('xs') {
+        &__middle--box, &__disclaimer--box {
+            @include padding-top(32);
+        }
+        &__disclaimer--box {
+            font-size: font-size(12);
+        }
+    }
+}

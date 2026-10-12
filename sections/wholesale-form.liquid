@@ -1,0 +1,197 @@
+{%- style -%}
+  .section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+  }
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+{%- endstyle -%}
+
+<section class="wholesale_form_section section-{{ section.id }}-padding color-{{ section.settings.color_scheme }} gradient">
+  <div class="padding-global">
+    <div class="container-small">
+      <div class="wholesale_form_component">
+        <div class="max-width-large align-center text-align-center">
+          {%- if section.settings.heading != blank -%}
+            <h2>{{ section.settings.heading }}</h2>
+          {%- endif -%}
+          {%- if section.settings.subheading != blank -%}
+            <div class="spacer-small"></div>
+            <p class="text-size-medium">{{ section.settings.subheading }}</p>
+          {%- endif -%}
+        </div>
+
+        <div class="wholesale_form_block">
+          {%- form 'contact', class: 'wholesale_form', id: 'WholesaleForm' -%}
+            {%- if form.posted_successfully? -%}
+              <div class="form-status form-status--success" tabindex="-1" role="status">
+                {{ section.settings.success_text }}
+              </div>
+            {%- endif -%}
+
+            {%- if form.errors -%}
+              <div class="form-status form-status--error" tabindex="-1" role="alert">
+                <h3>{{ section.settings.error_text }}</h3>
+                <ul>
+                  {%- for field in form.errors -%}
+                    <li>{{ form.errors.messages[field] }}</li>
+                  {%- endfor -%}
+                </ul>
+              </div>
+            {%- endif -%}
+
+            <div class="form_field-wrapper">
+              <label for="WholesaleForm-name" class="form_field-label">
+                {{ 'templates.contact.form.name' | t }}
+              </label>
+              <input
+                class="form_input"
+                type="text"
+                id="WholesaleForm-name"
+                name="contact[Full Name]"
+                placeholder="{{ 'templates.contact.form.name' | t }}"
+                required
+              >
+            </div>
+
+            <div class="form_field-wrapper">
+              <label for="WholesaleForm-country" class="form_field-label">
+                {{ section.settings.country_label }}
+              </label>
+              <select
+                class="form_input"
+                id="WholesaleForm-country"
+                name="contact[Country]"
+                {% if section.settings.country_required %}required{% endif %}
+              >
+                <option value="">{{ section.settings.country_placeholder }}</option>
+                {%- for block in section.blocks -%}
+                  {%- if block.type == 'country' -%}
+                    <option value="{{ block.settings.value | escape }}" {{ block.shopify_attributes }}>
+                      {{ block.settings.value }}
+                    </option>
+                  {%- endif -%}
+                {%- endfor -%}
+              </select>
+            </div>
+
+            <div class="form_field-wrapper">
+              <label for="WholesaleForm-company" class="form_field-label">{{ section.settings.company_label }}</label>
+              <input class="form_input" type="text" id="WholesaleForm-company" name="contact[Company]" placeholder="{{ section.settings.company_placeholder }}" required>
+            </div>
+
+            <div class="form_field-wrapper">
+              <label for="WholesaleForm-role" class="form_field-label">{{ section.settings.role_label }}</label>
+              <input class="form_input" type="text" id="WholesaleForm-role" name="contact[Role]" placeholder="{{ section.settings.role_placeholder }}" required>
+            </div>
+
+            <div class="form_field-wrapper">
+              <label for="WholesaleForm-phone" class="form_field-label">
+                {{ 'templates.contact.form.phone' | t }}
+              </label>
+              <input class="form_input" type="tel" id="WholesaleForm-phone" name="contact[{{ 'templates.contact.form.phone' | t }}]" placeholder="{{ 'templates.contact.form.phone' | t }}">
+            </div>
+
+            <div class="form_field-wrapper">
+              <label for="WholesaleForm-email" class="form_field-label">
+                {{ 'templates.contact.form.email' | t }}
+              </label>
+              <input class="form_input" type="email" id="WholesaleForm-email" name="contact[email]" autocomplete="email" value="{% if form.email %}{{ form.email }}{% elsif customer %}{{ customer.email }}{% endif %}" required>
+            </div>
+
+            <div class="form_field-wrapper">
+              <label for="WholesaleForm-website" class="form_field-label">{{ section.settings.website_label }}</label>
+              <input class="form_input" type="url" id="WholesaleForm-website" name="contact[Website]" placeholder="https://">
+            </div>
+
+            <div class="form_field-wrapper">
+              <label for="WholesaleForm-info" class="form_field-label">{{ section.settings.info_label }}</label>
+              <textarea
+                class="form_input is-text-area"
+                id="WholesaleForm-info"
+                name="contact[{{ 'templates.contact.form.comment' | t }}]"
+                placeholder="{{ section.settings.info_placeholder }}"
+                maxlength="5000"
+              ></textarea>
+            </div>
+
+            {%- if section.settings.terms_text != blank -%}
+              <div class="form_field_bottom">
+                <label class="form_checkbox">
+                  <input type="checkbox" id="WholesaleForm-terms" name="contact[Terms accepted]" value="yes" required>
+                  <span class="form_checkbox-label">{{ section.settings.terms_text }}</span>
+                </label>
+              </div>
+            {%- endif -%}
+
+            <button type="submit" class="button is-secondary is-icon">
+              <div>{{ section.settings.submit_label }}</div>
+            </button>
+          {%- endform -%}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "t:sections.wholesale-form.name",
+  "tag": "section",
+  "class": "section",
+  "disabled_on": { "groups": ["header", "footer"] },
+  "settings": [
+    { "type": "color_scheme", "id": "color_scheme", "default": "scheme-1", "label": "t:sections.all.colors.label" },
+    { "type": "inline_richtext", "id": "heading", "default": "Tell us about your brand", "label": "t:sections.wholesale-form.settings.heading.label" },
+    { "type": "text", "id": "subheading", "default": "Start your wholesale journey with Sparms today", "label": "t:sections.wholesale-form.settings.subheading.label" },
+
+    { "type": "header", "content": "t:sections.wholesale-form.settings.group_country.content" },
+    { "type": "text", "id": "country_label", "default": "Country", "label": "t:sections.wholesale-form.settings.country_label.label" },
+    { "type": "text", "id": "country_placeholder", "default": "Select one...", "label": "t:sections.wholesale-form.settings.country_placeholder.label" },
+    { "type": "checkbox", "id": "country_required", "default": true, "label": "t:sections.wholesale-form.settings.country_required.label" },
+
+    { "type": "header", "content": "t:sections.wholesale-form.settings.group_fields.content" },
+    { "type": "text", "id": "company_label", "default": "Company", "label": "t:sections.wholesale-form.settings.company_label.label" },
+    { "type": "text", "id": "company_placeholder", "default": "Trading Name", "label": "t:sections.wholesale-form.settings.company_placeholder.label" },
+    { "type": "text", "id": "role_label", "default": "Your role", "label": "t:sections.wholesale-form.settings.role_label.label" },
+    { "type": "text", "id": "role_placeholder", "default": "Job Title", "label": "t:sections.wholesale-form.settings.role_placeholder.label" },
+    { "type": "text", "id": "website_label", "default": "Website link", "label": "t:sections.wholesale-form.settings.website_label.label" },
+    { "type": "text", "id": "info_label", "default": "Tell us more", "label": "t:sections.wholesale-form.settings.info_label.label" },
+    { "type": "text", "id": "info_placeholder", "default": "Tell us about your business", "label": "t:sections.wholesale-form.settings.info_placeholder.label" },
+
+    { "type": "header", "content": "t:sections.wholesale-form.settings.group_actions.content" },
+    { "type": "richtext", "id": "terms_text", "default": "<p>I accept the terms and conditions</p>", "label": "t:sections.wholesale-form.settings.terms_text.label" },
+    { "type": "text", "id": "submit_label", "default": "Submit", "label": "t:sections.wholesale-form.settings.submit_label.label" },
+    { "type": "text", "id": "success_text", "default": "Thank you! Your submission has been received.", "label": "t:sections.wholesale-form.settings.success_text.label" },
+    { "type": "text", "id": "error_text", "default": "Please correct the following errors:", "label": "t:sections.wholesale-form.settings.error_text.label" },
+
+    { "type": "header", "content": "t:sections.all.padding.section_padding_heading" },
+    { "type": "range", "id": "padding_top",    "min": 0, "max": 100, "step": 4, "unit": "px", "default": 36, "label": "t:sections.all.padding.padding_top" },
+    { "type": "range", "id": "padding_bottom", "min": 0, "max": 100, "step": 4, "unit": "px", "default": 36, "label": "t:sections.all.padding.padding_bottom" }
+  ],
+  "blocks": [
+    {
+      "type": "country",
+      "name": "t:sections.wholesale-form.blocks.country.name",
+      "settings": [
+        { "type": "text", "id": "value", "default": "Australia", "label": "t:sections.wholesale-form.blocks.country.settings.value.label" }
+      ]
+    }
+  ],
+  "max_blocks": 50,
+  "presets": [
+    {
+      "name": "t:sections.wholesale-form.presets.name",
+      "blocks": [
+        { "type": "country", "settings": { "value": "Australia" } },
+        { "type": "country", "settings": { "value": "United States" } },
+        { "type": "country", "settings": { "value": "United Kingdom" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

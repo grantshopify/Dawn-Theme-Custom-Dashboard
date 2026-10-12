@@ -1,0 +1,70 @@
+@use "../abstracts" as *;
+
+.text-left {
+  text-align: left;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.text-upper {
+  text-transform: uppercase;
+}
+
+.text-lower {
+  text-transform: lowercase;
+}
+
+.text-bold {
+  font-weight: font-weight(bold);
+}
+
+.lh130 {
+  line-height: line-height(lh_3);
+}
+
+.small-text-bold {
+  font-weight: font-weight(semi-bold);
+  color: theme-color("secondary-text");
+  margin: spacing(0);
+  @include type-style("small-text");
+}
+
+.styled-text {
+  color: theme-color("secondary-text");
+  @include type-style("styled-text");
+}
+
+.badge-text {
+  @include type-style("badge-text");
+}
+
+.truncate {
+  @include text-truncate;
+}
+
+.line-clamp-2 {
+  @include line-clamp(2);
+}
+
+.line-clamp-3 {
+  @include line-clamp(3);
+}
+
+.focus-ring:focus,
+.focus-ring:focus-visible {
+  @include focus-ring;
+}
+
+.fw-600 {
+  font-weight: font-weight(semi-bold);
+}
+
+.fw-700 {
+  font-weight: font-weight(bold);
+}

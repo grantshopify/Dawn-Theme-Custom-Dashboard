@@ -1,0 +1,148 @@
+@use "sass:list";
+@use "sass:map";
+
+$font-primary: "Ro Sans", sans-serif;
+
+$base-font-size: 16px;
+$base-line-height: 1.5;
+$mobile-font-size: 14px;
+
+$type-scale: (
+  p-24-89: (24px, 18px, 89%),
+  p-24-18-150: (24px, 18px, 150%),
+  p-20-100: (20px, 16px, 100%),
+  p-18-16-130: (18px, 16px, 130%),
+  p-18-16-150: (18px, 16px, 150%),
+  p-18-130: (18px, 16px, 130%),
+  p-16-110: (16px, 16px, 110%),
+  p-16-150: (16px, 16px, 150%),
+  p-14-110: (14px, 14px, 110%),
+  p-12-10-150: (12px, 10px, 150%),
+  "small-text": (14px, 14px, 150%),
+  "styled-text": (14px, 13px, 150%),
+  "badge-text": (13px, 12px, 150%),
+  button: (16px, 16px, 150%),
+  button-small: (14px, 14px, 150%),
+);
+
+@function has-type-style($level) {
+  @return map.has-key($type-scale, $level);
+}
+
+@function type-values($level) {
+  @if not has-type-style($level) {
+    @error "Invalid type style: #{$level}. Available styles: #{map.keys($type-scale)}";
+  }
+
+  @return map.get($type-scale, $level);
+}
+
+@function type-size($level, $viewport: desktop) {
+  $values: type-values($level);
+  $desktop-size: list.nth($values, 1);
+  $mobile-size: if(list.length($values) > 1, list.nth($values, 2), $desktop-size);
+
+  @if $viewport == desktop {
+    @return $desktop-size;
+  }
+
+  @if $viewport == mobile {
+    @return $mobile-size;
+  }
+
+  @error "Invalid viewport: #{$viewport}. Available values: desktop, mobile";
+}
+
+@function type-line-height($level) {
+  $values: type-values($level);
+
+  @return if(list.length($values) > 2, list.nth($values, 3), normal);
+}
+
+@mixin type-style($level, $custom-line-height: null) {
+  $desktop-size: type-size($level, desktop);
+  $mobile-size: type-size($level, mobile);
+  $default-line-height: type-line-height($level);
+  $line-height: if($custom-line-height != null, $custom-line-height, $default-line-height);
+
+  font-size: $mobile-size;
+  line-height: $line-height;
+
+  @media (min-width: 768px) {
+    font-size: $desktop-size;
+  }
+}
+
+$font-sizes: (
+  12: 12px,
+  14: 14px,
+  18: 18px,
+  24: 24px,
+  32: 32px,
+  44: 44px,
+  56: 56px,
+  72: 72px,
+  88: 88px,
+  90: 90px,
+  96: 96px,
+  112: 112px,
+  160: 160px,
+);
+
+@function font-size($key) {
+  @if not map.has-key($font-sizes, $key) {
+    @error "Invalid font size: #{$key}. Available sizes: #{map.keys($font-sizes)}";
+  }
+
+  @return map.get($font-sizes, $key);
+}
+
+$line-heights: (
+  line-height: 1,
+  lh_09: 0.9,
+  lh_0: 1,
+  lh_1: 1.1,
+  lh_2: 1.2,
+  lh_3: 1.3,
+  lh_4: 1.4,
+  lh_5: 1.5,
+  lh_6: 1.6,
+  lh_7: 1.7,
+  lh_8: 1.8,
+  lh_9: 1.9,
+  lh_10: 2,
+);
+
+@function line-height($key) {
+  @if not map.has-key($line-heights, $key) {
+    @error "Invalid line height: #{$key}. Available values: #{map.keys($line-heights)}";
+  }
+
+  @return map.get($line-heights, $key);
+}
+
+$font-weights: (
+  bold: 700,
+  semi-bold: 600,
+  regular: 400
+);
+
+@function font-weight($key) {
+  @if not map.has-key($font-weights, $key) {
+    @error "Invalid font weight: #{$key}. Available values: #{map.keys($font-weights)}";
+  }
+
+  @return map.get($font-weights, $key);
+}
+
+@mixin text-preset($size-key, $weight-key: null, $line-height-key: null) {
+  font-size: font-size($size-key);
+
+  @if $weight-key != null {
+    font-weight: font-weight($weight-key);
+  }
+
+  @if $line-height-key != null {
+    line-height: line-height($line-height-key);
+  }
+}

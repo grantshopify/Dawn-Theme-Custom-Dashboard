@@ -1,0 +1,64 @@
+@use "../abstracts" as *;
+
+.wholesale_form_section {
+  // palette via section.color_scheme.
+}
+
+.wholesale_form_component {
+  @include stack(spacing(24));
+}
+
+.wholesale_form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: spacing(16);
+
+  @include down("xs") {
+    grid-template-columns: 1fr;
+  }
+}
+
+.form_field-wrapper {
+  @include stack(spacing(8));
+  // Wide fields (info, terms, submit) span the row on >xs.
+  @include up("xs") {
+    &:has(.is-text-area),
+    &.form_field_bottom { grid-column: 1 / -1; }
+  }
+}
+
+.form_field-label {
+  font-weight: 600;
+}
+
+.form_input {
+  width: 100%;
+  min-height: $control-height-md;
+  padding: 0 spacing(14);
+  border: 1px solid currentColor;
+  background: transparent;
+  color: inherit;
+  border-radius: $radius-sm;
+
+  &.is-text-area {
+    min-height: spacing(125);
+    padding: spacing(12) spacing(14);
+  }
+}
+
+.form_field_bottom {
+  @include cluster(spacing(16), space-between, center, wrap);
+}
+
+.form_checkbox {
+  @include cluster(spacing(8), flex-start, center, nowrap);
+}
+
+.form-status {
+  padding: spacing(12) spacing(16);
+  border-radius: $radius-sm;
+  border: 1px solid currentColor;
+
+  &--success { background: var(--success-soft, transparent); }
+  &--error   { background: var(--danger-soft, transparent); }
+}

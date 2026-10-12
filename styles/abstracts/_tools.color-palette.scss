@@ -1,0 +1,27 @@
+@use "sass:map";
+
+$-theme-colors: (
+  "black": #000000, 
+  "white": #ffffff,
+  "stale": #0A242B,
+  "off-black": #161616,
+  "light-black": #161616,
+  "deep-teal": #14383D,
+  "slate": #0A242B,
+  "secondary-text": #161616,
+  "grey": #ACA3A4,
+  "light-grey": #F5F3ED,
+  "light-grey-accent": #ACA3A4,
+  "qi-grey": #D1D4F766,
+  "qi-bg": #F8F3E0,
+) !default;
+
+@function theme-color($key) {
+  @if not map.has-key($-theme-colors, $key) {
+    @error "Invalid theme color: #{$key}. Available colors: #{map.keys($-theme-colors)}";
+  }
+
+  @return map.get($-theme-colors, $key);
+}
+   
+$white: #ffffff;

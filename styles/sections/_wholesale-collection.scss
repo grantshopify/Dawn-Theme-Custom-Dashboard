@@ -1,0 +1,61 @@
+@use "../abstracts" as *;
+
+.component_collection_section {
+  // The per-section <style> in the Liquid handles the swiper active-slide
+  // transitions; this partial styles structural layout and uses real tokens.
+}
+
+.component_collection_top-wrapper {
+  @include cluster(spacing(16), space-between, center, wrap);
+}
+
+.component_collection_name {
+  @include cluster(spacing(8), flex-start, center, nowrap);
+}
+
+.component_collection_item {
+  @include stack(spacing(16));
+}
+
+.component_collection_left {
+  @include cluster(spacing(24), space-between, center, wrap);
+}
+
+.component_collection_img-wrap {
+  overflow: hidden;
+  border-radius: $radius-md;
+  transition: transform $transition-duration-base $transition-ease-emphasized;
+  position: relative;
+
+  img {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+}
+
+.component_collection_swiper-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  transition: opacity $transition-duration-base $transition-ease-base;
+}
+
+.component_collection_item-grid {
+  @include stack(spacing(8));
+  border-top: 1px solid currentColor;
+  padding-top: spacing(8);
+}
+
+.component_collection_item-row {
+  min-height: spacing(8);
+  border-bottom: 1px solid currentColor;
+  transition: width $transition-duration-base $transition-ease-base;
+
+  &.no-bottom-border { border-bottom: 0; }
+}
+
+.component_collection_name-wrap {
+  @include cluster(spacing(8), flex-start, center, nowrap);
+  transition: opacity $transition-duration-base $transition-ease-base;
+}

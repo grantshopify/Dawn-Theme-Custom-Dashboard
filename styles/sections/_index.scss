@@ -1,0 +1,8 @@
+@forward "main-product";
+@forward "featured-product";
+@forward "wholesale-header";
+@forward "wholesale-collection";
+@forward "wholesale-partners";
+@forward "wholesale-form";
+// Sample of how you forward or include the custom scss you just created
+@forward "_section.liquid_name";

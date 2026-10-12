@@ -1,0 +1,7 @@
+// Keep utility forwards compatibility-first; avoid broad utility generation.
+@forward "color";
+@forward "text";
+@forward "spacing";
+@forward "flex";
+@forward "layout";
+@forward "visibility";

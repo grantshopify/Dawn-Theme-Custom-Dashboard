@@ -1,0 +1,45 @@
+@use "../abstracts" as *;
+
+.no-outline {
+  border: 0;
+}
+
+.sr-only {
+  @include visually-hidden;
+}
+
+.sr-only-focusable {
+  @include visually-hidden-focusable;
+}
+
+.hide-desk--show-tab {
+  display: none;
+
+  @include down("sm") {
+    display: block;
+  }
+}
+
+.hide-tab--show-desk {
+  display: block;
+
+  @include down("sm") {
+    display: none;
+  }
+}
+
+.show-desk--hide-tab {
+  display: block;
+
+  @include down("xs") {
+    display: none;
+  }
+}
+
+.show-tab--hide-desk {
+  display: none;
+
+  @include down("xs") {
+    display: block;
+  }
+}

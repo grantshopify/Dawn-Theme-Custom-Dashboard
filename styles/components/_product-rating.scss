@@ -1,0 +1,23 @@
+@use "../abstracts" as *;
+@use "product-form";
+
+@mixin summary($border-color) {
+  position: relative;
+  @include cluster(2px, flex-start, center, nowrap);
+  padding-left: 19px;
+
+  &::before {
+    content: '';
+    @include absolute-fill;
+    border-left: 1px solid $border-color;
+  }
+
+  &.hidden {
+    display: none;
+  }
+}
+
+@mixin count {
+  @include product-form.body-text;
+  margin-left: 7px;
+}

@@ -1,0 +1,19 @@
+// Always include this three lines below on all custom scss, for clarification liquid_name should be replaced with whatever file name of the section you are creating a custom scss into
+@use '../abstracts' as *;
+@use 'sass:map';
+@use "sass:list";
+
+// Note that this will be the standard naming convention for our class name and how we style even on customized section that are default
+// When styling default sections, add custom parent class name and child and so on then we'll call it here to style based on needs
+// Max styling level will be 3 level, until grand child only
+// If needed or unclear on how to class or tackle a task, ask your supervisor
+// Parent class name
+.parent {
+    // Child classs name, compiler will translate this into .parent__child
+    &__child {
+        // Grandchild class name, compiler will translate this into .parent__child--grand
+        &--grand {
+
+        }
+    }
+}

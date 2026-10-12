@@ -1,0 +1,68 @@
+@use "../abstracts" as *;
+
+.wholesale_header_section {
+  // section.color_scheme handles palette; this partial styles structure.
+}
+
+.wholesale_header_component {
+  @include stack(spacing(24));
+}
+
+.component_heading_split {
+  @include cluster(spacing(24), space-between, flex-start, wrap);
+
+  h1 { margin: 0; }
+}
+
+.wholesale_header_grid-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: spacing(24);
+
+  @include down("sm") {
+    grid-template-columns: 1fr;
+  }
+}
+
+.wholesale_header_card {
+  @include stack(spacing(12));
+  @include card-surface(transparent, $radius-md, spacing(16));
+  border: 1px solid currentColor;
+
+  &.is-horizontal {
+    grid-column: 1 / -1;
+
+    @include up("sm") {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+      gap: spacing(24);
+      align-items: center;
+    }
+  }
+}
+
+.wholesale_header_img-wrap {
+  overflow: hidden;
+  border-radius: $radius-md;
+
+  img {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  &.is-full-heght img { object-fit: cover; height: 100%; }
+}
+
+.wholesale_header_title-wrap {
+  @include cluster(spacing(8), flex-start, center, nowrap);
+
+  .button-icon { width: 13px; height: 13px; flex: none; }
+  h3 { margin: 0; }
+}
+
+.component_button-wrap {
+  margin-top: spacing(32);
+  display: flex;
+  justify-content: flex-start;
+}

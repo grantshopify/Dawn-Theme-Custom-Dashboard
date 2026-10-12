@@ -1,0 +1,17 @@
+@use "../abstracts" as *;
+
+.white {
+  color: $white;
+}
+
+.text-black {
+  color: theme-color('black');
+}
+
+.text-deep-teal {
+  color: theme-color('deep-teal');
+}
+
+.text-slate {
+  color: theme-color('slate');
+}

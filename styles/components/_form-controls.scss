@@ -1,0 +1,67 @@
+@use "../abstracts" as *;
+
+@mixin control-surface($background-color, $border-color, $border-width: 1px) {
+  background-color: $background-color;
+  border: $border-width solid $border-color;
+}
+
+@mixin control-min-height($min-height) {
+  min-height: $min-height;
+}
+
+@mixin control-inline-size($width, $max-width: null) {
+  width: $width;
+
+  @if $max-width != null {
+    max-width: $max-width;
+  }
+}
+
+@mixin control-frame($width: null, $max-width: null, $height: null, $min-height: null) {
+  @if $width != null {
+    width: $width;
+  }
+
+  @if $max-width != null {
+    max-width: $max-width;
+  }
+
+  @if $height != null {
+    height: $height;
+  }
+
+  @if $min-height != null {
+    min-height: $min-height;
+  }
+}
+
+@mixin control-padding-x($x) {
+  padding-left: $x;
+  padding-right: $x;
+}
+
+@mixin control-padding-y($y) {
+  padding-top: $y;
+  padding-bottom: $y;
+}
+
+@mixin control-padding($y, $x) {
+  @include control-padding-y($y);
+  @include control-padding-x($x);
+}
+
+@mixin control-disabled($opacity: 0.5, $cursor: not-allowed) {
+  cursor: $cursor;
+  opacity: $opacity;
+}
+
+@mixin control-opacity($opacity) {
+  opacity: $opacity;
+}
+
+@mixin control-focus-reset {
+  &:focus-visible {
+    outline: none;
+    box-shadow: none;
+  }
+}

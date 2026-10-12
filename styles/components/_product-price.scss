@@ -1,0 +1,22 @@
+@use "product-form";
+@use "text-primitives";
+
+@mixin regular-item {
+  @include product-form.body-text;
+  line-height: 140%;
+  letter-spacing: initial;
+  text-transform: capitalize;
+
+  @media screen and (min-width: 992px) {
+    font-size: 24px;
+  }
+}
+
+@mixin sale-item($color) {
+  @include text-primitives.hubot-text($color, 16px, 700, 140%);
+  text-transform: uppercase;
+
+  @media screen and (min-width: 992px) {
+    font-size: 16px !important;
+  }
+}

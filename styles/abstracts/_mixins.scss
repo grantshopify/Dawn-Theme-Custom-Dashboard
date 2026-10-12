@@ -1,0 +1,174 @@
+@use "spacing" as *;
+@use "tokens" as *;
+
+@mixin transition($properties...) {
+  transition-property: $properties;
+  transition-duration: $transition-duration-base;
+  transition-timing-function: $transition-ease-base;
+}
+
+@mixin transition-config($properties, $duration: $transition-duration-base, $easing: $transition-ease-base) {
+  transition-property: $properties;
+  transition-duration: $duration;
+  transition-timing-function: $easing;
+}
+
+@mixin inline-center {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin flex-center($important: false) {
+  @if $important {
+    display: flex !important;
+  } @else {
+    display: flex;
+  }
+
+  justify-content: center;
+  align-items: center;
+}
+
+@mixin absolute-fill {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+
+@mixin inset-x($value) {
+  left: $value;
+  right: $value;
+}
+
+@mixin square($size) {
+  width: $size;
+  height: $size;
+}
+
+@mixin size($width, $height: $width) {
+  width: $width;
+  height: $height;
+}
+
+@mixin control-size($height, $radius: null) {
+  min-height: $height;
+
+  @if $radius != null {
+    border-radius: $radius;
+  }
+}
+
+@mixin container-inline($max-width: null, $padding-x: spacing(32)) {
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: $padding-x;
+  padding-right: $padding-x;
+
+  @if $max-width != null {
+    max-width: $max-width;
+  }
+}
+
+@mixin section-space($padding-y, $padding-x: null) {
+  padding-top: $padding-y;
+  padding-bottom: $padding-y;
+
+  @if $padding-x != null {
+    padding-left: $padding-x;
+    padding-right: $padding-x;
+  }
+}
+
+@mixin section-inline-padding($padding-x) {
+  padding-left: $padding-x;
+  padding-right: $padding-x;
+}
+
+@mixin visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@mixin visually-hidden-focusable {
+  @include visually-hidden;
+
+  &:focus,
+  &:focus-visible {
+    position: static;
+    width: auto;
+    height: auto;
+    margin: 0;
+    overflow: visible;
+    clip: auto;
+    white-space: normal;
+  }
+}
+
+@mixin text-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@mixin line-clamp($lines) {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-line-clamp: $lines;
+  -webkit-box-orient: vertical;
+}
+
+@mixin focus-ring($color: currentColor, $offset: $focus-ring-offset, $width: $focus-ring-width) {
+  outline: $width solid $color;
+  outline-offset: $offset;
+}
+
+@mixin focus-ring-visible($color: $focus-ring-color, $offset: $focus-ring-offset, $width: $focus-ring-width) {
+  &:focus,
+  &:focus-visible {
+    @include focus-ring($color, $offset, $width);
+  }
+}
+
+@mixin interactive-color($base-color, $hover-color, $property: color) {
+  #{$property}: $base-color;
+  @include transition($property);
+
+  &:hover {
+    #{$property}: $hover-color;
+  }
+}
+
+@mixin stack($gap, $align: stretch) {
+  display: flex;
+  flex-direction: column;
+  align-items: $align;
+  gap: $gap;
+}
+
+@mixin cluster($gap, $justify: flex-start, $align: center, $wrap: wrap) {
+  display: flex;
+  flex-wrap: $wrap;
+  align-items: $align;
+  justify-content: $justify;
+  gap: $gap;
+}
+
+@mixin card-surface($background-color, $border-radius: $radius-md, $padding: null) {
+  background-color: $background-color;
+  border-radius: $border-radius;
+
+  @if $padding != null {
+    padding: $padding;
+  }
+}

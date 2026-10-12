@@ -1,0 +1,40 @@
+@use "../abstracts" as *;
+
+.wholesale_partner_section {
+  // palette via section.color_scheme.
+}
+
+.wholesale_partner_component {
+  @include stack(spacing(16), center);
+}
+
+.wholesale_partner_grid-list {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: spacing(24);
+  width: 100%;
+
+  @include down("sm") {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: spacing(16);
+  }
+
+  @include down("xs") {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.wholesale_partner_logo-wrap {
+  display: grid;
+  place-items: center;
+  padding: spacing(12);
+
+  img,
+  svg {
+    max-width: 100%;
+    max-height: 64px;
+    width: auto;
+    height: auto;
+    display: block;
+  }
+}

@@ -1,0 +1,49 @@
+@use "../abstracts" as *;
+
+.cart-notification {
+  &-wrapper {
+    display: none;
+  }
+
+  &__header {
+    @include cluster(spacing(8), space-between, flex-start, nowrap);
+  }
+
+  &__heading {
+    @include cluster(spacing(8), flex-start, center, nowrap);
+  }
+
+  &__links {
+    @include stack(spacing(10));
+    text-align: center;
+
+    > * {
+      margin-top: 0;
+    }
+  }
+}
+
+.cart-notification-product {
+  @include cluster(spacing(15), flex-start, flex-start, nowrap);
+
+  &__image {
+    @include inline-center;
+    margin-right: 0;
+  }
+}
+
+.nav {
+  &_menu {
+    &_wrapper {
+      .cart-count-bubble {
+        bottom: -4px;
+        left: 27px;
+        color: #381d22;
+        font-size: 14px;
+        border: 1px solid #ACA3A4;
+        background-color: #d1d4f7;
+        @include square(22px);
+      }
+    }
+  }
+}

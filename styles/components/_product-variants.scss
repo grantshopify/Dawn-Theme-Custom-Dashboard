@@ -1,0 +1,16 @@
+@use "../abstracts" as *;
+@use "form-controls";
+@use "product-form";
+
+@mixin option-label($background-color, $border-color, $radius, $height, $transition-duration, $transition-easing: $transition-ease-base) {
+  @include inline-center;
+  @include product-form.body-text;
+  background-color: $background-color;
+  border: 1px solid $border-color;
+  border-radius: $radius;
+  min-width: 260px;
+  height: $height;
+  letter-spacing: initial;
+  @include form-controls.control-padding(0, spacing(4));
+  @include transition-config(background-color, $transition-duration, $transition-easing);
+}

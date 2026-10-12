@@ -1,0 +1,99 @@
+// Keep legacy utility names while avoiding additional generated spacing APIs.
+@use "../abstracts" as *;
+
+.padding-bottom-16 {
+  padding-bottom: spacing(16);
+}
+
+.margin-bottom-16 {
+  margin-bottom: spacing(16);
+}
+
+.margin-0 {
+  margin: spacing(0);
+}
+
+.padding-0 {
+  padding: spacing(0);
+}
+
+.padding-test {
+  // Compatibility-only alias retained until usage is audited.
+  padding: 0;
+}
+
+.gap-4 {
+  @include gap(4);
+}
+
+.gap-8 {
+  @include gap(8);
+}
+
+.gap-12 {
+  @include gap(12);
+}
+
+.gap-16 {
+  @include gap(16);
+}
+
+.gap-24 {
+  @include gap(24);
+}
+
+.gap-32-24 {
+  @include gap(32);
+
+  @include down("xs") {
+    @include gap(24);
+  }
+}
+
+.gap-32 {
+  @include gap(32);
+}
+
+.gap-40 {
+  @include gap(40);
+}
+
+.gap-48 {
+  @include gap(48);
+}
+
+.gap-64 {
+  @include gap(64);
+}
+
+.gap-16-12 {
+  @include gap(16);
+
+  @include down("sm") {
+    @include gap(12);
+  }
+}
+
+.gap-48-32 {
+  @include gap(48);
+
+  @include down("sm") {
+    @include gap(32);
+  }
+}
+
+.padding-8 {
+  padding: spacing(8);
+}
+
+.padding-16 {
+  padding: spacing(16);
+}
+
+.padding-24 {
+  padding: spacing(24);
+}
+
+.padding-32 {
+  padding: spacing(32);
+}

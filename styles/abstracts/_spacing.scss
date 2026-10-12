@@ -1,0 +1,204 @@
+@use "sass:map";
+@use "sass:list";
+
+$spacing-values: (
+  0: 0,
+  1: 1px,
+  2: 2px,
+  3: 3px,
+  4: 4px,
+  5: 5px,
+  6: 6px,
+  8: 8px,
+  7: 7px,
+  9: 9px,
+  10: 10px,
+  11: 11px,
+  12: 12px,
+  13: 13px,
+  14: 14px,
+  15: 15px,
+  16: 16px,
+  17: 17px,
+  18: 18px,
+  19: 19px,
+  20: 20px,
+  21: 21px,
+  22: 22px,
+  23: 23px,
+  24: 24px,
+  25: 25px,
+  26: 26px,
+  27: 27px,
+  28: 28px,
+  29: 29px,
+  30: 30px,
+  31: 31px,
+  32: 32px,
+  33: 33px,
+  34: 34px,
+  35: 35px,
+  36: 36px,
+  37: 37px,
+  38: 38px,
+  40: 40px,
+  41: 41px,
+  42: 42px,
+  43: 43px,
+  44: 44px,
+  46: 46px,
+  48: 48px,
+  50: 50px,
+  56: 56px,
+  58: 58px,
+  60: 60px,
+  64: 64px,
+  65: 65px,
+  66: 66px,
+  67: 67px,
+  68: 68px,
+  69: 69px,
+  70: 70px,
+  72: 72px,
+  75: 75px,
+  80: 80px,
+  85: 85px,
+  90: 90px,
+  95: 95px,
+  96: 96px,
+  98: 98px,
+  100: 100px,
+  105: 105px,
+  110: 110px,
+  112: 112px,
+  118: 118px,
+  125: 125px,
+  140: 140px,
+  160: 160px,
+  165: 165px,
+  175: 175px,
+  185: 185px,
+  195: 195px,
+  210: 210px,
+  230: 230px,
+  245: 245px,
+  250: 250px,
+);
+
+@function spacing($sizes...) {
+  $result: ();
+
+  @each $size in $sizes {
+    @if not map.has-key($spacing-values, $size) {
+      @error "Invalid spacing size: #{$size}. Available sizes: #{map.keys($spacing-values)}";
+    }
+
+    $result: list.append($result, map.get($spacing-values, $size));
+  }
+
+  @return $result;
+}
+
+@function has-spacing($size) {
+  @return map.has-key($spacing-values, $size);
+}
+
+@function spacing-value($size) {
+  @if not has-spacing($size) {
+    @error "Invalid spacing size: #{$size}. Available sizes: #{map.keys($spacing-values)}";
+  }
+
+  @return map.get($spacing-values, $size);
+}
+
+@mixin padding($sizes...) {
+  padding: spacing($sizes...);
+}
+
+@mixin gap($size) {
+  gap: spacing-value($size);
+}
+
+@mixin row-gap($size) {
+  row-gap: spacing-value($size);
+}
+
+@mixin column-gap($size) {
+  column-gap: spacing-value($size);
+}
+
+@mixin padding-x($size) {
+  padding-left: spacing($size);
+  padding-right: spacing($size);
+}
+
+@mixin padding-y($size) {
+  padding-top: spacing($size);
+  padding-bottom: spacing($size);
+}
+
+@mixin padding-top($size) {
+  padding-top: spacing($size);
+}
+
+@mixin padding-right($size) {
+  padding-right: spacing($size);
+}
+
+@mixin padding-bottom($size) {
+  padding-bottom: spacing($size);
+}
+
+@mixin padding-left($size) {
+  padding-left: spacing($size);
+}
+
+@mixin margin($sizes...) {
+  margin: spacing($sizes...);
+}
+
+@mixin margin-x($size) {
+  margin-left: spacing($size);
+  margin-right: spacing($size);
+}
+
+@mixin margin-y($size) {
+  margin-top: spacing($size);
+  margin-bottom: spacing($size);
+}
+
+@mixin margin-top($size) {
+  margin-top: spacing($size);
+}
+
+@mixin margin-right($size) {
+  margin-right: spacing($size);
+}
+
+@mixin margin-bottom($size) {
+  margin-bottom: spacing($size);
+}
+
+@mixin margin-left($size) {
+  margin-left: spacing($size);
+}
+
+@mixin generate-spacing-utilities {
+  @each $name, $value in $spacing-values {
+    .p-#{$name} { @include padding($name); }
+    .px-#{$name} { @include padding-x($name); }
+    .py-#{$name} { @include padding-y($name); }
+    .pt-#{$name} { @include padding-top($name); }
+    .pr-#{$name} { @include padding-right($name); }
+    .pb-#{$name} { @include padding-bottom($name); }
+    .pl-#{$name} { @include padding-left($name); }
+
+    .m-#{$name} { @include margin($name); }
+    .mx-#{$name} { @include margin-x($name); }
+    .my-#{$name} { @include margin-y($name); }
+    .mt-#{$name} { @include margin-top($name); }
+    .mr-#{$name} { @include margin-right($name); }
+    .mb-#{$name} { @include margin-bottom($name); }
+    .ml-#{$name} { @include margin-left($name); }
+  }
+}
