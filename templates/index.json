@@ -15,7 +15,7 @@
       "settings": {
         "image": "shopify://shop_images/Rectangle_11_1.png",
         "enable_animation": true,
-        "background_color": "#FFFFFF",
+        "background_color": "#ffffff",
         "height": "full",
         "overlay_opacity": 0,
         "heading": "PREMIUM AUSTRALIAN DRINK HOUSE",
@@ -24,7 +24,7 @@
         "button_link": "",
         "content_position": "bottom",
         "content_alignment": "center",
-        "text_color": "#FFFFFF",
+        "text_color": "#ffffff",
         "heading_desktop_size": 40,
         "heading_desktop_font_weight": 700,
         "heading_desktop_line_height": 100,
@@ -38,6 +38,7 @@
     },
     "featured_collection": {
       "type": "featured-collection",
+      "disabled": true,
       "settings": {
         "collection": "all",
         "products_to_show": 8,
@@ -90,6 +91,7 @@
         "heading",
         "button"
       ],
+      "disabled": true,
       "settings": {
         "image_overlay_opacity": 40,
         "image_height": "large",
