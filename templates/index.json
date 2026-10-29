@@ -9,6 +9,61 @@
  */
 {
   "sections": {
+    "custom_hero_banner_taMt4V": {
+      "type": "custom-hero-banner",
+      "name": "Custom hero banner",
+      "settings": {
+        "image": "shopify://shop_images/Rectangle_11_1.png",
+        "enable_animation": true,
+        "background_color": "#FFFFFF",
+        "height": "full",
+        "overlay_opacity": 0,
+        "heading": "PREMIUM AUSTRALIAN DRINK HOUSE",
+        "text": "",
+        "button_label": "",
+        "button_link": "",
+        "content_position": "bottom",
+        "content_alignment": "center",
+        "text_color": "#FFFFFF",
+        "heading_desktop_size": 40,
+        "heading_desktop_font_weight": 700,
+        "heading_desktop_line_height": 100,
+        "heading_tablet_size": 34,
+        "heading_tablet_font_weight": 700,
+        "heading_tablet_line_height": 100,
+        "heading_mobile_size": 28,
+        "heading_mobile_font_weight": 700,
+        "heading_mobile_line_height": 100
+      }
+    },
+    "featured_collection": {
+      "type": "featured-collection",
+      "settings": {
+        "collection": "all",
+        "products_to_show": 8,
+        "title": "Featured products",
+        "heading_size": "h2",
+        "description": "",
+        "show_description": false,
+        "description_style": "body",
+        "columns_desktop": 4,
+        "enable_desktop_slider": false,
+        "full_width": false,
+        "show_view_all": true,
+        "view_all_style": "solid",
+        "color_scheme": "scheme-1",
+        "image_ratio": "adapt",
+        "image_shape": "default",
+        "show_secondary_image": true,
+        "show_vendor": false,
+        "show_rating": false,
+        "quick_add": "standard",
+        "columns_mobile": "2",
+        "swipe_on_mobile": false,
+        "padding_top": 44,
+        "padding_bottom": 36
+      }
+    },
     "image_banner": {
       "type": "image-banner",
       "blocks": {
@@ -47,38 +102,11 @@
         "mobile_content_alignment": "center",
         "show_text_below": false
       }
-    },
-    "featured_collection": {
-      "type": "featured-collection",
-      "settings": {
-        "collection": "all",
-        "products_to_show": 8,
-        "title": "Featured products",
-        "heading_size": "h2",
-        "description": "",
-        "show_description": false,
-        "description_style": "body",
-        "columns_desktop": 4,
-        "enable_desktop_slider": false,
-        "full_width": false,
-        "show_view_all": true,
-        "view_all_style": "solid",
-        "color_scheme": "scheme-1",
-        "image_ratio": "adapt",
-        "image_shape": "default",
-        "show_secondary_image": true,
-        "show_vendor": false,
-        "show_rating": false,
-        "quick_add": "standard",
-        "columns_mobile": "2",
-        "swipe_on_mobile": false,
-        "padding_top": 44,
-        "padding_bottom": 36
-      }
     }
   },
   "order": [
-    "image_banner",
-    "featured_collection"
+    "custom_hero_banner_taMt4V",
+    "featured_collection",
+    "image_banner"
   ]
 }
