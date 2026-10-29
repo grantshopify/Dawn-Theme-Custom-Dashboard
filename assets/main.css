@@ -949,6 +949,183 @@
   background: var(--danger-soft, transparent);
 }
 
+.custom-hero-banner {
+  --custom-hero-banner-window-width: min(370px, 70vw);
+  --custom-hero-banner-window-height: calc(
+    var(--custom-hero-banner-window-width) * 1.1324324324
+  );
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  min-height: calc(100vh - var(--header-height, 0px));
+  min-height: calc(100svh - var(--header-height, 0px));
+  overflow: hidden;
+}
+.custom-hero-banner--large {
+  min-height: 720px;
+}
+@media (max-width: 749px) {
+  .custom-hero-banner--large {
+    min-height: 560px;
+  }
+}
+.custom-hero-banner--medium {
+  min-height: 560px;
+}
+@media (max-width: 749px) {
+  .custom-hero-banner--medium {
+    min-height: 440px;
+  }
+}
+.custom-hero-banner--content-top {
+  justify-content: flex-start;
+}
+.custom-hero-banner--content-middle {
+  justify-content: center;
+}
+.custom-hero-banner__media {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+.custom-hero-banner__media::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background-color: rgba(0, 0, 0, var(--custom-hero-banner-overlay, 0));
+}
+.custom-hero-banner__image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.custom-hero-banner__content {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding-top: 40px;
+  padding-bottom: 40px;
+  text-align: center;
+}
+@media (max-width: 749px) {
+  .custom-hero-banner__content {
+    padding-top: 24px;
+    padding-bottom: 24px;
+  }
+}
+.custom-hero-banner--align-left .custom-hero-banner__content {
+  align-items: flex-start;
+  text-align: left;
+}
+.custom-hero-banner--align-right .custom-hero-banner__content {
+  align-items: flex-end;
+  text-align: right;
+}
+.custom-hero-banner__heading {
+  margin: 0;
+  color: inherit;
+}
+.custom-hero-banner__text {
+  color: inherit;
+}
+.custom-hero-banner__text p {
+  margin: 0;
+}
+
+.custom-hero-banner--animate {
+  background-color: var(--custom-hero-banner-background, #fff);
+}
+
+.custom-hero-banner--animate .custom-hero-banner__media {
+  animation: custom-hero-banner-fade-in 0.6s ease both, custom-hero-banner-reveal 2.05s linear 0.6s both;
+}
+
+.custom-hero-banner--animate .custom-hero-banner__media::after {
+  animation: custom-hero-banner-fade-in 1.2s cubic-bezier(0.65, 0, 0.35, 1) 1.45s both;
+}
+
+.custom-hero-banner--animate .custom-hero-banner__image {
+  animation: custom-hero-banner-zoom 1.2s cubic-bezier(0.65, 0, 0.35, 1) 1.45s both;
+}
+
+.custom-hero-banner--animate .custom-hero-banner__content > * {
+  animation: custom-hero-banner-fade-up 0.8s cubic-bezier(0, 0, 0.5, 1) 2.65s both;
+}
+
+.custom-hero-banner--animate .custom-hero-banner__content > :nth-child(2) {
+  animation-delay: 2.8s;
+}
+
+.custom-hero-banner--animate .custom-hero-banner__content > :nth-child(3) {
+  animation-delay: 2.95s;
+}
+
+.custom-hero-banner--animate .custom-hero-banner__media,
+.custom-hero-banner--animate .custom-hero-banner__media::after,
+.custom-hero-banner--animate .custom-hero-banner__image,
+.custom-hero-banner--animate .custom-hero-banner__content > * {
+  animation-play-state: paused;
+}
+
+.custom-hero-banner--animate.is-playing .custom-hero-banner__media,
+.custom-hero-banner--animate.is-playing .custom-hero-banner__media::after,
+.custom-hero-banner--animate.is-playing .custom-hero-banner__image,
+.custom-hero-banner--animate.is-playing .custom-hero-banner__content > * {
+  animation-play-state: running;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .custom-hero-banner--animate .custom-hero-banner__media,
+  .custom-hero-banner--animate .custom-hero-banner__media::after,
+  .custom-hero-banner--animate .custom-hero-banner__image,
+  .custom-hero-banner--animate .custom-hero-banner__content > * {
+    animation: none;
+  }
+}
+@keyframes custom-hero-banner-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes custom-hero-banner-reveal {
+  0% {
+    clip-path: polygon(calc(50% - 0.5 * var(--custom-hero-banner-window-width)) calc(50% - 0.5 * var(--custom-hero-banner-window-height)), calc(50% - 0.5 * var(--custom-hero-banner-window-width)) calc(50% - 0.4167 * var(--custom-hero-banner-window-height)), calc(50% - 0.5 * var(--custom-hero-banner-window-width)) calc(50% - 0.3333 * var(--custom-hero-banner-window-height)), calc(50% - 0.5 * var(--custom-hero-banner-window-width)) calc(50% - 0.25 * var(--custom-hero-banner-window-height)), calc(50% - 0.5 * var(--custom-hero-banner-window-width)) calc(50% - 0.1667 * var(--custom-hero-banner-window-height)), calc(50% - 0.5 * var(--custom-hero-banner-window-width)) calc(50% - 0.0833 * var(--custom-hero-banner-window-height)), calc(50% - 0.5 * var(--custom-hero-banner-window-width)) calc(50% + 0 * var(--custom-hero-banner-window-height)), calc(50% - 0.5 * var(--custom-hero-banner-window-width)) calc(50% + 0.0833 * var(--custom-hero-banner-window-height)), calc(50% - 0.5 * var(--custom-hero-banner-window-width)) calc(50% + 0.1667 * var(--custom-hero-banner-window-height)), calc(50% - 0.5 * var(--custom-hero-banner-window-width)) calc(50% + 0.25 * var(--custom-hero-banner-window-height)), calc(50% - 0.5 * var(--custom-hero-banner-window-width)) calc(50% + 0.3333 * var(--custom-hero-banner-window-height)), calc(50% - 0.5 * var(--custom-hero-banner-window-width)) calc(50% + 0.4167 * var(--custom-hero-banner-window-height)), calc(50% - 0.5 * var(--custom-hero-banner-window-width)) calc(50% + 0.5 * var(--custom-hero-banner-window-height)), calc(50% + 0.5 * var(--custom-hero-banner-window-width)) calc(50% + 0.5 * var(--custom-hero-banner-window-height)), calc(50% + 0.5 * var(--custom-hero-banner-window-width)) calc(50% + 0.4167 * var(--custom-hero-banner-window-height)), calc(50% + 0.5 * var(--custom-hero-banner-window-width)) calc(50% + 0.3333 * var(--custom-hero-banner-window-height)), calc(50% + 0.5 * var(--custom-hero-banner-window-width)) calc(50% + 0.25 * var(--custom-hero-banner-window-height)), calc(50% + 0.5 * var(--custom-hero-banner-window-width)) calc(50% + 0.1667 * var(--custom-hero-banner-window-height)), calc(50% + 0.5 * var(--custom-hero-banner-window-width)) calc(50% + 0.0833 * var(--custom-hero-banner-window-height)), calc(50% + 0.5 * var(--custom-hero-banner-window-width)) calc(50% + 0 * var(--custom-hero-banner-window-height)), calc(50% + 0.5 * var(--custom-hero-banner-window-width)) calc(50% - 0.0833 * var(--custom-hero-banner-window-height)), calc(50% + 0.5 * var(--custom-hero-banner-window-width)) calc(50% - 0.1667 * var(--custom-hero-banner-window-height)), calc(50% + 0.5 * var(--custom-hero-banner-window-width)) calc(50% - 0.25 * var(--custom-hero-banner-window-height)), calc(50% + 0.5 * var(--custom-hero-banner-window-width)) calc(50% - 0.3333 * var(--custom-hero-banner-window-height)), calc(50% + 0.5 * var(--custom-hero-banner-window-width)) calc(50% - 0.4167 * var(--custom-hero-banner-window-height)), calc(50% + 0.5 * var(--custom-hero-banner-window-width)) calc(50% - 0.5 * var(--custom-hero-banner-window-height)));
+    animation-timing-function: ease-in-out;
+  }
+  34.1463414634% {
+    clip-path: polygon(calc(50% - 0.5 * var(--custom-hero-banner-window-width)) calc(50% - 0.5 * var(--custom-hero-banner-window-height)), calc(50% - 0.4931 * var(--custom-hero-banner-window-width)) calc(50% - 0.4167 * var(--custom-hero-banner-window-height)), calc(50% - 0.4875 * var(--custom-hero-banner-window-width)) calc(50% - 0.3333 * var(--custom-hero-banner-window-height)), calc(50% - 0.4831 * var(--custom-hero-banner-window-width)) calc(50% - 0.25 * var(--custom-hero-banner-window-height)), calc(50% - 0.48 * var(--custom-hero-banner-window-width)) calc(50% - 0.1667 * var(--custom-hero-banner-window-height)), calc(50% - 0.4781 * var(--custom-hero-banner-window-width)) calc(50% - 0.0833 * var(--custom-hero-banner-window-height)), calc(50% - 0.4775 * var(--custom-hero-banner-window-width)) calc(50% + 0 * var(--custom-hero-banner-window-height)), calc(50% - 0.4781 * var(--custom-hero-banner-window-width)) calc(50% + 0.0833 * var(--custom-hero-banner-window-height)), calc(50% - 0.48 * var(--custom-hero-banner-window-width)) calc(50% + 0.1667 * var(--custom-hero-banner-window-height)), calc(50% - 0.4831 * var(--custom-hero-banner-window-width)) calc(50% + 0.25 * var(--custom-hero-banner-window-height)), calc(50% - 0.4875 * var(--custom-hero-banner-window-width)) calc(50% + 0.3333 * var(--custom-hero-banner-window-height)), calc(50% - 0.4931 * var(--custom-hero-banner-window-width)) calc(50% + 0.4167 * var(--custom-hero-banner-window-height)), calc(50% - 0.5 * var(--custom-hero-banner-window-width)) calc(50% + 0.5 * var(--custom-hero-banner-window-height)), calc(50% + 0.5 * var(--custom-hero-banner-window-width)) calc(50% + 0.5 * var(--custom-hero-banner-window-height)), calc(50% + 0.4931 * var(--custom-hero-banner-window-width)) calc(50% + 0.4167 * var(--custom-hero-banner-window-height)), calc(50% + 0.4875 * var(--custom-hero-banner-window-width)) calc(50% + 0.3333 * var(--custom-hero-banner-window-height)), calc(50% + 0.4831 * var(--custom-hero-banner-window-width)) calc(50% + 0.25 * var(--custom-hero-banner-window-height)), calc(50% + 0.48 * var(--custom-hero-banner-window-width)) calc(50% + 0.1667 * var(--custom-hero-banner-window-height)), calc(50% + 0.4781 * var(--custom-hero-banner-window-width)) calc(50% + 0.0833 * var(--custom-hero-banner-window-height)), calc(50% + 0.4775 * var(--custom-hero-banner-window-width)) calc(50% + 0 * var(--custom-hero-banner-window-height)), calc(50% + 0.4781 * var(--custom-hero-banner-window-width)) calc(50% - 0.0833 * var(--custom-hero-banner-window-height)), calc(50% + 0.48 * var(--custom-hero-banner-window-width)) calc(50% - 0.1667 * var(--custom-hero-banner-window-height)), calc(50% + 0.4831 * var(--custom-hero-banner-window-width)) calc(50% - 0.25 * var(--custom-hero-banner-window-height)), calc(50% + 0.4875 * var(--custom-hero-banner-window-width)) calc(50% - 0.3333 * var(--custom-hero-banner-window-height)), calc(50% + 0.4931 * var(--custom-hero-banner-window-width)) calc(50% - 0.4167 * var(--custom-hero-banner-window-height)), calc(50% + 0.5 * var(--custom-hero-banner-window-width)) calc(50% - 0.5 * var(--custom-hero-banner-window-height)));
+    animation-timing-function: linear;
+  }
+  41.4634146341% {
+    clip-path: polygon(calc(50% - 0.5 * var(--custom-hero-banner-window-width)) calc(50% - 0.5 * var(--custom-hero-banner-window-height)), calc(50% - 0.4931 * var(--custom-hero-banner-window-width)) calc(50% - 0.4167 * var(--custom-hero-banner-window-height)), calc(50% - 0.4875 * var(--custom-hero-banner-window-width)) calc(50% - 0.3333 * var(--custom-hero-banner-window-height)), calc(50% - 0.4831 * var(--custom-hero-banner-window-width)) calc(50% - 0.25 * var(--custom-hero-banner-window-height)), calc(50% - 0.48 * var(--custom-hero-banner-window-width)) calc(50% - 0.1667 * var(--custom-hero-banner-window-height)), calc(50% - 0.4781 * var(--custom-hero-banner-window-width)) calc(50% - 0.0833 * var(--custom-hero-banner-window-height)), calc(50% - 0.4775 * var(--custom-hero-banner-window-width)) calc(50% + 0 * var(--custom-hero-banner-window-height)), calc(50% - 0.4781 * var(--custom-hero-banner-window-width)) calc(50% + 0.0833 * var(--custom-hero-banner-window-height)), calc(50% - 0.48 * var(--custom-hero-banner-window-width)) calc(50% + 0.1667 * var(--custom-hero-banner-window-height)), calc(50% - 0.4831 * var(--custom-hero-banner-window-width)) calc(50% + 0.25 * var(--custom-hero-banner-window-height)), calc(50% - 0.4875 * var(--custom-hero-banner-window-width)) calc(50% + 0.3333 * var(--custom-hero-banner-window-height)), calc(50% - 0.4931 * var(--custom-hero-banner-window-width)) calc(50% + 0.4167 * var(--custom-hero-banner-window-height)), calc(50% - 0.5 * var(--custom-hero-banner-window-width)) calc(50% + 0.5 * var(--custom-hero-banner-window-height)), calc(50% + 0.5 * var(--custom-hero-banner-window-width)) calc(50% + 0.5 * var(--custom-hero-banner-window-height)), calc(50% + 0.4931 * var(--custom-hero-banner-window-width)) calc(50% + 0.4167 * var(--custom-hero-banner-window-height)), calc(50% + 0.4875 * var(--custom-hero-banner-window-width)) calc(50% + 0.3333 * var(--custom-hero-banner-window-height)), calc(50% + 0.4831 * var(--custom-hero-banner-window-width)) calc(50% + 0.25 * var(--custom-hero-banner-window-height)), calc(50% + 0.48 * var(--custom-hero-banner-window-width)) calc(50% + 0.1667 * var(--custom-hero-banner-window-height)), calc(50% + 0.4781 * var(--custom-hero-banner-window-width)) calc(50% + 0.0833 * var(--custom-hero-banner-window-height)), calc(50% + 0.4775 * var(--custom-hero-banner-window-width)) calc(50% + 0 * var(--custom-hero-banner-window-height)), calc(50% + 0.4781 * var(--custom-hero-banner-window-width)) calc(50% - 0.0833 * var(--custom-hero-banner-window-height)), calc(50% + 0.48 * var(--custom-hero-banner-window-width)) calc(50% - 0.1667 * var(--custom-hero-banner-window-height)), calc(50% + 0.4831 * var(--custom-hero-banner-window-width)) calc(50% - 0.25 * var(--custom-hero-banner-window-height)), calc(50% + 0.4875 * var(--custom-hero-banner-window-width)) calc(50% - 0.3333 * var(--custom-hero-banner-window-height)), calc(50% + 0.4931 * var(--custom-hero-banner-window-width)) calc(50% - 0.4167 * var(--custom-hero-banner-window-height)), calc(50% + 0.5 * var(--custom-hero-banner-window-width)) calc(50% - 0.5 * var(--custom-hero-banner-window-height)));
+    animation-timing-function: cubic-bezier(0.65, 0, 0.35, 1);
+  }
+  100% {
+    clip-path: polygon(0% 0%, 0% 8.3333%, 0% 16.6667%, 0% 25%, 0% 33.3333%, 0% 41.6667%, 0% 50%, 0% 58.3333%, 0% 66.6667%, 0% 75%, 0% 83.3333%, 0% 91.6667%, 0% 100%, 100% 100%, 100% 91.6667%, 100% 83.3333%, 100% 75%, 100% 66.6667%, 100% 58.3333%, 100% 50%, 100% 41.6667%, 100% 33.3333%, 100% 25%, 100% 16.6667%, 100% 8.3333%, 100% 0%);
+  }
+}
+@keyframes custom-hero-banner-zoom {
+  from {
+    transform: scale(0.8);
+  }
+}
+@keyframes custom-hero-banner-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+}
 .custom-cart {
   height: 70vh;
   display: flex !important;
