@@ -1486,5 +1486,32 @@
         "info": "The page that uses the dashboard template. Leave empty to use /pages/dashboard."
       }
     ]
+  },
+  {
+    "name": "Loading screen",
+    "settings": [
+      {
+        "type": "paragraph",
+        "content": "Plays once per browser session, on the first page a visitor opens: the image fades in, its corners stretch out and settle back, then it expands away to reveal the page."
+      },
+      {
+        "type": "checkbox",
+        "id": "loading_screen_enabled",
+        "label": "Enable loading screen",
+        "default": true
+      },
+      {
+        "type": "image_picker",
+        "id": "loading_screen_image",
+        "label": "Image",
+        "info": "Shown up to 494px wide. Leave empty to use the default photo."
+      },
+      {
+        "type": "color",
+        "id": "loading_screen_background",
+        "label": "Background",
+        "default": "#FFFFFF"
+      }
+    ]
   }
 ]

@@ -1,0 +1,146 @@
+@use "sass:list";
+@use "sass:math";
+@use "../abstracts" as *;
+
+
+$loading-screen-width: 494px;
+$loading-screen-stretch: 2%; 
+$loading-screen-z-index: 10000;
+$loading-screen-fade-in-duration: 0.8s;
+$loading-screen-stretch-delay: 0.9s;
+$loading-screen-stretch-duration: 1.2s; 
+$loading-screen-reveal-duration: 1.2s;
+$loading-screen-ease-reveal: cubic-bezier(0.65, 0, 0.35, 1);
+$loading-screen-failsafe-delay: 10s; 
+
+@function loading-screen-round($value) {
+  @return math.div(math.round($value * 1000), 1000);
+}
+
+@function loading-screen-shape($pull, $steps: 12) {
+  $inset: math.div($loading-screen-stretch, 100% + 2 * $loading-screen-stretch) * 100%;
+  $left: ();
+  $right: ();
+
+  @for $i from 0 through $steps {
+    $t: math.div($i, $steps);
+    $x: loading-screen-round($inset * (1 - $pull * (1 - 4 * $t * (1 - $t))));
+    $y: loading-screen-round($t * 100%);
+    $left: list.append($left, $x $y, comma);
+    $right: list.append($right, (100% - $x) (100% - $y), comma);
+  }
+
+  @return polygon(list.join($left, $right, comma));
+}
+
+.loading-screen {
+  @include flex-center;
+  position: fixed;
+  inset: 0;
+  z-index: $loading-screen-z-index;
+  overflow: hidden;
+  animation: loading-screen-failsafe 0.4s linear $loading-screen-failsafe-delay forwards;
+
+  &::before {
+    content: "";
+    @include absolute-fill;
+    background-color: var(--loading-screen-background, #fff);
+  }
+}
+
+.loading-screen__frame {
+  position: relative;
+  width: min(#{$loading-screen-width}, 80vw, calc(80vh * var(--loading-screen-ratio)));
+  width: min(#{$loading-screen-width}, 80vw, calc(80svh * var(--loading-screen-ratio)));
+  aspect-ratio: var(--loading-screen-ratio);
+  opacity: 0;
+}
+
+.loading-screen__media {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  @include inset-x(-$loading-screen-stretch);
+  clip-path: loading-screen-shape(0);
+}
+
+.loading-screen__image {
+  display: block;
+  @include size(100%);
+  object-fit: cover;
+}
+
+.loading-screen.is-ready .loading-screen__frame {
+  opacity: 1;
+  animation: loading-screen-fade-in $loading-screen-fade-in-duration $transition-ease-base both;
+}
+
+.loading-screen.is-ready .loading-screen__media {
+  animation: loading-screen-stretch $loading-screen-stretch-duration ease-in-out $loading-screen-stretch-delay both;
+}
+
+.loading-screen.is-revealing {
+  pointer-events: none;
+  animation: none;
+
+  &::before {
+    animation: loading-screen-fade-out $loading-screen-reveal-duration * 0.75 $transition-ease-base forwards;
+  }
+}
+
+.loading-screen.is-revealing .loading-screen__frame {
+  will-change: transform, opacity;
+  animation: loading-screen-expand $loading-screen-reveal-duration $loading-screen-ease-reveal forwards;
+}
+
+.loading-screen-lock {
+  overflow: hidden;
+  scrollbar-gutter: stable;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loading-screen.is-ready .loading-screen__media {
+    animation: none;
+  }
+
+  .loading-screen.is-revealing .loading-screen__frame {
+    animation-name: loading-screen-fade-out;
+  }
+}
+
+@keyframes loading-screen-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes loading-screen-stretch {
+  0%,
+  100% {
+    clip-path: loading-screen-shape(0);
+  }
+
+  50% {
+    clip-path: loading-screen-shape(1);
+  }
+} 
+
+@keyframes loading-screen-expand {
+  to {
+    opacity: 0;
+    transform: scale(var(--loading-screen-scale, 3));
+  }
+}
+
+@keyframes loading-screen-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes loading-screen-failsafe {
+  to {
+    opacity: 0;
+    visibility: hidden;
+  }
+}

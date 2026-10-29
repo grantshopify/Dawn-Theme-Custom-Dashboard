@@ -1,0 +1,66 @@
+{%- comment -%}
+  First-visit loading screen. Rendered at the top of <body> from layout/theme.liquid only
+  when Theme settings → Loading screen is enabled.
+
+  The overlay sits in a <template> and the script below adds it to the page only on the
+  first page view of a browser session, so later pages never download its image.
+  Animation: styles/components/_loading-screen.scss. Reveal and cleanup: assets/main.js.
+{%- endcomment -%}
+{%- liquid
+  assign loading_screen_image = settings.loading_screen_image
+  if loading_screen_image != blank
+    assign loading_screen_ratio = loading_screen_image.aspect_ratio
+  else
+    assign loading_screen_ratio = 494 | divided_by: 575.0
+  endif
+  assign loading_screen_onload = "this.closest('.loading-screen').classList.add('is-ready')"
+-%}
+<template id="LoadingScreen">
+  <div
+    class="loading-screen"
+    style="--loading-screen-background: {{ settings.loading_screen_background | default: '#ffffff' }}; --loading-screen-ratio: {{ loading_screen_ratio }};"
+    aria-hidden="true"
+  >
+    <div class="loading-screen__frame">
+      <div class="loading-screen__media">
+        {%- if loading_screen_image != blank -%}
+          {{
+            loading_screen_image
+            | image_url: width: 1040
+            | image_tag:
+              widths: '520, 780, 1040',
+              sizes: '(min-width: 650px) 520px, 84vw',
+              alt: '',
+              class: 'loading-screen__image',
+              loading: 'eager',
+              fetchpriority: 'high',
+              onload: loading_screen_onload
+          }}
+        {%- else -%}
+          <img
+            src="{{ 'loading-screen.jpg' | asset_url }}"
+            alt=""
+            width="494"
+            height="575"
+            class="loading-screen__image"
+            loading="eager"
+            fetchpriority="high"
+            onload="{{ loading_screen_onload }}"
+          >
+        {%- endif -%}
+      </div>
+    </div>
+  </div>
+</template>
+<script>
+  (function () {
+    try {
+      if (sessionStorage.getItem('loading-screen-seen')) return;
+      sessionStorage.setItem('loading-screen-seen', '1');
+    } catch (error) {
+      return;
+    }
+    var template = document.getElementById('LoadingScreen');
+    template.after(document.importNode(template.content, true));
+  })();
+</script>
