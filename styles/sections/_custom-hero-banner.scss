@@ -5,36 +5,29 @@
 @use "sass:string";
 
 // Custom hero banner (sections/custom-hero-banner.liquid).
-// With "Add animation" on, every animation waits paused on its first frame until
-// assets/main.js adds .is-playing (banner in view and image loaded):
-// 1. the image fades in as a centred 370 × 419 window,
-// 2. the middle of the window's left and right sides pulls in toward the centre,
-// 3. the window opens out to the full banner while the image settles to full size,
-// 4. the heading, text and button fade up one after another.
+// With "Add animation" on, the image starts as a centred 370 × 419 window whose left and right
+// sides curve in toward the middle. Every animation waits paused on that first frame until
+// assets/main.js adds .is-playing (banner in view and image loaded). A second later the window
+// bounces open to the whole banner, then the heading, text and button fade up one after another.
 
 $custom-hero-banner-window-width: 370px;
 $custom-hero-banner-window-height: 419px;
 $custom-hero-banner-window-max: 70vw; // window width cap on narrow screens
-$custom-hero-banner-pinch: 2.25%; // how far each side's midpoint moves in, as a share of the window width
+$custom-hero-banner-pinch: 1.85%; // how far each side's midpoint sits in, as a share of the window width
 $custom-hero-banner-start-scale: 0.8; // image size inside the window, relative to the open banner
+$custom-hero-banner-bounce-scale: 1.04; // image overshoot as the window springs open
 $custom-hero-banner-height-large: 720px;
 $custom-hero-banner-height-medium: 560px;
 $custom-hero-banner-height-large-mobile: 560px;
 $custom-hero-banner-height-medium-mobile: 440px;
-$custom-hero-banner-fade-in-duration: 0.6s;
-$custom-hero-banner-pinch-duration: 0.7s;
-$custom-hero-banner-pinch-hold: 0.15s;
-$custom-hero-banner-expand-duration: 1.2s;
+$custom-hero-banner-open-delay: 1s; // how long the window holds before it bounces open
+$custom-hero-banner-open-duration: 1.1s;
 $custom-hero-banner-text-duration: 0.8s;
 $custom-hero-banner-text-stagger: 0.15s;
 $custom-hero-banner-text-offset: 24px;
-$custom-hero-banner-ease-expand: cubic-bezier(0.65, 0, 0.35, 1);
+$custom-hero-banner-ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
 
-$custom-hero-banner-reveal-duration: $custom-hero-banner-pinch-duration + $custom-hero-banner-pinch-hold +
-  $custom-hero-banner-expand-duration;
-$custom-hero-banner-expand-delay: $custom-hero-banner-fade-in-duration + $custom-hero-banner-pinch-duration +
-  $custom-hero-banner-pinch-hold;
-$custom-hero-banner-text-delay: $custom-hero-banner-expand-delay + $custom-hero-banner-expand-duration;
+$custom-hero-banner-text-delay: $custom-hero-banner-open-delay + $custom-hero-banner-open-duration;
 
 @function custom-hero-banner-number($value) {
   @return math.div(math.round($value * 10000), 10000);
@@ -49,10 +42,10 @@ $custom-hero-banner-text-delay: $custom-hero-banner-expand-delay + $custom-hero-
   @return string.unquote("calc(50% + #{$factor} * var(--custom-hero-banner-window-#{$size}))");
 }
 
-// Clip shape for .custom-hero-banner__media. $pinch 0 is the straight-sided centred window;
-// at 1 the middle of each side sits $custom-hero-banner-pinch further in, curving back out
-// to the corners. $open 1 is the whole banner. Every shape has the same points so they animate.
-@function custom-hero-banner-shape($pinch: 0, $open: 0, $steps: 12) {
+// Clip shape for .custom-hero-banner__media: the centred window, the middle of each side
+// $custom-hero-banner-pinch in from the corners; $open is the whole banner. Both shapes have
+// the same points so one animates into the other.
+@function custom-hero-banner-shape($open: false, $steps: 12) {
   $depth: math.div($custom-hero-banner-pinch, 100%);
   $left: ();
   $right: ();
@@ -60,11 +53,11 @@ $custom-hero-banner-text-delay: $custom-hero-banner-expand-delay + $custom-hero-
   @for $i from 0 through $steps {
     $t: math.div($i, $steps);
 
-    @if $open == 1 {
+    @if $open {
       $left: list.append($left, 0% custom-hero-banner-number($t * 100%), comma);
       $right: list.append($right, 100% custom-hero-banner-number((1 - $t) * 100%), comma);
     } @else {
-      $x: custom-hero-banner-number(0.5 - $depth * $pinch * 4 * $t * (1 - $t));
+      $x: custom-hero-banner-number(0.5 - $depth * 4 * $t * (1 - $t));
       $y: custom-hero-banner-number($t - 0.5);
       $left: list.append($left, custom-hero-banner-offset(-$x, width) custom-hero-banner-offset($y, height), comma);
       $right: list.append($right, custom-hero-banner-offset($x, width) custom-hero-banner-offset(-$y, height), comma);
@@ -170,19 +163,17 @@ $custom-hero-banner-text-delay: $custom-hero-banner-expand-delay + $custom-hero-
 }
 
 .custom-hero-banner--animate .custom-hero-banner__media {
-  animation:
-    custom-hero-banner-fade-in $custom-hero-banner-fade-in-duration $transition-ease-base both,
-    custom-hero-banner-reveal $custom-hero-banner-reveal-duration linear $custom-hero-banner-fade-in-duration both;
+  animation: custom-hero-banner-reveal $custom-hero-banner-open-duration $custom-hero-banner-ease-bounce
+    $custom-hero-banner-open-delay both;
 }
 
 .custom-hero-banner--animate .custom-hero-banner__media::after {
-  animation: custom-hero-banner-fade-in $custom-hero-banner-expand-duration $custom-hero-banner-ease-expand
-    $custom-hero-banner-expand-delay both;
+  animation: custom-hero-banner-fade-in $custom-hero-banner-open-duration $transition-ease-base
+    $custom-hero-banner-open-delay both;
 }
 
 .custom-hero-banner--animate .custom-hero-banner__image {
-  animation: custom-hero-banner-zoom $custom-hero-banner-expand-duration $custom-hero-banner-ease-expand
-    $custom-hero-banner-expand-delay both;
+  animation: custom-hero-banner-zoom $custom-hero-banner-open-duration linear $custom-hero-banner-open-delay both;
 }
 
 .custom-hero-banner--animate .custom-hero-banner__content > * {
@@ -225,30 +216,36 @@ $custom-hero-banner-text-delay: $custom-hero-banner-expand-delay + $custom-hero-
   }
 }
 
+// The bounce easing overshoots the banner edges, where the overshoot is clipped away.
 @keyframes custom-hero-banner-reveal {
-  0% {
+  from {
     clip-path: custom-hero-banner-shape();
-    animation-timing-function: ease-in-out;
   }
 
-  #{math.percentage(math.div($custom-hero-banner-pinch-duration, $custom-hero-banner-reveal-duration))} {
-    clip-path: custom-hero-banner-shape($pinch: 1);
-    animation-timing-function: linear;
-  }
-
-  #{math.percentage(math.div($custom-hero-banner-pinch-duration + $custom-hero-banner-pinch-hold, $custom-hero-banner-reveal-duration))} {
-    clip-path: custom-hero-banner-shape($pinch: 1);
-    animation-timing-function: $custom-hero-banner-ease-expand;
-  }
-
-  100% {
-    clip-path: custom-hero-banner-shape($open: 1);
+  to {
+    clip-path: custom-hero-banner-shape($open: true);
   }
 }
 
+// The image springs past full size and settles, so the bounce stays visible once the window is open.
 @keyframes custom-hero-banner-zoom {
-  from {
+  0% {
     transform: scale($custom-hero-banner-start-scale);
+    animation-timing-function: $transition-ease-smooth;
+  }
+
+  55% {
+    transform: scale($custom-hero-banner-bounce-scale);
+    animation-timing-function: ease-in-out;
+  }
+
+  80% {
+    transform: scale(0.99);
+    animation-timing-function: ease-in-out;
+  }
+
+  100% {
+    transform: none;
   }
 }
 

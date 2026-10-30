@@ -1,6 +1,6 @@
 {%- comment -%}
-  Full-width hero image with text. "Add animation" opens the image out from a centred
-  370 × 419 window, then fades the text up.
+  Full-width hero image with text. "Add animation" starts the image as a centred 370 × 419
+  window with its sides curved in, bounces it open to the full banner, then fades the text up.
   Styles and animation: styles/sections/_custom-hero-banner.scss. Playback: assets/main.js.
 {%- endcomment -%}
 {%- liquid
@@ -119,7 +119,7 @@
       "type": "checkbox",
       "id": "enable_animation",
       "label": "Add animation",
-      "info": "The image starts as a 370 × 419px window in the centre, pulls the middle of its sides inward, then opens out to the full banner. The text fades up afterwards. Plays once the banner is in view.",
+      "info": "The image starts as a 370 × 419px window in the centre with its sides curved in. A second after the banner comes into view it bounces open to the full banner, then the text fades up.",
       "default": true
     },
     {
