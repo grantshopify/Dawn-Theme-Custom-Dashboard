@@ -15,7 +15,6 @@ $custom-hero-banner-window-height: 419px;
 $custom-hero-banner-window-max: 70vw; // window width cap on narrow screens
 $custom-hero-banner-pinch: 1.85%; // how far each side's midpoint sits in, as a share of the window width
 $custom-hero-banner-start-scale: 0.8; // image size inside the window, relative to the open banner
-$custom-hero-banner-bounce-scale: 1.04; // image overshoot as the window springs open
 $custom-hero-banner-height-large: 720px;
 $custom-hero-banner-height-medium: 560px;
 $custom-hero-banner-height-large-mobile: 560px;
@@ -173,7 +172,8 @@ $custom-hero-banner-text-delay: $custom-hero-banner-open-delay + $custom-hero-ba
 }
 
 .custom-hero-banner--animate .custom-hero-banner__image {
-  animation: custom-hero-banner-zoom $custom-hero-banner-open-duration linear $custom-hero-banner-open-delay both;
+  animation: custom-hero-banner-zoom $custom-hero-banner-open-duration $transition-ease-smooth
+    $custom-hero-banner-open-delay both;
 }
 
 .custom-hero-banner--animate .custom-hero-banner__content > * {
@@ -227,25 +227,9 @@ $custom-hero-banner-text-delay: $custom-hero-banner-open-delay + $custom-hero-ba
   }
 }
 
-// The image springs past full size and settles, so the bounce stays visible once the window is open.
 @keyframes custom-hero-banner-zoom {
-  0% {
+  from {
     transform: scale($custom-hero-banner-start-scale);
-    animation-timing-function: $transition-ease-smooth;
-  }
-
-  55% {
-    transform: scale($custom-hero-banner-bounce-scale);
-    animation-timing-function: ease-in-out;
-  }
-
-  80% {
-    transform: scale(0.99);
-    animation-timing-function: ease-in-out;
-  }
-
-  100% {
-    transform: none;
   }
 }
 
